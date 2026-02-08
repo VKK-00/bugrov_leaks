@@ -214,9 +214,11 @@ body {
 }
 
 .message.outgoing {
-    align-self: flex-end;
+    align-self: flex-start;
+    /* Move Bugrov to left */
     background-color: var(--message-bg-out);
-    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 6px;
 }
 
 .message.incoming {
@@ -247,12 +249,43 @@ body {
 }
 
 .message-sender {
-    color: var(--link-color);
+    font-weight: 600;
     font-size: 13px;
-    font-weight: 500;
     margin-bottom: 4px;
     display: block;
     cursor: pointer;
+}
+
+.message-sender.userpic1 {
+    color: #ff5555;
+}
+
+.message-sender.userpic2 {
+    color: #64bf47;
+}
+
+.message-sender.userpic3 {
+    color: #ffab00;
+}
+
+.message-sender.userpic4 {
+    color: #4f9cd9;
+}
+
+.message-sender.userpic5 {
+    color: #9884e8;
+}
+
+.message-sender.userpic6 {
+    color: #e671a5;
+}
+
+.message-sender.userpic7 {
+    color: #47bcd1;
+}
+
+.message-sender.userpic8 {
+    color: #ff8c44;
 }
 
 .message-content {
