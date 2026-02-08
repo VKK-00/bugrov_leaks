@@ -349,6 +349,13 @@ const app = {
                 }
             }
 
+            // ... (rest of loop)
+
+            /* The loop continues... handled in next chunk */
+
+            /* I need to inject the call at the END of renderMessages, not inside loop */
+
+
             const msgDiv = document.createElement('div');
             if (msg.dt_iso) msgDiv.dataset.date = msg.dt_iso.split('T')[0];
             if (msg.message_id) msgDiv.id = msg.message_id;
@@ -456,6 +463,8 @@ const app = {
             }
             container.appendChild(msgDiv);
         });
+
+        this.generateTimeline();
     },
 
     renderAttachment: function (att) {
@@ -551,38 +560,69 @@ const app = {
         currentMatchIndex: -1
     },
 
-    filterMessages: function (text) {
+    filterMessages: function (query) {
         const container = document.getElementById('messages-container');
-        const msgs = container.querySelectorAll('.message');
 
-        // Reset highlights
-        msgs.forEach(m => m.classList.remove('match', 'current-match'));
-        this.state.searchMatches = [];
-        this.state.currentMatchIndex = -1;
+        // Cleanup previous highlights
+        const highlighted = container.querySelectorAll('.highlight-text');
+        highlighted.forEach(el => {
+            el.outerHTML = el.textContent;
+        });
 
-        if (!text) {
-            container.classList.remove('searching');
-            this.updateSearchCount();
+        container.classList.remove('searching');
+        container.querySelectorAll('.message').forEach(m => m.classList.remove('match'));
+
+        if (!query) {
+            document.getElementById('search-count').textContent = '';
+            this.state.searchMatches = [];
+            this.state.currentMatchIndex = -1;
             return;
         }
 
         container.classList.add('searching');
-        const matches = [];
-        msgs.forEach(m => {
-            // Check plain text content
-            if (m.textContent.toLowerCase().includes(text.toLowerCase())) {
-                m.classList.add('match');
-                matches.push(m);
+        const lowerQuery = query.toLowerCase();
+        let count = 0;
+        this.state.searchMatches = [];
+
+        // Search rendered DOM
+        const messages = container.querySelectorAll('.message');
+
+        messages.forEach(msg => {
+            const textEl = msg.querySelector('.message-text'); // This class might not exist if I didn't add it to renderMessages? 
+            // wait, renderMessages uses .message-content for text.
+            // Let's check renderMessages again.
+            // Line 453: content += `<div class="message-content">${textToShow}</div>`;
+            // So class is message-content.
+
+            const contentEl = msg.querySelector('.message-content');
+            if (contentEl) {
+                const text = contentEl.textContent;
+                if (text.toLowerCase().includes(lowerQuery)) {
+                    count++;
+                    msg.classList.add('match');
+                    this.state.searchMatches.push(msg);
+
+                    // Highlight
+                    try {
+                        const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                        contentEl.innerHTML = text.replace(regex, '<span class="highlight-text">$1</span>');
+                    } catch (e) {
+                        // fallback
+                    }
+                }
             }
         });
 
-        this.state.searchMatches = matches;
-        this.state.currentMatchIndex = matches.length > 0 ? 0 : -1;
+        const countSpan = document.getElementById('search-count');
+        if (countSpan) countSpan.textContent = count > 0 ? `1/${count}` : '0 found';
 
-        if (this.state.currentMatchIndex >= 0) {
+        if (this.state.searchMatches.length > 0) {
+            this.state.currentMatchIndex = 0;
+            this.state.searchMatches[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
             this.highlightCurrentMatch();
+        } else {
+            this.state.currentMatchIndex = -1;
         }
-        this.updateSearchCount();
     },
 
     navigateSearch: function (direction) {
@@ -768,7 +808,59 @@ const app = {
 
     openInfoModal: function () {
         document.getElementById('info-modal').style.display = 'flex';
+    },
+
+    initGestures: function () {
+        const gallery = document.getElementById('media-gallery-modal');
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        if (!gallery) return;
+
+        gallery.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+
+        gallery.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            if (touchStartX - touchEndX > 50) {
+                // Swipe Left -> Next
+                this.navigateMedia('next');
+            }
+            if (touchEndX - touchStartX > 50) {
+                // Swipe Right -> Prev
+                this.navigateMedia('prev');
+            }
+        }, { passive: true });
+    },
+
+    initPWA: function () {
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            this.state.deferredPrompt = e;
+            // Create Install Button if not exists
+            const sidebarHeader = document.querySelector('.sidebar-header');
+            if (!sidebarHeader) return;
+
+            const installBtn = document.createElement('button');
+            installBtn.textContent = '📲';
+            installBtn.title = 'Install App';
+            installBtn.className = 'icon-btn';
+            installBtn.style.fontSize = '12px';
+            installBtn.onclick = () => {
+                this.state.deferredPrompt.prompt();
+                this.state.deferredPrompt.userChoice.then((choiceResult) => {
+                    this.state.deferredPrompt = null;
+                    installBtn.remove();
+                });
+            };
+            sidebarHeader.insertBefore(installBtn, sidebarHeader.firstChild);
+        });
     }
 };
 
-document.addEventListener('DOMContentLoaded', () => app.init());
+document.addEventListener('DOMContentLoaded', () => {
+    app.init();
+    app.initGestures();
+    app.initPWA();
+});
