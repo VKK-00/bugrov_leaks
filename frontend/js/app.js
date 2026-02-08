@@ -23,6 +23,16 @@ const app = {
             this.state.profiles = {};
         }
 
+        // Check Password
+        const authorized = sessionStorage.getItem('bugrov_auth');
+        if (authorized) {
+            document.getElementById('password-overlay').style.display = 'none';
+        }
+
+        // Theme Check
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        this.setTheme(savedTheme);
+
         // Check Consent - ALWAYS SHOW
         document.getElementById('disclaimer-modal').style.display = 'flex';
 
