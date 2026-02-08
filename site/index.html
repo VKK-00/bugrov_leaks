@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Archive Viewer</title>
+    <meta name="description" content="Interactive viewer for Telegram chat archive export">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div id="app">
+        <!-- Sidebar: Chat List -->
+        <aside id="sidebar">
+            <header id="sidebar-header">
+                <h1>📨 Telegram Archive</h1>
+                <div id="stats"></div>
+            </header>
+            <div id="chat-search-container">
+                <input type="text" id="chat-search" placeholder="🔍 Пошук чату..." autocomplete="off">
+            </div>
+            <nav id="chat-list">
+                <div class="loading">Завантаження...</div>
+            </nav>
+        </aside>
+
+        <!-- Main Content: Messages -->
+        <main id="main-content">
+            <!-- Welcome Screen -->
+            <div id="welcome-screen">
+                <div class="welcome-icon">💬</div>
+                <h2>Виберіть чат зліва</h2>
+                <p>Оберіть чат зі списку для перегляду повідомлень</p>
+            </div>
+
+            <!-- Chat View (hidden by default) -->
+            <div id="chat-view" class="hidden">
+                <header id="chat-header">
+                    <button id="back-btn" class="mobile-only" title="Назад">←</button>
+                    <div id="chat-info">
+                        <h2 id="chat-title"></h2>
+                        <span id="chat-meta"></span>
+                    </div>
+                    <div id="chat-actions">
+                        <button id="search-toggle" title="Пошук">🔍</button>
+                        <button id="date-picker-toggle" title="Перейти до дати">📅</button>
+                    </div>
+                </header>
+
+                <!-- Search Panel -->
+                <div id="search-panel" class="hidden">
+                    <input type="text" id="message-search" placeholder="Пошук у повідомленнях..." autocomplete="off">
+                    <div id="search-results"></div>
+                </div>
+
+                <!-- Date Picker Panel -->
+                <div id="date-panel" class="hidden">
+                    <input type="date" id="date-input">
+                    <button id="go-to-date">Перейти</button>
+                </div>
+
+                <!-- Messages Container -->
+                <div id="messages-container">
+                    <div id="load-older" class="load-more hidden">
+                        <button id="load-older-btn">⬆️ Завантажити старіші повідомлення</button>
+                    </div>
+                    <div id="messages"></div>
+                    <div id="load-newer" class="load-more hidden">
+                        <button id="load-newer-btn">⬇️ Завантажити новіші повідомлення</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Lightbox for media -->
+    <div id="lightbox" class="hidden">
+        <button id="lightbox-close">✕</button>
+        <div id="lightbox-content"></div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
