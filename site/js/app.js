@@ -11,6 +11,18 @@ const app = {
     init: async function () {
         console.log("App initializing...");
 
+        // Load Profiles
+        try {
+            const pRes = await fetch('data/profiles.json');
+            if (pRes.ok) {
+                const pData = await pRes.json();
+                this.state.profiles = pData.profiles || {};
+            }
+        } catch (e) {
+            console.error("Profiles load error:", e);
+            this.state.profiles = {};
+        }
+
         // Check Consent
         if (!localStorage.getItem('bugrov_consent')) {
             document.getElementById('disclaimer-modal').style.display = 'flex';
@@ -360,20 +372,31 @@ const app = {
                 const currentName = msg.from_name || 'Unknown';
                 const showName = (currentName !== lastSenderName);
 
+                // Profile Lookup
+                const profile = this.state.profiles && this.state.profiles[currentName];
+                const profileLink = profile ? profile.link : null;
+
                 if (showName && msg.from_name) {
+                    let nameHtml = '';
                     if (isBugrov) {
                         // For Bugrov, checking if we want to hide name or show it specially.
                         // User request: "ім'я профілю ... потім текст"
                         // TDesktop shows name for everyone in groups. In PM, it might hide.
                         // Let's show it to be safe as per "має бути: імя..."
-                        content += `<span class="message-sender">${this.escapeHtml(msg.from_name)}</span>`;
+                        nameHtml = `<span class="message-sender">${this.escapeHtml(msg.from_name)}</span>`;
                     } else {
                         let hash = 0;
                         for (let i = 0; i < msg.from_name.length; i++) {
                             hash = msg.from_name.charCodeAt(i) + ((hash << 5) - hash);
                         }
                         const colorIndex = (Math.abs(hash) % 8) + 1;
-                        content += `<span class="message-sender color${colorIndex}">${this.escapeHtml(msg.from_name)}</span>`;
+                        nameHtml = `<span class="message-sender color${colorIndex}">${this.escapeHtml(msg.from_name)}</span>`;
+                    }
+
+                    if (profileLink) {
+                        content += `<a href="${profileLink}" target="_blank" style="text-decoration:none;">${nameHtml}</a>`;
+                    } else {
+                        content += nameHtml;
                     }
                 }
 
