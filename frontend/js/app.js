@@ -1,4 +1,4 @@
-const app = {
+var app = {
     state: {
         chats: [],
         currentChatId: null,
@@ -9,18 +9,37 @@ const app = {
     },
 
     checkPassword: function () {
-        const input = document.getElementById('access-password').value;
-        // Case-insensitive check
-        if (['bugrov'].includes(input.trim().toLowerCase())) {
-            sessionStorage.setItem('bugrov_auth', 'true');
-            document.getElementById('password-overlay').style.display = 'none';
-        } else {
-            alert('Невірний пароль / Incorrect password');
+        try {
+            const input = document.getElementById('access-password').value || '';
+            console.log("Checking password:", input);
+
+            // Case-insensitive check
+            if (['bugrov'].includes(input.trim().toLowerCase())) {
+                document.getElementById('password-overlay').style.display = 'none';
+                try {
+                    sessionStorage.setItem('bugrov_auth', 'true');
+                } catch (e) {
+                    console.warn('Session storage failed:', e);
+                }
+            } else {
+                alert('Невірний пароль / Incorrect password');
+            }
+        } catch (e) {
+            console.error("Password check error:", e);
+            alert('Error checking password. See console.');
         }
     },
 
     init: async function () {
         console.log("App initializing...");
+
+        // Setup Password Enter Key
+        const pwInput = document.getElementById('access-password');
+        if (pwInput) {
+            pwInput.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') this.checkPassword();
+            });
+        }
 
         // Load Profiles
         try {
@@ -35,9 +54,13 @@ const app = {
         }
 
         // Check Password
-        const authorized = sessionStorage.getItem('bugrov_auth');
-        if (authorized) {
-            document.getElementById('password-overlay').style.display = 'none';
+        try {
+            const authorized = sessionStorage.getItem('bugrov_auth');
+            if (authorized) {
+                document.getElementById('password-overlay').style.display = 'none';
+            }
+        } catch (e) {
+            console.warn("Session check failed:", e);
         }
 
         // Theme Check
