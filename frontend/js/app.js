@@ -8,6 +8,17 @@ const app = {
         lastRenderedDate: null
     },
 
+    checkPassword: function () {
+        const input = document.getElementById('access-password').value;
+        // Case-insensitive check
+        if (['bugrov'].includes(input.trim().toLowerCase())) {
+            sessionStorage.setItem('bugrov_auth', 'true');
+            document.getElementById('password-overlay').style.display = 'none';
+        } else {
+            alert('Невірний пароль / Incorrect password');
+        }
+    },
+
     init: async function () {
         console.log("App initializing...");
 
@@ -465,598 +476,602 @@ const app = {
 
         } catch (e) { console.error(e); }
     },
-    if(!response.ok) return;
-    const messages = await response.json();
+    loadChunk: async function (chatId, filename) {
+        if (this.state.chunksLoaded.has(filename)) return;
+        try {
+            const response = await fetch(`data/${chatId}/chunks/${filename}`);
+            if (!response.ok) return;
+            const messages = await response.json();
+            this.state.chunksLoaded.add(filename);
 
-    this.state.chunksLoaded.add(filename);
+            // Append messages for initial load
+            this.state.currentChatMessages.push(...messages);
+            messages.forEach(m => {
+                if (m.message_id) this.state.messageMap.set(m.message_id, m);
+            });
 
-    messages.forEach(m => {
-        this.state.currentChatMessages.push(m);
-        if (m.message_id) this.state.messageMap.set(m.message_id, m);
-    });
-
-    this.renderMessages(messages);
-} catch (e) {
-    console.error('Error loading chunk:', e);
-}
+            this.renderMessages(this.state.currentChatMessages);
+        } catch (e) {
+            console.error('Error loading chunk:', e);
+        }
     },
 
-formatDateHeader: function (isoString) {
-    const date = new Date(isoString);
-    // Format: "27 March 2021"
-    const day = date.getDate();
-    const month = date.toLocaleString('default', { month: 'long' });
-    const year = date.getFullYear();
-    return `${day} ${month} ${year}`;
-},
+    formatDateHeader: function (isoString) {
+        const date = new Date(isoString);
+        // Format: "27 March 2021"
+        const day = date.getDate();
+        const month = date.toLocaleString('default', { month: 'long' });
+        const year = date.getFullYear();
+        return `${day} ${month} ${year}`;
+    },
 
-renderMessages: function (messages) {
-    const container = document.getElementById('messages-container');
+    renderMessages: function (messages) {
+        const container = document.getElementById('messages-container');
 
-    // Reset lastSender for this batch if it's a new render (not append). 
-    // But renderMessages is called by loadChunk which appends. 
-    // We should track the last message rendered in the container to be sure.
-    // However, we can just rely on local logic for the chunk, assuming chunks are large enough that boundary issues are minor.
-    // Better: check the last element in container.
+        // Reset lastSender for this batch if it's a new render (not append). 
+        // But renderMessages is called by loadChunk which appends. 
+        // We should track the last message rendered in the container to be sure.
+        // However, we can just rely on local logic for the chunk, assuming chunks are large enough that boundary issues are minor.
+        // Better: check the last element in container.
 
-    // Local state for this batch
-    let lastSenderName = null; messages.forEach((msg, index) => {
-        // Date Header
-        if (msg.dt_iso) {
-            const dateKey = msg.dt_iso.split('T')[0];
-            if (dateKey !== this.state.lastRenderedDate) {
-                const dateDiv = document.createElement('div');
-                dateDiv.className = 'date-header';
-                dateDiv.textContent = this.formatDateHeader(msg.dt_iso);
-                container.appendChild(dateDiv);
-                this.state.lastRenderedDate = dateKey;
+        // Local state for this batch
+        let lastSenderName = null; messages.forEach((msg, index) => {
+            // Date Header
+            if (msg.dt_iso) {
+                const dateKey = msg.dt_iso.split('T')[0];
+                if (dateKey !== this.state.lastRenderedDate) {
+                    const dateDiv = document.createElement('div');
+                    dateDiv.className = 'date-header';
+                    dateDiv.textContent = this.formatDateHeader(msg.dt_iso);
+                    container.appendChild(dateDiv);
+                    this.state.lastRenderedDate = dateKey;
 
-                // Reset sender grouping on new day
-                lastSenderName = null;
-            }
-        }
-
-        // ... (rest of loop)
-
-        /* The loop continues... handled in next chunk */
-
-        /* I need to inject the call at the END of renderMessages, not inside loop */
-
-
-        const msgDiv = document.createElement('div');
-        if (msg.dt_iso) msgDiv.dataset.date = msg.dt_iso.split('T')[0];
-        if (msg.message_id) msgDiv.id = msg.message_id;
-
-        if (msg.is_service) {
-            msgDiv.className = 'service-message';
-            msgDiv.dataset.isServiceMsg = "true";
-            msgDiv.textContent = msg.plain_text;
-            lastSenderName = null; // Reset grouping on service msg
-        } else {
-            // Sender Logic
-            const isBugrov = msg.from_name &&
-                (msg.from_name.includes('Volodymyr Bugrov') || msg.from_name.includes('Bugrov'));
-
-            let msgClass = 'message incoming';
-            if (isBugrov) {
-                msgClass = 'message bugrov-message';
+                    // Reset sender grouping on new day
+                    lastSenderName = null;
+                }
             }
 
-            msgDiv.className = msgClass;
+            // ... (rest of loop)
 
-            let content = '';
+            /* The loop continues... handled in next chunk */
 
-            // Name Logic (Grouping) - SHOW FIRST
-            const currentName = msg.from_name || 'Unknown';
-            const showName = (currentName !== lastSenderName);
+            /* I need to inject the call at the END of renderMessages, not inside loop */
 
-            // Profile Lookup
-            const profile = this.state.profiles && this.state.profiles[currentName];
-            const profileLink = profile ? profile.link : null;
 
-            if (showName && msg.from_name) {
-                let nameHtml = '';
+            const msgDiv = document.createElement('div');
+            if (msg.dt_iso) msgDiv.dataset.date = msg.dt_iso.split('T')[0];
+            if (msg.message_id) msgDiv.id = msg.message_id;
+
+            if (msg.is_service) {
+                msgDiv.className = 'service-message';
+                msgDiv.dataset.isServiceMsg = "true";
+                msgDiv.textContent = msg.plain_text;
+                lastSenderName = null; // Reset grouping on service msg
+            } else {
+                // Sender Logic
+                const isBugrov = msg.from_name &&
+                    (msg.from_name.includes('Volodymyr Bugrov') || msg.from_name.includes('Bugrov'));
+
+                let msgClass = 'message incoming';
                 if (isBugrov) {
-                    // For Bugrov, checking if we want to hide name or show it specially.
-                    // User request: "ім'я профілю ... потім текст"
-                    // TDesktop shows name for everyone in groups. In PM, it might hide.
-                    // Let's show it to be safe as per "має бути: імя..."
-                    nameHtml = `<span class="message-sender">${this.escapeHtml(msg.from_name)}</span>`;
-                } else {
-                    let hash = 0;
-                    for (let i = 0; i < msg.from_name.length; i++) {
-                        hash = msg.from_name.charCodeAt(i) + ((hash << 5) - hash);
+                    msgClass = 'message bugrov-message';
+                }
+
+                msgDiv.className = msgClass;
+
+                let content = '';
+
+                // Name Logic (Grouping) - SHOW FIRST
+                const currentName = msg.from_name || 'Unknown';
+                const showName = (currentName !== lastSenderName);
+
+                // Profile Lookup
+                const profile = this.state.profiles && this.state.profiles[currentName];
+                const profileLink = profile ? profile.link : null;
+
+                if (showName && msg.from_name) {
+                    let nameHtml = '';
+                    if (isBugrov) {
+                        // For Bugrov, checking if we want to hide name or show it specially.
+                        // User request: "ім'я профілю ... потім текст"
+                        // TDesktop shows name for everyone in groups. In PM, it might hide.
+                        // Let's show it to be safe as per "має бути: імя..."
+                        nameHtml = `<span class="message-sender">${this.escapeHtml(msg.from_name)}</span>`;
+                    } else {
+                        let hash = 0;
+                        for (let i = 0; i < msg.from_name.length; i++) {
+                            hash = msg.from_name.charCodeAt(i) + ((hash << 5) - hash);
+                        }
+                        const colorIndex = (Math.abs(hash) % 8) + 1;
+                        nameHtml = `<span class="message-sender color${colorIndex}">${this.escapeHtml(msg.from_name)}</span>`;
                     }
-                    const colorIndex = (Math.abs(hash) % 8) + 1;
-                    nameHtml = `<span class="message-sender color${colorIndex}">${this.escapeHtml(msg.from_name)}</span>`;
+
+                    if (profileLink) {
+                        content += `<a href="${profileLink}" target="_blank" style="text-decoration:none;">${nameHtml}</a>`;
+                    } else {
+                        content += nameHtml;
+                    }
                 }
 
-                if (profileLink) {
-                    content += `<a href="${profileLink}" target="_blank" style="text-decoration:none;">${nameHtml}</a>`;
-                } else {
-                    content += nameHtml;
-                }
-            }
+                lastSenderName = currentName;
 
-            lastSenderName = currentName;
+                // Reply Logic - SHOW SECOND
+                if (msg.reply_to) {
+                    const replyMsg = this.state.messageMap.get(msg.reply_to);
+                    const replyName = replyMsg ? (replyMsg.from_name || 'Someone') : 'Message';
+                    const replyText = replyMsg ? (replyMsg.plain_text || 'Media') : '...';
 
-            // Reply Logic - SHOW SECOND
-            if (msg.reply_to) {
-                const replyMsg = this.state.messageMap.get(msg.reply_to);
-                const replyName = replyMsg ? (replyMsg.from_name || 'Someone') : 'Message';
-                const replyText = replyMsg ? (replyMsg.plain_text || 'Media') : '...';
-
-                content += `
+                    content += `
                         <div class="reply-preview" onclick="app.scrollToMessage('${msg.reply_to}')">
                             <div class="reply-name">${this.escapeHtml(replyName)}</div>
                             <div class="reply-text">${this.escapeHtml(replyText)}</div>
                         </div>`;
-            }
-
-            const hasAttachments = msg.attachments && msg.attachments.length > 0;
-
-            // Media
-            if (hasAttachments) {
-                msg.attachments.forEach(att => {
-                    content += this.renderAttachment(att);
-                });
-            }
-
-            // Text Logic
-            let textToShow = null;
-            if (hasAttachments) {
-                if (msg.plain_text && msg.plain_text.trim().length > 0) {
-                    textToShow = this.escapeHtml(msg.plain_text);
                 }
-            } else {
-                if (msg.html_text) {
-                    textToShow = msg.html_text;
-                } else if (msg.plain_text) {
-                    textToShow = this.escapeHtml(msg.plain_text);
+
+                const hasAttachments = msg.attachments && msg.attachments.length > 0;
+
+                // Media
+                if (hasAttachments) {
+                    msg.attachments.forEach(att => {
+                        content += this.renderAttachment(att);
+                    });
                 }
-            }
 
-            if (textToShow) {
-                content += `<div class="message-content">${textToShow}</div>`;
-            }
-
-            // Timestamp
-            if (msg.dt_iso) {
-                const time = msg.dt_iso.split('T')[1].substring(0, 5);
-                content += `<div class="message-meta">${time}</div>`;
-            }
-
-            msgDiv.innerHTML = content;
-        }
-        container.appendChild(msgDiv);
-    });
-
-    this.generateTimeline();
-},
-
-renderAttachment: function (att) {
-    if (att.kind === 'photo' || att.kind === 'sticker') {
-        const isSticker = att.kind === 'sticker';
-        const cls = isSticker ? 'media-sticker' : 'media-photo';
-        const onclick = isSticker ? '' : `onclick="app.openLightbox('${att.href}')"`;
-
-        // Thumbnail Logic: Try to use _thumb.jpg if available
-        // We blindly assume a thumb might exist or fallback to full image.
-        // Since we can't check existence easily without 404s, we will use the full image as src,
-        // BUT for the lightbox we definitely use the full image.
-        // OPTIMIZATION: If the file is huge, this is slow. 
-        // Telegram export usually names photos like "photo_123.jpg". 
-        // Thumbs are usually embedded or separate. 
-        // Users request implies "thumbnails" exist.
-        // Let's try to construct a thumb path if it's a standard format.
-        // Standard export: "photo_1@01-01-2021_12-00-00.jpg" -> "photo_1@01-01-2021_12-00-00_thumb.jpg" ??
-        // Actually standard export:
-        // photos/photo_1.jpg
-        // photos/photo_1_thumb.jpg (sometimes)
-        // Let's try to infer thumb path.
-
-        let src = att.href;
-        // Hacky attempt: if path ends in .jpg, try inserting _thumb
-        // We will stick to using the main image for now unless we are sure.
-        // User said: "картинки есть с подписью thumb и без неё".
-        // So if `att.href` is `photo_123.jpg`, there is `photo_123_thumb.jpg`.
-
-        if (!isSticker && src.toLowerCase().endsWith('.jpg')) {
-            // Try to use thumb for display
-            const thumbSrc = src.replace('.jpg', '_thumb.jpg');
-            // We render the thumb, but keep full href for lightbox
-            // Note: If _thumb doesn't exist, this will show broken image.
-            // We can add onerror to fallback.
-        }
-        // Fallback
-        return `<div class="media-container"><img src="${src}" class="${cls}" loading="lazy" ${onclick}></div>`;
-    } else if (att.kind === 'video') {
-        return `<div class="media-container"><video src="${att.href}" controls class="media-video"></video></div>`;
-    } else if (att.kind === 'round_video') {
-        return `<div class="media-container round-container"><video src="${att.href}" autoplay loop muted class="media-round-video"></video></div>`;
-    } else if (att.kind === 'voice') {
-        // Use Stick Player
-        // att.href is relative path? "data/chat/voice/..."
-        // We need title (date? duration?)
-        return `<div class="media-container">
-                <button class="voice-msg-btn" onclick="app.playAudio('${att.href}', 'Voice Message')">▶️ Play Voice</button>
-            </div>`;
-    } else {
-        return `<div class="media-container"><a href="${att.href}" target="_blank" style="color: var(--link-color)">📄 ${att.kind}</a></div>`;
-    }
-},
-
-openLightbox: function (src) {
-    const lb = document.getElementById('lightbox');
-    const img = document.getElementById('lightbox-img');
-    img.src = src;
-    lb.style.display = 'flex';
-},
-
-scrollToMessage: function (msgId) {
-    const el = document.getElementById(msgId);
-    if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        el.classList.add('highlight');
-        setTimeout(() => el.classList.remove('highlight'), 2000);
-    }
-},
-
-toggleSearch: function () {
-    const bar = document.getElementById('search-bar-chat');
-    bar.style.display = bar.style.display === 'none' ? 'block' : 'none';
-
-    if (bar.style.display === 'block') {
-        document.getElementById('msg-search-input').focus();
-        // Reset search state
-        this.state.searchMatches = [];
-        this.state.currentMatchIndex = -1;
-        this.updateSearchCount();
-    } else {
-        // Clear search
-        this.filterMessages('');
-    }
-},
-
-// Search functionality state
-state: {
-    chats: [],
-        currentChatId: null,
-            currentChatMessages: [],
-                chunksLoaded: new Set(),
-                    messageMap: new Map(),
-                        lastRenderedDate: null,
-                            searchMatches: [],
-                                currentMatchIndex: -1
-},
-
-filterMessages: function (query) {
-    const container = document.getElementById('messages-container');
-
-    // Cleanup previous highlights
-    const highlighted = container.querySelectorAll('.highlight-text');
-    highlighted.forEach(el => {
-        el.outerHTML = el.textContent;
-    });
-
-    container.classList.remove('searching');
-    container.querySelectorAll('.message').forEach(m => m.classList.remove('match'));
-
-    if (!query) {
-        document.getElementById('search-count').textContent = '';
-        this.state.searchMatches = [];
-        this.state.currentMatchIndex = -1;
-        return;
-    }
-
-    container.classList.add('searching');
-    const lowerQuery = query.toLowerCase();
-    let count = 0;
-    this.state.searchMatches = [];
-
-    // Search rendered DOM
-    const messages = container.querySelectorAll('.message');
-
-    messages.forEach(msg => {
-        const textEl = msg.querySelector('.message-text'); // This class might not exist if I didn't add it to renderMessages? 
-        // wait, renderMessages uses .message-content for text.
-        // Let's check renderMessages again.
-        // Line 453: content += `<div class="message-content">${textToShow}</div>`;
-        // So class is message-content.
-
-        const contentEl = msg.querySelector('.message-content');
-        if (contentEl) {
-            const text = contentEl.textContent;
-            if (text.toLowerCase().includes(lowerQuery)) {
-                count++;
-                msg.classList.add('match');
-                this.state.searchMatches.push(msg);
-
-                // Highlight
-                try {
-                    const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-                    contentEl.innerHTML = text.replace(regex, '<span class="highlight-text">$1</span>');
-                } catch (e) {
-                    // fallback
-                }
-            }
-        }
-    });
-
-    const countSpan = document.getElementById('search-count');
-    if (countSpan) countSpan.textContent = count > 0 ? `1/${count}` : '0 found';
-
-    if (this.state.searchMatches.length > 0) {
-        this.state.currentMatchIndex = 0;
-        this.state.searchMatches[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
-        this.highlightCurrentMatch();
-    } else {
-        this.state.currentMatchIndex = -1;
-    }
-},
-
-navigateSearch: function (direction) {
-    if (this.state.searchMatches.length === 0) return;
-
-    if (direction === 'next') {
-        this.state.currentMatchIndex++;
-        if (this.state.currentMatchIndex >= this.state.searchMatches.length) {
-            this.state.currentMatchIndex = 0;
-        }
-    } else {
-        this.state.currentMatchIndex--;
-        if (this.state.currentMatchIndex < 0) {
-            this.state.currentMatchIndex = this.state.searchMatches.length - 1;
-        }
-    }
-    this.highlightCurrentMatch();
-    this.updateSearchCount();
-},
-
-highlightCurrentMatch: function () {
-    // Remove previous current-match
-    document.querySelectorAll('.current-match').forEach(el => el.classList.remove('current-match'));
-
-    const currentEl = this.state.searchMatches[this.state.currentMatchIndex];
-    if (currentEl) {
-        currentEl.classList.add('current-match');
-        currentEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-},
-
-updateSearchCount: function () {
-    const countSpan = document.getElementById('search-count');
-    if (!countSpan) return;
-
-    if (this.state.searchMatches.length === 0) {
-        countSpan.textContent = '';
-    } else {
-        countSpan.textContent = `${this.state.currentMatchIndex + 1}/${this.state.searchMatches.length}`;
-    }
-},
-
-showCalendar: function () {
-    document.getElementById('calendar-modal').style.display = 'flex';
-    const input = document.getElementById('calendar-input');
-
-    // Hightlight logic would go here if specialized calendar used.
-    // For native input, we can't easily highlight, but we can restrict min/max
-    const first = this.state.currentChatMessages[0];
-    const last = this.state.currentChatMessages[this.state.currentChatMessages.length - 1];
-
-    if (first && first.dt_iso) input.min = first.dt_iso.split('T')[0];
-    if (last && last.dt_iso) input.max = last.dt_iso.split('T')[0];
-
-    // Warning: This simple native picker doesn't "show only dates with messages". 
-    // Just limits range.
-},
-
-jumpToDate: function () {
-    const dateVal = document.getElementById('calendar-input').value;
-    if (!dateVal) return;
-
-    document.getElementById('calendar-modal').style.display = 'none';
-
-    const targetMsg = this.state.currentChatMessages.find(m => {
-        return m.dt_iso && m.dt_iso.startsWith(dateVal);
-    });
-
-    if (targetMsg && targetMsg.message_id) {
-        this.scrollToMessage(targetMsg.message_id);
-    } else {
-        const nextMsg = this.state.currentChatMessages.find(m => m.dt_iso && m.dt_iso >= dateVal);
-        if (nextMsg && nextMsg.message_id) {
-            this.scrollToMessage(nextMsg.message_id);
-        } else {
-            alert("No messages found on or after this date.");
-        }
-    }
-},
-
-openMediaGallery: function () {
-    if (!this.state.currentChatMessages || this.state.currentChatMessages.length === 0) return;
-
-    document.getElementById('media-gallery-modal').style.display = 'flex';
-    // Default to photo
-    const photoTab = document.querySelector('.media-tab');
-    this.filterGallery('photo', photoTab);
-},
-
-filterGallery: function (type, tabElement) {
-    // Update tabs
-    document.querySelectorAll('.media-tab').forEach(t => t.classList.remove('active'));
-    if (tabElement) tabElement.classList.add('active');
-
-    const grid = document.getElementById('media-grid');
-    grid.innerHTML = '';
-
-    // Filter messages with attachments of 'type'
-    // types: photo, video (includes round), voice
-
-    let targetType = type;
-    if (type === 'video') targetType = 'video';
-
-    const mediaItems = [];
-
-    this.state.currentChatMessages.forEach(msg => {
-        if (msg.attachments && msg.attachments.length > 0) {
-            msg.attachments.forEach(att => {
-                const k = att.kind || '';
-                // IF filter is 'video', include both 'video' and 'round_video'
-                if (type === 'video') {
-                    if (k === 'video' || k === 'round_video') {
-                        mediaItems.push({ ...att, msgId: msg.message_id, dt: msg.dt_iso });
+                // Text Logic
+                let textToShow = null;
+                if (hasAttachments) {
+                    if (msg.plain_text && msg.plain_text.trim().length > 0) {
+                        textToShow = this.escapeHtml(msg.plain_text);
                     }
                 } else {
-                    if (k === type) {
-                        mediaItems.push({ ...att, msgId: msg.message_id, dt: msg.dt_iso });
+                    if (msg.html_text) {
+                        textToShow = msg.html_text;
+                    } else if (msg.plain_text) {
+                        textToShow = this.escapeHtml(msg.plain_text);
                     }
                 }
-            });
-        }
-    });
 
-    if (mediaItems.length === 0) {
-        grid.innerHTML = '<div style="color:#aaa; text-align:center; padding:20px; width:100%;">No media found</div>';
-        return;
-    }
+                if (textToShow) {
+                    content += `<div class="message-content">${textToShow}</div>`;
+                }
 
-    mediaItems.forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'media-grid-item';
-        div.onclick = () => {
-            // Determine action
-            if (type === 'photo' || type === 'video') {
-                // For videos, openLightbox might need tweaking if it only supports images?
-                // app.openLightbox currently sets img.src. 
-                // Let's modify openLightbox to support video or just open image.
-                if (type === 'photo') this.openLightbox(item.href);
-                else window.open(item.href, '_blank');
-            } else {
-                document.getElementById('media-gallery-modal').style.display = 'none';
-                this.scrollToMessage(item.msgId);
+                // Timestamp
+                if (msg.dt_iso) {
+                    const time = msg.dt_iso.split('T')[1].substring(0, 5);
+                    content += `<div class="message-meta">${time}</div>`;
+                }
+
+                msgDiv.innerHTML = content;
             }
-        };
+            container.appendChild(msgDiv);
+        });
 
-        let inner = '';
-        if (type === 'photo') {
-            // Try thumb
-            let src = item.href;
-            if (src.toLowerCase().endsWith('.jpg')) src = src.replace('.jpg', '_thumb.jpg');
-            inner = `<img src="${src}" onerror="this.onerror=null;this.src='${item.href}'" loading="lazy">`;
-        } else if (type === 'video' || type === 'round') {
-            inner = `<video src="${item.href}" muted preload="metadata"></video><div class="type-icon">▶</div>`;
-        } else if (type === 'voice') {
-            inner = `<div style="color:white; font-size:24px;">🎤</div><div class="type-icon">${item.duration || ''}</div>`;
+        this.generateTimeline();
+    },
+
+    renderAttachment: function (att) {
+        if (att.kind === 'photo' || att.kind === 'sticker') {
+            const isSticker = att.kind === 'sticker';
+            const cls = isSticker ? 'media-sticker' : 'media-photo';
+            const onclick = isSticker ? '' : `onclick="app.openLightbox('${att.href}')"`;
+
+            // Thumbnail Logic: Try to use _thumb.jpg if available
+            // We blindly assume a thumb might exist or fallback to full image.
+            // Since we can't check existence easily without 404s, we will use the full image as src,
+            // BUT for the lightbox we definitely use the full image.
+            // OPTIMIZATION: If the file is huge, this is slow. 
+            // Telegram export usually names photos like "photo_123.jpg". 
+            // Thumbs are usually embedded or separate. 
+            // Users request implies "thumbnails" exist.
+            // Let's try to construct a thumb path if it's a standard format.
+            // Standard export: "photo_1@01-01-2021_12-00-00.jpg" -> "photo_1@01-01-2021_12-00-00_thumb.jpg" ??
+            // Actually standard export:
+            // photos/photo_1.jpg
+            // photos/photo_1_thumb.jpg (sometimes)
+            // Let's try to infer thumb path.
+
+            let src = att.href;
+            // Hacky attempt: if path ends in .jpg, try inserting _thumb
+            // We will stick to using the main image for now unless we are sure.
+            // User said: "картинки есть с подписью thumb и без неё".
+            // So if `att.href` is `photo_123.jpg`, there is `photo_123_thumb.jpg`.
+
+            if (!isSticker && src.toLowerCase().endsWith('.jpg')) {
+                // Try to use thumb for display
+                const thumbSrc = src.replace('.jpg', '_thumb.jpg');
+                // We render the thumb, but keep full href for lightbox
+                // Note: If _thumb doesn't exist, this will show broken image.
+                // We can add onerror to fallback.
+            }
+            // Fallback
+            return `<div class="media-container"><img src="${src}" class="${cls}" loading="lazy" ${onclick}></div>`;
+        } else if (att.kind === 'video') {
+            return `<div class="media-container"><video src="${att.href}" controls class="media-video"></video></div>`;
+        } else if (att.kind === 'round_video') {
+            return `<div class="media-container round-container"><video src="${att.href}" autoplay loop muted class="media-round-video"></video></div>`;
+        } else if (att.kind === 'voice') {
+            // Use Stick Player
+            // att.href is relative path? "data/chat/voice/..."
+            // We need title (date? duration?)
+            return `<div class="media-container">
+                <button class="voice-msg-btn" onclick="app.playAudio('${att.href}', 'Voice Message')">▶️ Play Voice</button>
+            </div>`;
+        } else {
+            return `<div class="media-container"><a href="${att.href}" target="_blank" style="color: var(--link-color)">📄 ${att.kind}</a></div>`;
+        }
+    },
+
+    openLightbox: function (src) {
+        const lb = document.getElementById('lightbox');
+        const img = document.getElementById('lightbox-img');
+        img.src = src;
+        lb.style.display = 'flex';
+    },
+
+    scrollToMessage: function (msgId) {
+        const el = document.getElementById(msgId);
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el.classList.add('highlight');
+            setTimeout(() => el.classList.remove('highlight'), 2000);
+        }
+    },
+
+    toggleSearch: function () {
+        const bar = document.getElementById('search-bar-chat');
+        bar.style.display = bar.style.display === 'none' ? 'block' : 'none';
+
+        if (bar.style.display === 'block') {
+            document.getElementById('msg-search-input').focus();
+            // Reset search state
+            this.state.searchMatches = [];
+            this.state.currentMatchIndex = -1;
+            this.updateSearchCount();
+        } else {
+            // Clear search
+            this.filterMessages('');
+        }
+    },
+
+    // Search functionality state
+    state: {
+        chats: [],
+        currentChatId: null,
+        currentChatMessages: [],
+        chunksLoaded: new Set(),
+        messageMap: new Map(),
+        lastRenderedDate: null,
+        searchMatches: [],
+        currentMatchIndex: -1
+    },
+
+    filterMessages: function (query) {
+        const container = document.getElementById('messages-container');
+
+        // Cleanup previous highlights
+        const highlighted = container.querySelectorAll('.highlight-text');
+        highlighted.forEach(el => {
+            el.outerHTML = el.textContent;
+        });
+
+        container.classList.remove('searching');
+        container.querySelectorAll('.message').forEach(m => m.classList.remove('match'));
+
+        if (!query) {
+            document.getElementById('search-count').textContent = '';
+            this.state.searchMatches = [];
+            this.state.currentMatchIndex = -1;
+            return;
         }
 
-        div.innerHTML = inner;
-        grid.appendChild(div);
-    });
-},
+        container.classList.add('searching');
+        const lowerQuery = query.toLowerCase();
+        let count = 0;
+        this.state.searchMatches = [];
 
-scrollToTop: function () {
-    document.getElementById('messages-container').scrollTo({ top: 0, behavior: 'smooth' });
-},
+        // Search rendered DOM
+        const messages = container.querySelectorAll('.message');
 
-getInitials: function (name) {
-    if (!name) return '?';
-    const parts = name.split(' ');
-    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-    return name.substring(0, 2).toUpperCase();
-},
+        messages.forEach(msg => {
+            const textEl = msg.querySelector('.message-text'); // This class might not exist if I didn't add it to renderMessages? 
+            // wait, renderMessages uses .message-content for text.
+            // Let's check renderMessages again.
+            // Line 453: content += `<div class="message-content">${textToShow}</div>`;
+            // So class is message-content.
 
-escapeHtml: function (text) {
-    if (!text) return '';
-    return text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-},
+            const contentEl = msg.querySelector('.message-content');
+            if (contentEl) {
+                const text = contentEl.textContent;
+                if (text.toLowerCase().includes(lowerQuery)) {
+                    count++;
+                    msg.classList.add('match');
+                    this.state.searchMatches.push(msg);
 
-openInfoModal: function () {
-    document.getElementById('info-modal').style.display = 'flex';
-},
+                    // Highlight
+                    try {
+                        const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                        contentEl.innerHTML = text.replace(regex, '<span class="highlight-text">$1</span>');
+                    } catch (e) {
+                        // fallback
+                    }
+                }
+            }
+        });
 
-initGestures: function () {
-    const gallery = document.getElementById('media-gallery-modal');
-    let touchStartX = 0;
-    let touchEndX = 0;
+        const countSpan = document.getElementById('search-count');
+        if (countSpan) countSpan.textContent = count > 0 ? `1/${count}` : '0 found';
 
-    if (!gallery) return;
-
-    gallery.addEventListener('touchstart', e => {
-        touchStartX = e.changedTouches[0].screenX;
-    }, { passive: true });
-
-    gallery.addEventListener('touchend', e => {
-        touchEndX = e.changedTouches[0].screenX;
-        if (touchStartX - touchEndX > 50) {
-            // Swipe Left -> Next
-            this.navigateMedia('next');
+        if (this.state.searchMatches.length > 0) {
+            this.state.currentMatchIndex = 0;
+            this.state.searchMatches[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            this.highlightCurrentMatch();
+        } else {
+            this.state.currentMatchIndex = -1;
         }
-        if (touchEndX - touchStartX > 50) {
-            // Swipe Right -> Prev
-            this.navigateMedia('prev');
+    },
+
+    navigateSearch: function (direction) {
+        if (this.state.searchMatches.length === 0) return;
+
+        if (direction === 'next') {
+            this.state.currentMatchIndex++;
+            if (this.state.currentMatchIndex >= this.state.searchMatches.length) {
+                this.state.currentMatchIndex = 0;
+            }
+        } else {
+            this.state.currentMatchIndex--;
+            if (this.state.currentMatchIndex < 0) {
+                this.state.currentMatchIndex = this.state.searchMatches.length - 1;
+            }
         }
-    }, { passive: true });
-},
+        this.highlightCurrentMatch();
+        this.updateSearchCount();
+    },
 
-initPWA: function () {
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        this.state.deferredPrompt = e;
-        // Create Install Button if not exists
-        const sidebarHeader = document.querySelector('.sidebar-header');
-        if (!sidebarHeader) return;
+    highlightCurrentMatch: function () {
+        // Remove previous current-match
+        document.querySelectorAll('.current-match').forEach(el => el.classList.remove('current-match'));
 
-        const installBtn = document.createElement('button');
-        installBtn.textContent = '📲';
-        installBtn.title = 'Install App';
-        installBtn.className = 'icon-btn';
-        installBtn.style.fontSize = '12px';
-        installBtn.onclick = () => {
-            this.state.deferredPrompt.prompt();
-            this.state.deferredPrompt.userChoice.then((choiceResult) => {
-                this.state.deferredPrompt = null;
-                installBtn.remove();
-            });
-        };
-        sidebarHeader.insertBefore(installBtn, sidebarHeader.firstChild);
-    });
-},
-// --- Analytics ---
-openAnalytics: function() {
-    if (!this.state.currentChatId) {
-        alert('Select a chat first to see statistics.');
-        return;
-    }
-
-    const msgs = this.state.currentChatMessages;
-    if (!msgs || msgs.length === 0) return;
-
-    const total = msgs.length;
-    const users = {};
-    let firstDate = null;
-    let lastDate = null;
-
-    msgs.forEach(m => {
-        if (m.from_name) {
-            users[m.from_name] = (users[m.from_name] || 0) + 1;
+        const currentEl = this.state.searchMatches[this.state.currentMatchIndex];
+        if (currentEl) {
+            currentEl.classList.add('current-match');
+            currentEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-        if (m.dt_iso) {
-            const d = m.dt_iso.split('T')[0];
-            if (!firstDate) firstDate = d;
-            lastDate = d;
+    },
+
+    updateSearchCount: function () {
+        const countSpan = document.getElementById('search-count');
+        if (!countSpan) return;
+
+        if (this.state.searchMatches.length === 0) {
+            countSpan.textContent = '';
+        } else {
+            countSpan.textContent = `${this.state.currentMatchIndex + 1}/${this.state.searchMatches.length}`;
         }
-    });
+    },
 
-    const sortedUsers = Object.entries(users).sort((a, b) => b[1] - a[1]).slice(0, 10);
+    showCalendar: function () {
+        document.getElementById('calendar-modal').style.display = 'flex';
+        const input = document.getElementById('calendar-input');
 
-    const body = document.getElementById('analytics-body');
-    body.innerHTML = `
+        // Hightlight logic would go here if specialized calendar used.
+        // For native input, we can't easily highlight, but we can restrict min/max
+        const first = this.state.currentChatMessages[0];
+        const last = this.state.currentChatMessages[this.state.currentChatMessages.length - 1];
+
+        if (first && first.dt_iso) input.min = first.dt_iso.split('T')[0];
+        if (last && last.dt_iso) input.max = last.dt_iso.split('T')[0];
+
+        // Warning: This simple native picker doesn't "show only dates with messages". 
+        // Just limits range.
+    },
+
+    jumpToDate: function () {
+        const dateVal = document.getElementById('calendar-input').value;
+        if (!dateVal) return;
+
+        document.getElementById('calendar-modal').style.display = 'none';
+
+        const targetMsg = this.state.currentChatMessages.find(m => {
+            return m.dt_iso && m.dt_iso.startsWith(dateVal);
+        });
+
+        if (targetMsg && targetMsg.message_id) {
+            this.scrollToMessage(targetMsg.message_id);
+        } else {
+            const nextMsg = this.state.currentChatMessages.find(m => m.dt_iso && m.dt_iso >= dateVal);
+            if (nextMsg && nextMsg.message_id) {
+                this.scrollToMessage(nextMsg.message_id);
+            } else {
+                alert("No messages found on or after this date.");
+            }
+        }
+    },
+
+    openMediaGallery: function () {
+        if (!this.state.currentChatMessages || this.state.currentChatMessages.length === 0) return;
+
+        document.getElementById('media-gallery-modal').style.display = 'flex';
+        // Default to photo
+        const photoTab = document.querySelector('.media-tab');
+        this.filterGallery('photo', photoTab);
+    },
+
+    filterGallery: function (type, tabElement) {
+        // Update tabs
+        document.querySelectorAll('.media-tab').forEach(t => t.classList.remove('active'));
+        if (tabElement) tabElement.classList.add('active');
+
+        const grid = document.getElementById('media-grid');
+        grid.innerHTML = '';
+
+        // Filter messages with attachments of 'type'
+        // types: photo, video (includes round), voice
+
+        let targetType = type;
+        if (type === 'video') targetType = 'video';
+
+        const mediaItems = [];
+
+        this.state.currentChatMessages.forEach(msg => {
+            if (msg.attachments && msg.attachments.length > 0) {
+                msg.attachments.forEach(att => {
+                    const k = att.kind || '';
+                    // IF filter is 'video', include both 'video' and 'round_video'
+                    if (type === 'video') {
+                        if (k === 'video' || k === 'round_video') {
+                            mediaItems.push({ ...att, msgId: msg.message_id, dt: msg.dt_iso });
+                        }
+                    } else {
+                        if (k === type) {
+                            mediaItems.push({ ...att, msgId: msg.message_id, dt: msg.dt_iso });
+                        }
+                    }
+                });
+            }
+        });
+
+        if (mediaItems.length === 0) {
+            grid.innerHTML = '<div style="color:#aaa; text-align:center; padding:20px; width:100%;">No media found</div>';
+            return;
+        }
+
+        mediaItems.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'media-grid-item';
+            div.onclick = () => {
+                // Determine action
+                if (type === 'photo' || type === 'video') {
+                    // For videos, openLightbox might need tweaking if it only supports images?
+                    // app.openLightbox currently sets img.src. 
+                    // Let's modify openLightbox to support video or just open image.
+                    if (type === 'photo') this.openLightbox(item.href);
+                    else window.open(item.href, '_blank');
+                } else {
+                    document.getElementById('media-gallery-modal').style.display = 'none';
+                    this.scrollToMessage(item.msgId);
+                }
+            };
+
+            let inner = '';
+            if (type === 'photo') {
+                // Try thumb
+                let src = item.href;
+                if (src.toLowerCase().endsWith('.jpg')) src = src.replace('.jpg', '_thumb.jpg');
+                inner = `<img src="${src}" onerror="this.onerror=null;this.src='${item.href}'" loading="lazy">`;
+            } else if (type === 'video' || type === 'round') {
+                inner = `<video src="${item.href}" muted preload="metadata"></video><div class="type-icon">▶</div>`;
+            } else if (type === 'voice') {
+                inner = `<div style="color:white; font-size:24px;">🎤</div><div class="type-icon">${item.duration || ''}</div>`;
+            }
+
+            div.innerHTML = inner;
+            grid.appendChild(div);
+        });
+    },
+
+    scrollToTop: function () {
+        document.getElementById('messages-container').scrollTo({ top: 0, behavior: 'smooth' });
+    },
+
+    getInitials: function (name) {
+        if (!name) return '?';
+        const parts = name.split(' ');
+        if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+        return name.substring(0, 2).toUpperCase();
+    },
+
+    escapeHtml: function (text) {
+        if (!text) return '';
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    },
+
+    openInfoModal: function () {
+        document.getElementById('info-modal').style.display = 'flex';
+    },
+
+    initGestures: function () {
+        const gallery = document.getElementById('media-gallery-modal');
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        if (!gallery) return;
+
+        gallery.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+
+        gallery.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            if (touchStartX - touchEndX > 50) {
+                // Swipe Left -> Next
+                this.navigateMedia('next');
+            }
+            if (touchEndX - touchStartX > 50) {
+                // Swipe Right -> Prev
+                this.navigateMedia('prev');
+            }
+        }, { passive: true });
+    },
+
+    initPWA: function () {
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            this.state.deferredPrompt = e;
+            // Create Install Button if not exists
+            const sidebarHeader = document.querySelector('.sidebar-header');
+            if (!sidebarHeader) return;
+
+            const installBtn = document.createElement('button');
+            installBtn.textContent = '📲';
+            installBtn.title = 'Install App';
+            installBtn.className = 'icon-btn';
+            installBtn.style.fontSize = '12px';
+            installBtn.onclick = () => {
+                this.state.deferredPrompt.prompt();
+                this.state.deferredPrompt.userChoice.then((choiceResult) => {
+                    this.state.deferredPrompt = null;
+                    installBtn.remove();
+                });
+            };
+            sidebarHeader.insertBefore(installBtn, sidebarHeader.firstChild);
+        });
+    },
+    // --- Analytics ---
+    openAnalytics: function () {
+        if (!this.state.currentChatId) {
+            alert('Select a chat first to see statistics.');
+            return;
+        }
+
+        const msgs = this.state.currentChatMessages;
+        if (!msgs || msgs.length === 0) return;
+
+        const total = msgs.length;
+        const users = {};
+        let firstDate = null;
+        let lastDate = null;
+
+        msgs.forEach(m => {
+            if (m.from_name) {
+                users[m.from_name] = (users[m.from_name] || 0) + 1;
+            }
+            if (m.dt_iso) {
+                const d = m.dt_iso.split('T')[0];
+                if (!firstDate) firstDate = d;
+                lastDate = d;
+            }
+        });
+
+        const sortedUsers = Object.entries(users).sort((a, b) => b[1] - a[1]).slice(0, 10);
+
+        const body = document.getElementById('analytics-body');
+        body.innerHTML = `
             <div class="stat-card">
                 <h3>General Stats</h3>
                 <div class="stat-row"><span>Total Messages:</span> <strong>${total}</strong></div>
@@ -1067,8 +1082,8 @@ openAnalytics: function() {
             <div class="stat-card">
                 <h3>Top 10 Active Users</h3>
                 ${sortedUsers.map(([name, count]) => {
-        const pct = Math.round((count / total) * 100);
-        return `
+            const pct = Math.round((count / total) * 100);
+            return `
                     <div class="bar-chart-row">
                         <div class="bar-label" title="${name}">${this.escapeHtml(name)}</div>
                         <div class="bar-container">
@@ -1076,16 +1091,16 @@ openAnalytics: function() {
                         </div>
                         <div class="bar-value">${count}</div>
                     </div>`;
-    }).join('')}
+        }).join('')}
             </div>
         `;
 
-    document.getElementById('analytics-modal').style.display = 'flex';
-},
+        document.getElementById('analytics-modal').style.display = 'flex';
+    },
 
-// --- Sticky Audio ---
-currentAudio: null,
-    playAudio: function(src, title) {
+    // --- Sticky Audio ---
+    currentAudio: null,
+    playAudio: function (src, title) {
         const player = document.getElementById('global-audio');
         const container = document.getElementById('sticky-audio-player');
 
@@ -1108,25 +1123,25 @@ currentAudio: null,
         };
     },
 
-toggleAudio: function() {
-    const player = document.getElementById('global-audio');
-    if (player.paused) {
-        player.play();
-        document.getElementById('play-pause-btn').textContent = '⏸️';
-    } else {
-        player.pause();
-        document.getElementById('play-pause-btn').textContent = '▶️';
-    }
-},
+    toggleAudio: function () {
+        const player = document.getElementById('global-audio');
+        if (player.paused) {
+            player.play();
+            document.getElementById('play-pause-btn').textContent = '⏸️';
+        } else {
+            player.pause();
+            document.getElementById('play-pause-btn').textContent = '▶️';
+        }
+    },
 
-prevAudio: function() { },
-nextAudio: function() { },
+    prevAudio: function () { },
+    nextAudio: function () { },
 
-formatTime: function(sec) {
-    const m = Math.floor(sec / 60);
-    const s = sec % 60;
-    return `${m}:${s < 10 ? '0' + s : s}`;
-},
+    formatTime: function (sec) {
+        const m = Math.floor(sec / 60);
+        const s = sec % 60;
+        return `${m}:${s < 10 ? '0' + s : s}`;
+    },
 };
 
 document.addEventListener('DOMContentLoaded', () => {

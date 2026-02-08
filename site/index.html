@@ -13,11 +13,25 @@
 
 <body>
     <div id="app">
+        <!-- Password Modal -->
+        <div id="password-overlay"
+            style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; display: flex; align-items: center; justify-content: center; color: white; flex-direction: column;">
+            <h2>🔒 Вхід до архіву</h2>
+            <div style="margin: 20px; text-align: center;">
+                <input type="password" id="access-password" placeholder="Введіть пароль"
+                    style="padding: 10px; font-size: 16px; border-radius: 4px; border: none;">
+                <button onclick="app.checkPassword()"
+                    style="padding: 10px 20px; font-size: 16px; background: var(--link-color); color: white; border: none; border-radius: 4px; cursor: pointer;">Ввійти</button>
+            </div>
+            <p style="color: #666; font-size: 12px;">Підказка: прізвище ректора (лат.)</p>
+        </div>
         <aside class="sidebar">
             <header class="sidebar-header">
-                <div class="search-bar">
+                <div class="search-bar" style="flex:1; margin-right: 10px;">
                     <input type="text" placeholder="Search" id="chat-search">
                 </div>
+                <button class="icon-btn" onclick="app.toggleTheme()" title="Switch Theme"
+                    id="theme-toggle-btn">🌙</button>
                 <div
                     style="margin-top: 10px; display: flex; align-items: center; justify-content: space-between; padding: 0 5px;">
                     <label
@@ -64,6 +78,7 @@
             <div class="fab-container" id="fab-container" style="display: flex;">
                 <div class="fab" title="Info & Context" onclick="app.openInfoModal()"
                     style="background: #ffc107; color: #000; font-weight: bold;">ℹ️</div>
+                <div class="fab" title="Analytics" onclick="app.openAnalytics()">📊</div>
                 <div class="fab" title="Calendar" onclick="app.showCalendar()">📅</div>
                 <div class="fab" title="Scroll to Top" onclick="app.scrollToTop()">⬆️</div>
             </div>
@@ -120,6 +135,35 @@
                     </div>
                     <div style="clear: both;"></div>
                 </div>
+            </div>
+
+            <!-- Analytics Modal -->
+            <div class="modal" id="analytics-modal" onclick="if(event.target === this) this.style.display='none'">
+                <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
+                    <div class="modal-header"
+                        style="border-bottom: 1px solid #eee; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                        <span>📊 Статистика Чату</span>
+                        <span style="cursor: pointer; font-size: 24px;"
+                            onclick="document.getElementById('analytics-modal').style.display='none'">&times;</span>
+                    </div>
+                    <div class="modal-body" id="analytics-body" style="padding-top: 20px;">
+                        <!-- Stats injected here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sticky Audio Player -->
+            <div id="sticky-audio-player" class="sticky-player" style="display: none;">
+                <div class="player-info">
+                    <span id="player-title">Audio Track</span>
+                    <span id="player-time">00:00 / 00:00</span>
+                </div>
+                <div class="player-controls">
+                    <button onclick="app.prevAudio()">⏮️</button>
+                    <button onclick="app.toggleAudio()" id="play-pause-btn">▶️</button>
+                    <button onclick="app.nextAudio()">⏭️</button>
+                </div>
+                <audio id="global-audio" style="display:none;"></audio>
             </div>
 
             <!-- Info Modal -->
@@ -211,6 +255,18 @@
                 </div>
                 <div class="media-grid" id="media-grid">
                     <!-- Media items injected here -->
+                </div>
+            </div>
+            <!-- Analytics Modal -->
+            <div class="modal" id="analytics-modal" onclick="if(event.target === this) this.style.display='none'">
+                <div class="modal-content" style="max-width: 600px;">
+                    <div class="modal-header"
+                        style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:10px;">
+                        <span style="font-weight:bold;">Chat Analytics</span>
+                        <button class="icon-btn"
+                            onclick="document.getElementById('analytics-modal').style.display='none'">✕</button>
+                    </div>
+                    <div id="analytics-body" style="padding: 10px 0;"></div>
                 </div>
             </div>
         </main>
