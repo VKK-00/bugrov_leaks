@@ -216,17 +216,41 @@ const app = {
                     });
                 }
 
-                // Text Logic: Avoid duplication
                 let textToShow = null;
                 if (hasAttachments) {
-                    // Use plain_text as caption
-                    if (msg.plain_text && msg.plain_text.trim().length > 0) {
+                    // Try to extract useful info from html_text if it's NOT just the media
+                    if (msg.html_text) {
+                        try {
+                            const tempDiv = document.createElement('div');
+                            tempDiv.innerHTML = msg.html_text;
+
+                            // Remove media links that are already handled as attachments
+                            const mediaLinks = tempDiv.querySelectorAll('a[href*="photos/"], a[href*="video_files/"], a[href*="stickers/"], a[href*="voice_messages/"], a[href*="round_video_messages/"]');
+                            mediaLinks.forEach(l => l.remove());
+
+                            // Also remove images directly if present
+                            const images = tempDiv.querySelectorAll('img');
+                            images.forEach(img => img.remove());
+
+                            const remaining = tempDiv.innerHTML.trim();
+                            if (remaining.length > 0) {
+                                // If there's text remaining (like a real caption or link), use it
+                                textToShow = remaining;
+                            } else if (msg.plain_text && msg.plain_text.trim().length > 0) {
+                                // Fallback to plain text caption if html reduction ended up empty
+                                textToShow = this.escapeHtml(msg.plain_text);
+                            }
+                        } catch (e) {
+                            // Fallback
+                            if (msg.plain_text) textToShow = this.escapeHtml(msg.plain_text);
+                        }
+                    } else if (msg.plain_text && msg.plain_text.trim().length > 0) {
                         textToShow = this.escapeHtml(msg.plain_text);
                     }
                 } else {
-                    // No attachments, use html_text if available (preserves links), otherwise plain
+                    // No attachments
                     if (msg.html_text) {
-                        textToShow = msg.html_text; // Already trusted from source
+                        textToShow = msg.html_text;
                     } else if (msg.plain_text) {
                         textToShow = this.escapeHtml(msg.plain_text);
                     }
@@ -251,8 +275,12 @@ const app = {
     renderAttachment: function (att) {
         if (att.kind === 'photo') {
             return `<div class="media-container"><img src="${att.href}" class="media-photo" loading="lazy"></div>`;
-        } else if (att.kind === 'video' || att.kind === 'round_video') {
+        } else if (att.kind === 'video') {
             return `<div class="media-container"><video src="${att.href}" controls class="media-video"></video></div>`;
+        } else if (att.kind === 'round_video') {
+            return `<div class="media-container"><video src="${att.href}" autoplay loop muted controls class="media-round-video"></video></div>`;
+        } else if (att.kind === 'sticker') {
+            return `<div class="media-container"><img src="${att.href}" class="media-sticker" loading="lazy"></div>`;
         } else if (att.kind === 'voice') {
             return `<div class="media-container"><audio src="${att.href}" controls></audio></div>`;
         } else {

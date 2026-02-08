@@ -216,28 +216,39 @@ const app = {
                     });
                 }
 
-                // Text Logic: Avoid duplication
                 let textToShow = null;
                 if (hasAttachments) {
-                    // If attachment exists, we ignore html_text usually as it might contain the image.
-                    // However, sometimes html_text contains valuable caption with links.
-                    // We should try to strip <img> tags from html_text.
+                    // Try to extract useful info from html_text if it's NOT just the media
                     if (msg.html_text) {
-                        // Strip <img> and <video> tags
-                        const tempDiv = document.createElement('div');
-                        tempDiv.innerHTML = msg.html_text;
-                        const images = tempDiv.querySelectorAll('img, video, a[href*="photos"], a[href*="video_files"]');
-                        images.forEach(img => img.remove());
-                        const stripped = tempDiv.innerHTML.trim();
+                        try {
+                            const tempDiv = document.createElement('div');
+                            tempDiv.innerHTML = msg.html_text;
 
-                        if (stripped.length > 0) {
-                            textToShow = stripped;
+                            // Remove media links that are already handled as attachments
+                            const mediaLinks = tempDiv.querySelectorAll('a[href*="photos/"], a[href*="video_files/"], a[href*="stickers/"], a[href*="voice_messages/"], a[href*="round_video_messages/"]');
+                            mediaLinks.forEach(l => l.remove());
+
+                            // Also remove images directly if present
+                            const images = tempDiv.querySelectorAll('img');
+                            images.forEach(img => img.remove());
+
+                            const remaining = tempDiv.innerHTML.trim();
+                            if (remaining.length > 0) {
+                                // If there's text remaining (like a real caption or link), use it
+                                textToShow = remaining;
+                            } else if (msg.plain_text && msg.plain_text.trim().length > 0) {
+                                // Fallback to plain text caption if html reduction ended up empty
+                                textToShow = this.escapeHtml(msg.plain_text);
+                            }
+                        } catch (e) {
+                            // Fallback
+                            if (msg.plain_text) textToShow = this.escapeHtml(msg.plain_text);
                         }
                     } else if (msg.plain_text && msg.plain_text.trim().length > 0) {
                         textToShow = this.escapeHtml(msg.plain_text);
                     }
                 } else {
-                    // No attachments, use html_text if available (preserves links), otherwise plain
+                    // No attachments
                     if (msg.html_text) {
                         textToShow = msg.html_text;
                     } else if (msg.plain_text) {
