@@ -754,6 +754,10 @@ const app = {
             .replace(/>/g, "&gt;")
             .replace(/"/g, "&quot;")
             .replace(/'/g, "&#039;");
+    },
+
+    openInfoModal: function () {
+        document.getElementById('info-modal').style.display = 'flex';
     }
 };
 
