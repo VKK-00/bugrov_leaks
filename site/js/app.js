@@ -193,6 +193,27 @@ var app = {
         sidebar.classList.toggle('collapsed');
     },
 
+    closeChat: function () {
+        window.location.hash = '';
+        this.state.currentChatId = null;
+
+        // Mobile Logic: Show sidebar, hide back button
+        if (window.innerWidth <= 768) {
+            document.querySelector('.sidebar').classList.remove('collapsed');
+            const backBtn = document.getElementById('mobile-back-btn');
+            if (backBtn) backBtn.style.display = 'none';
+            const toggleBtn = document.getElementById('sidebar-toggle-btn');
+            if (toggleBtn) toggleBtn.style.display = 'block'; // Show burger again if needed
+        }
+
+        // Hide chat header and cleared container
+        document.getElementById('chat-header').style.display = 'none';
+        document.getElementById('messages-container').innerHTML = '<div class="empty-state"><p>Select a chat from the sidebar</p></div>';
+        document.getElementById('fab-container').style.display = 'none';
+        const bar = document.getElementById('search-bar-chat');
+        if (bar) bar.style.display = 'none';
+    },
+
     performGlobalSearch: async function (text) {
         if (this.searchTimer) clearTimeout(this.searchTimer);
 
@@ -312,6 +333,20 @@ var app = {
 
         // Reset UI
         if (document.getElementById('search-bar-chat')) document.getElementById('search-bar-chat').style.display = 'none';
+
+        // Mobile Navigation Logic
+        if (window.innerWidth <= 768) {
+            // Auto-hide sidebar to show chat
+            document.querySelector('.sidebar').classList.add('collapsed');
+
+            // Show Back Button, Hide Burger
+            const backBtn = document.getElementById('mobile-back-btn');
+            if (backBtn) backBtn.style.display = 'block';
+
+            const toggleBtn = document.getElementById('sidebar-toggle-btn');
+            if (toggleBtn) toggleBtn.style.display = 'none';
+        }
+
         document.getElementById('fab-container').style.display = 'flex';
 
         const chat = this.state.chats.find(c => c.chat_id === chatId);
