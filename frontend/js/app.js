@@ -899,9 +899,6 @@ var app = {
         if (tabElement) tabElement.classList.add('active');
 
         const grid = document.getElementById('media-grid');
-        grid.style.display = 'grid';
-        grid.style.gap = '10px';
-        grid.style.padding = '20px';
         grid.innerHTML = '';
 
         // Filter messages with attachments of 'type'
