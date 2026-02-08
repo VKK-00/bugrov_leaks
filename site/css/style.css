@@ -350,108 +350,41 @@ body {
 }
 
 /* Round Video Messages - Enforced Circle */
-.media-round-video {
-    width: 240px;
-    height: 240px;
-    border-radius: 50% !important;
-    object-fit: cover;
-    background-color: #000;
-    display: block;
-}
-
-/* Ensure container doesn't break shape */
-.media-container.round-container {
-    width: 240px;
-    height: 240px;
-    border-radius: 50%;
-    overflow: hidden;
-    display: inline-block;
-}
-
-/* Sender Name Colors (Text Only) - Tweaked for Light Mode */
-.message-sender.color1 {
-    color: #cc3333;
-}
-
-.message-sender.color2 {
-    color: #339933;
-}
-
-.message-sender.color3 {
-    color: #e69500;
-}
-
-.message-sender.color4 {
-    color: #3377cc;
-}
-
-.message-sender.color5 {
-    color: #7744aa;
-}
-
-.message-sender.color6 {
-    color: #b74477;
-}
-
-.message-sender.color7 {
-    color: #3399aa;
-}
-
-.message-sender.color8 {
-    color: #d66633;
-}
-
-.message-content {
-    white-space: pre-wrap;
-    /* FIX: Force wrapping */
-    word-wrap: break-word;
-    word-break: break-word;
-    overflow-wrap: break-word;
-    overflow-x: hidden;
-}
-
-.message-meta {
-    float: right;
-    margin-left: 8px;
-    margin-top: 6px;
-    font-size: 11px;
-    color: #a0a0a0;
-    /* Greyer timestamp */
-}
-
-.message.outgoing .message-meta {
-    color: #559c36;
-    /* Greenish timestamp for outgoing */
-}
-
-/* Service Messages (Dates, System) */
-.service-message {
-    align-self: center;
-    background-color: rgba(0, 0, 0, 0.25);
-    color: #fff;
-    padding: 4px 12px;
-    border-radius: 12px;
-    margin: 10px 0;
-    font-size: 13px;
-    font-weight: 600;
-}
-
-/* Sticky Date Header */
+/* Sticky Date Header - REMOVED STICKY to prevent cascading overlap */
 .date-header {
-    position: sticky;
-    top: 10px;
-    z-index: 100;
-    margin-bottom: 10px;
-    align-self: center;
+    position: relative;
+    /* Changed from sticky */
+    margin: 15px auto;
+    /* Centered with margin */
+    width: fit-content;
     background-color: rgba(0, 0, 0, 0.4);
-    /* Darker background for better visibility */
-    backdrop-filter: blur(4px);
     color: #fff;
     padding: 6px 14px;
     border-radius: 14px;
     font-size: 13px;
     font-weight: 600;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+}
+
+/* Round Video Messages - Strict Styling */
+.media-container.round-container {
+    width: 240px;
+    height: 240px;
+    border-radius: 50%;
+    overflow: hidden;
+    /* Critical for cutting off corners */
+    display: inline-block;
+    position: relative;
+    background-color: #000;
+}
+
+.media-round-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Critical for filling circle */
+    border-radius: 50%;
+    /* Double ensurance */
 }
 
 /* Sender Name Colors */
@@ -488,14 +421,22 @@ body {
     color: #cc602e;
 }
 
-/* Special Bugrov Styling */
-.message-sender.user-bugrov {
-    color: #ffffff !important;
-    background-color: #3390ec;
-    padding: 2px 6px;
-    border-radius: 4px;
-    display: inline-block;
-    margin-bottom: 6px;
+/* Special Bugrov Styling (Message Bubble) */
+/* This class is applied to the .message DIV, not just the name */
+.message.bugrov-message {
+    align-self: flex-end;
+    /* Right align */
+    background-color: #e3f2fd;
+    /* Light Blue distinct from standard Green */
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 0;
+    margin-left: auto;
+    /* Push to right */
+}
+
+.message.bugrov-message .message-sender {
+    color: #3390ec !important;
+    /* Blue name */
 }
 
 /* Calendar Button & Scroll Top */

@@ -322,21 +322,13 @@ const app = {
                 msgDiv.textContent = msg.plain_text;
             } else {
                 // Sender Logic
-                // Update 2026: User requested Bugrov to be on the LEFT again.
-                // We use 'incoming' style for him, or a custom class if we want distinct color but left alignment.
-                // Let's keep him as standard 'incoming' so he aligns left, but we can style his name differently.
-
                 const isBugrov = msg.from_name &&
                     (msg.from_name.includes('Volodymyr Bugrov') || msg.from_name.includes('Bugrov'));
 
-                // FORCE LEFT ALIGNMENT for everyone, including Bugrov.
-                // If we want Bugrov to have a different background color, we can add a specific class, 
-                // but 'outgoing' class forces right alignment in our CSS.
-                // So we will use 'incoming-bugrov' if we want special styling on the left.
-
                 let msgClass = 'message incoming';
                 if (isBugrov) {
-                    msgClass = 'message incoming bugrov-message'; // We can add special CSS for this if needed
+                    // Bugrov goes to the RIGHT with a distinct style
+                    msgClass = 'message bugrov-message';
                 }
 
                 msgDiv.className = msgClass;
@@ -358,11 +350,10 @@ const app = {
 
                 // Name Logic
                 if (msg.from_name) {
-                    // Check for Bugrov
-                    const isBugrovSender = (msg.from_name.includes('Volodymyr Bugrov') || msg.from_name.includes('Bugrov'));
-
-                    if (isBugrovSender) {
-                        content += `<span class="message-sender user-bugrov">${this.escapeHtml(msg.from_name)}</span>`;
+                    // For Bugrov, we still show his name but the styling is handled by CSS (blue color)
+                    // For others, we use the random color logic
+                    if (isBugrov) {
+                        content += `<span class="message-sender">${this.escapeHtml(msg.from_name)}</span>`;
                     } else {
                         let hash = 0;
                         for (let i = 0; i < msg.from_name.length; i++) {
