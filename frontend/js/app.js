@@ -12,9 +12,17 @@ var app = {
         isSearching: false
     },
 
+    toggleTheme: function () {
+        const current = document.body.getAttribute('data-theme') || 'light';
+        const next = current === 'dark' ? 'light' : 'dark';
+        this.setTheme(next);
+    },
+
     setTheme: function (theme) {
         document.body.setAttribute('data-theme', theme);
         localStorage.setItem('theme', theme);
+        // Update button icon if needed, though pure CSS or just toggle is fine.
+        // We can update the FAB icon if we gave it an ID.
     },
 
     checkPassword: function () {
@@ -133,6 +141,9 @@ var app = {
                 '<div class="empty-state"><p>Select a chat from the sidebar</p></div>';
             document.getElementById('chat-header').style.display = 'none';
             document.getElementById('fab-container').style.display = 'none';
+            // Hide search bar if open
+            const bar = document.getElementById('search-bar-chat');
+            if (bar) bar.style.display = 'none';
         }
     },
 
@@ -209,8 +220,10 @@ var app = {
                     if (!mRes.ok) continue;
                     const manifest = await mRes.json();
 
-                    // Limit: Search only last 3 chunks to save bandwidth? Or all?
-                    // User asked for "Deep Search". Let's search ALL.
+                    // Search chunks associated with this chat
+                    // To avoid freezing, we might want to prioritize recent chunks or limit count.
+                    // Searching ALL chunks in ALL chats is very heavy for client side without index.
+                    // We will search ALL chunks.
                     for (const chunk of manifest.chunks) {
                         const cRes = await fetch(`data/${chat.chat_id}/chunks/${chunk.filename}`);
                         if (!cRes.ok) continue;
@@ -222,15 +235,16 @@ var app = {
                         });
 
                         if (matches.length > 0) {
-                            // Deduplicate if pushed multiple times? No, chunks are unique.
-                            // We need to group by chat.
                             let chatResult = results.find(r => r.chat.chat_id === chat.chat_id);
                             if (!chatResult) {
                                 chatResult = { chat, matches: [] };
                                 results.push(chatResult);
                             }
+                            // Store the chunk filename with the match so we know what to load!
+                            const matchesWithChunk = matches.map(m => ({ ...m, chunkFilename: chunk.filename }));
+
                             // Add max 5 matches per chat per chunk to avoid overload
-                            chatResult.matches.push(...matches);
+                            chatResult.matches.push(...matchesWithChunk);
                             totalFound += matches.length;
                         }
                     }
@@ -266,8 +280,10 @@ var app = {
                         rDiv.style.height = 'auto';
 
                         rDiv.onclick = () => {
-                            window.location.hash = item.chat.chat_id;
+                            // Important: Set pending scroll details BEFORE hash change or loadChat
                             this.state.pendingScrollId = match.message_id || match.id;
+                            this.state.pendingScrollChunk = match.chunkFilename;
+                            window.location.hash = item.chat.chat_id;
                         };
 
                         const txt = match.plain_text || 'Media';
@@ -290,7 +306,7 @@ var app = {
     },
 
     loadChat: async function (chatId) {
-        if (this.state.currentChatId === chatId && this.state.currentChatMessages.length > 0) return;
+        if (this.state.currentChatId === chatId && this.state.currentChatMessages.length > 0 && !this.state.pendingScrollChunk) return;
 
         this.state.currentChatId = chatId;
         this.state.chunksLoaded.clear();
@@ -322,32 +338,84 @@ var app = {
 
             container.innerHTML = '';
 
-            // INFINITE SCROLL: Load only the last chunk initially
-            // Unless we are jumping to a specific message? (Requires index which we don't have easily).
-            // For simplicity, always load last chunk on open.
-
             const totalChunks = manifest.chunks.length;
             if (totalChunks > 0) {
-                // Load last chunk
-                const lastChunk = manifest.chunks[totalChunks - 1];
-                await this.loadChunk(chatId, lastChunk.filename);
+                // Logic: 
+                // 1. If we have a pending scroll chunk (from global search), load that.
+                // 2. Otherwise, load the FIRST chunk (oldest messages) as per new requirement.
+
+                let targetChunkIndex = 0; // Default to first chunk
+                let targetFilename = manifest.chunks[0].filename;
+
+                if (this.state.pendingScrollChunk) {
+                    targetFilename = this.state.pendingScrollChunk;
+                    targetChunkIndex = manifest.chunks.findIndex(c => c.filename === targetFilename);
+                    if (targetChunkIndex === -1) {
+                        targetChunkIndex = 0;
+                        targetFilename = manifest.chunks[0].filename;
+                    }
+                }
+
+                await this.loadChunk(chatId, targetFilename);
                 this.state.loadedChunksCount = 1;
 
-                // Add "Load More" trigger if more chunks exist
-                if (totalChunks > 1) {
-                    this.prependLoadMore(chatId, totalChunks - 2); // pointer to previous chunk index
+                // If we loaded the FIRST chunk, we need "Load More" at the bottom (append) - wait,
+                // our structure expects "Load Previous" (prepend). 
+                // If we start at older messages, the user scrolls DOWN to see newer messages.
+                // So we need "Load Next Chunk" at the bottom!
+
+                // Existing `loadChunk` appends. `prependLoadMore` adds to top.
+                // We need `appendLoadMore` at the bottom if we are not at the last chunk.
+
+                if (targetChunkIndex < totalChunks - 1) {
+                    this.appendLoadMore(chatId, targetChunkIndex + 1);
+                }
+
+                // If we jumped to the middle (search), we might also need "Load Previous" at the top?
+                if (targetChunkIndex > 0) {
+                    this.prependLoadMore(chatId, targetChunkIndex - 1);
                 }
             }
 
-            // Scroll to bottom
-            setTimeout(() => {
-                container.scrollTop = container.scrollHeight;
-            }, 100);
+            // Scroll Logic
+            if (this.state.pendingScrollId) {
+                setTimeout(() => {
+                    this.scrollToMessage(this.state.pendingScrollId);
+                    this.state.pendingScrollId = null;
+                    this.state.pendingScrollChunk = null;
+                }, 300);
+            } else {
+                // Scroll to TOP if starting from beginning
+                container.scrollTop = 0;
+            }
 
         } catch (e) {
             console.error('Error loading chat:', e);
             container.innerHTML = '<div class="empty-state">Error loading chat data</div>';
         }
+    },
+
+    appendLoadMore: function (chatId, chunkIndex) {
+        const container = document.getElementById('messages-container');
+        const btn = document.createElement('div');
+        btn.className = 'date-header';
+        btn.textContent = '🔽 Load Newer Messages';
+        btn.style.cursor = 'pointer';
+        btn.style.background = 'var(--accent-color)';
+        btn.style.color = 'white';
+        btn.onclick = async () => {
+            btn.textContent = 'Loading...';
+            const chunk = this.state.chatManifest.chunks[chunkIndex];
+
+            await this.loadChunk(chatId, chunk.filename); // This appends
+
+            btn.remove();
+
+            if (chunkIndex < this.state.chatManifest.chunks.length - 1) {
+                this.appendLoadMore(chatId, chunkIndex + 1);
+            }
+        };
+        container.appendChild(btn);
     },
 
     prependLoadMore: function (chatId, chunkIndex) {
@@ -587,6 +655,59 @@ var app = {
             container.appendChild(msgDiv);
         });
 
+        this.generateTimeline();
+    },
+
+    closeAudio: function () {
+        const player = document.getElementById('sticky-audio-player');
+        if (player) player.style.display = 'none';
+        const audio = document.getElementById('global-audio');
+        if (audio) {
+            audio.pause();
+            audio.currentTime = 0;
+        }
+    },
+
+    generateTimeline: function () {
+        const container = document.getElementById('timeline-container');
+        if (!container) return;
+        container.innerHTML = '';
+
+        const msgs = this.state.currentChatMessages;
+        if (!msgs || msgs.length === 0) return;
+
+        // Extract years and months
+        const groups = {};
+        msgs.forEach(m => {
+            if (m.dt_iso) {
+                const year = m.dt_iso.substring(0, 4);
+                const month = m.dt_iso.substring(5, 7);
+                const key = `${year}-${month}`;
+                if (!groups[key]) {
+                    groups[key] = {
+                        year,
+                        month,
+                        firstMsgId: m.message_id,
+                        label: `${year}-${month}`
+                    };
+                }
+            }
+        });
+
+        Object.values(groups).forEach(g => {
+            const dot = document.createElement('div');
+            dot.className = 'timeline-item';
+            dot.textContent = '•';
+            const tooltip = document.createElement('span');
+            tooltip.className = 'timeline-tooltip';
+            tooltip.textContent = g.label;
+            dot.appendChild(tooltip);
+
+            dot.onclick = () => {
+                this.scrollToMessage(g.firstMsgId);
+            };
+            container.appendChild(dot);
+        });
     },
 
 
@@ -835,6 +956,9 @@ var app = {
         if (tabElement) tabElement.classList.add('active');
 
         const grid = document.getElementById('media-grid');
+        grid.style.display = 'grid';
+        grid.style.gap = '10px';
+        grid.style.padding = '20px';
         grid.innerHTML = '';
 
         // Filter messages with attachments of 'type'

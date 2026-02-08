@@ -676,26 +676,6 @@ input[type="date"] {
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
 }
 
-/* Scrollbar */
-::-webkit-scrollbar {
-    width: 6px;
-}
-
-::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 0, 0, 0.3);
-}
-
-
-
 /* Timeline Scrubber */
 .timeline-container {
     position: absolute;

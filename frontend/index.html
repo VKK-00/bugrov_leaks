@@ -73,9 +73,11 @@
                     <p>Select a chat from the sidebar</p>
                 </div>
             </div>
+            <div id="timeline-container" class="timeline-container"></div>
 
             <!-- FAB Container -->
             <div class="fab-container" id="fab-container" style="display: flex;">
+                <div class="fab" title="Switch Theme" onclick="app.toggleTheme()">🌓</div>
                 <div class="fab" title="Analytics" onclick="app.openAnalytics()">📊</div>
                 <div class="fab" title="Calendar" onclick="app.showCalendar()">📅</div>
                 <div class="fab" title="Scroll to Top" onclick="app.scrollToTop()">⬆️</div>
@@ -160,6 +162,7 @@
                     <button onclick="app.prevAudio()">⏮️</button>
                     <button onclick="app.toggleAudio()" id="play-pause-btn">▶️</button>
                     <button onclick="app.nextAudio()">⏭️</button>
+                    <button onclick="app.closeAudio()" style="margin-left: 10px; opacity: 0.7;">✕</button>
                 </div>
                 <audio id="global-audio" style="display:none;"></audio>
             </div>
