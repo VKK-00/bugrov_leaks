@@ -13,16 +13,11 @@ var app = {
     },
 
     toggleTheme: function () {
-        const current = document.body.getAttribute('data-theme') || 'light';
-        const next = current === 'dark' ? 'light' : 'dark';
-        this.setTheme(next);
+        // Removed
     },
 
     setTheme: function (theme) {
-        document.body.setAttribute('data-theme', theme);
-        localStorage.setItem('theme', theme);
-        // Update button icon if needed, though pure CSS or just toggle is fine.
-        // We can update the FAB icon if we gave it an ID.
+        // Removed
     },
 
     checkPassword: function () {
@@ -80,9 +75,8 @@ var app = {
             console.warn("Session check failed:", e);
         }
 
-        // Theme Check
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        this.setTheme(savedTheme);
+        // Force Light Theme (or default)
+        document.body.setAttribute('data-theme', 'light');
 
         // Check Consent - ALWAYS SHOW
         document.getElementById('disclaimer-modal').style.display = 'flex';
@@ -655,60 +649,9 @@ var app = {
             container.appendChild(msgDiv);
         });
 
-        this.generateTimeline();
+        // this.generateTimeline(); // Removed
     },
 
-    closeAudio: function () {
-        const player = document.getElementById('sticky-audio-player');
-        if (player) player.style.display = 'none';
-        const audio = document.getElementById('global-audio');
-        if (audio) {
-            audio.pause();
-            audio.currentTime = 0;
-        }
-    },
-
-    generateTimeline: function () {
-        const container = document.getElementById('timeline-container');
-        if (!container) return;
-        container.innerHTML = '';
-
-        const msgs = this.state.currentChatMessages;
-        if (!msgs || msgs.length === 0) return;
-
-        // Extract years and months
-        const groups = {};
-        msgs.forEach(m => {
-            if (m.dt_iso) {
-                const year = m.dt_iso.substring(0, 4);
-                const month = m.dt_iso.substring(5, 7);
-                const key = `${year}-${month}`;
-                if (!groups[key]) {
-                    groups[key] = {
-                        year,
-                        month,
-                        firstMsgId: m.message_id,
-                        label: `${year}-${month}`
-                    };
-                }
-            }
-        });
-
-        Object.values(groups).forEach(g => {
-            const dot = document.createElement('div');
-            dot.className = 'timeline-item';
-            dot.textContent = '•';
-            const tooltip = document.createElement('span');
-            tooltip.className = 'timeline-tooltip';
-            tooltip.textContent = g.label;
-            dot.appendChild(tooltip);
-
-            dot.onclick = () => {
-                this.scrollToMessage(g.firstMsgId);
-            };
-            container.appendChild(dot);
-        });
-    },
 
 
     renderAttachment: function (att) {
