@@ -253,6 +253,29 @@ body {
     text-decoration: none;
 }
 
+.info-link-highlight {
+    color: #e65100 !important;
+    font-weight: bold;
+    background: #fff3e0;
+    padding: 2px 8px;
+    border-radius: 12px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        background: #fff3e0;
+    }
+
+    50% {
+        background: #ffe0b2;
+    }
+
+    100% {
+        background: #fff3e0;
+    }
+}
+
 .messages-container.searching .message:not(.match) {
     opacity: 0.3;
 }

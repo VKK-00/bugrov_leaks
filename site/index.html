@@ -61,7 +61,9 @@
             </div>
 
             <!-- FAB Container -->
-            <div class="fab-container" id="fab-container" style="display: none;">
+            <div class="fab-container" id="fab-container" style="display: flex;">
+                <div class="fab" title="Info & Context" onclick="app.openInfoModal()"
+                    style="background: #ffc107; color: #000; font-weight: bold;">ℹ️</div>
                 <div class="fab" title="Calendar" onclick="app.showCalendar()">📅</div>
                 <div class="fab" title="Scroll to Top" onclick="app.scrollToTop()">⬆️</div>
             </div>
@@ -70,6 +72,10 @@
             <div class="footer-banner">
                 Зазначене листування було вперше опубліковано на Telegram-каналі <a href="https://t.me/bugrovleaks/3"
                     target="_blank">@bugrovleaks</a>
+                <span style="margin: 0 8px; opacity: 0.5;">|</span>
+                <a href="#" onclick="app.openInfoModal(); return false;" class="info-link-highlight">
+                    ℹ️ <span style="text-decoration: underline;">Довідка</span>
+                </a>
             </div>
 
             <!-- Calendar Modal -->
@@ -108,8 +114,11 @@
                         Продовжуючи, ви підтверджуєте, що вам виповнилося 18 років і ви усвідомлюєте характер
                         матеріалів.
                     </p>
-                    <button class="btn" onclick="app.acceptDisclaimer()"
-                        style="float: none; font-size: 16px; padding: 10px 20px;">Я погоджуюсь / I Agree</button>
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        <button class="btn" onclick="app.openInfoModal()" style="background: #ffc107; color: #000;">📖
+                            Контекст / Context</button>
+                        <button class="btn" onclick="app.acceptDisclaimer()">Я погоджуюсь</button>
+                    </div>
                     <div style="clear: both;"></div>
                 </div>
             </div>
@@ -122,6 +131,16 @@
                         <span>Довідка та Контекст</span>
                         <button class="icon-btn" onclick="document.getElementById('info-modal').style.display='none'"
                             style="font-size: 24px;">✕</button>
+                    </div>
+
+                    <div style="margin-top: 20px;">
+                        <h3 style="color: var(--accent-color); margin-bottom: 10px;">📉 Відсутні медіа</h3>
+                        <p
+                            style="font-size: 14px; color: #555; background: #fff3cd; padding: 10px; border-radius: 6px; border-left: 4px solid #ffc107;">
+                            <strong>Зверніть увагу:</strong> При експорті архіву деякі файли, що перевищували ліміт
+                            розміру, не були завантажені. Також можуть бути відсутні деякі приватні стікери або
+                            специфічні медіа-файли. Це може виглядати як "бите" зображення або пустий файл у чаті.
+                        </p>
                     </div>
 
                     <div style="margin-top: 20px;">
