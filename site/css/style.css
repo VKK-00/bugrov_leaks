@@ -676,37 +676,6 @@ input[type="date"] {
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
 }
 
-/* Timeline Scrubber */
-.timeline-container {
-    position: absolute;
-    right: 10px;
-    top: 60px;
-    bottom: 20px;
-    width: 40px;
-    display: flex;
-    flex-direction: column;
-    z-index: 99;
-    pointer-events: none;
-}
-
-.timeline-pill {
-    background: rgba(0, 0, 0, 0.5);
-    color: white;
-    font-size: 10px;
-    padding: 2px 5px;
-    border-radius: 10px;
-    margin-bottom: 2px;
-    text-align: center;
-    cursor: pointer;
-    pointer-events: auto;
-    opacity: 0;
-    transition: opacity 0.2s;
-}
-
-.chat-area:hover .timeline-pill {
-    opacity: 1;
-}
-
 /* Highlight */
 .highlight-text {
     background: #ffc107;
