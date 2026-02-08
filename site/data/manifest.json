@@ -1,0 +1,63 @@
+{
+  "chats": [
+    {
+      "chat_id": "chat_003",
+      "title": "Марія Горбань",
+      "message_count": 16440,
+      "chunk_count": 2,
+      "start_date": "2021-06-20T03:14:02",
+      "end_date": "2021-11-10T12:38:40"
+    },
+    {
+      "chat_id": "chat_016",
+      "title": "Інна Степанець",
+      "message_count": 12012,
+      "chunk_count": 2,
+      "start_date": "2021-03-05T13:54:01",
+      "end_date": "2021-11-09T22:08:06"
+    },
+    {
+      "chat_id": "chat_001",
+      "title": "Вікторія Лукянцева",
+      "message_count": 1399,
+      "chunk_count": 1,
+      "start_date": "2021-03-27T21:31:50",
+      "end_date": "2021-11-10T13:48:33"
+    },
+    {
+      "chat_id": "chat_042",
+      "title": "Катерина Ган",
+      "message_count": 1106,
+      "chunk_count": 1,
+      "start_date": "2021-04-13T21:32:28",
+      "end_date": "2021-10-11T21:03:06"
+    },
+    {
+      "chat_id": "chat_017",
+      "title": "Сергій Юрійович Козьяков",
+      "message_count": 674,
+      "chunk_count": 1,
+      "start_date": "2020-06-24T09:15:19",
+      "end_date": "2021-11-09T19:17:05"
+    },
+    {
+      "chat_id": "chat_030",
+      "title": "Євген Борисович Геллер",
+      "message_count": 444,
+      "chunk_count": 1,
+      "start_date": "2019-12-06T08:06:29",
+      "end_date": "2021-10-22T12:06:53"
+    },
+    {
+      "chat_id": "chat_023",
+      "title": "Туса",
+      "message_count": 362,
+      "chunk_count": 1,
+      "start_date": "2021-08-07T22:27:36",
+      "end_date": "2021-11-03T12:24:52"
+    }
+  ],
+  "total_chats": 7,
+  "total_messages": 32437,
+  "generated_at": "2026-02-08T11:16:12.804517"
+}

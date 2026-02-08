@@ -1,0 +1,27 @@
+{
+  "chat_id": "chat_016",
+  "title": "Інна Степанець",
+  "message_count": 12012,
+  "chunk_count": 2,
+  "chunks": [
+    {
+      "filename": "chunk_0001.json",
+      "message_count": 10000,
+      "start_id": "message-1",
+      "end_id": "message168833",
+      "start_date": "2021-03-05T13:54:01",
+      "end_date": "2021-09-27T16:01:05"
+    },
+    {
+      "filename": "chunk_0002.json",
+      "message_count": 2012,
+      "start_id": "message168834",
+      "end_id": "message178724",
+      "start_date": "2021-09-27T16:01:11",
+      "end_date": "2021-11-09T22:08:06"
+    }
+  ],
+  "start_date": "2021-03-05T13:54:01",
+  "end_date": "2021-11-09T22:08:06",
+  "search_file": "search.json"
+}

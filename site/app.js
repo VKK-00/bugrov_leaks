@@ -1,649 +1,392 @@
 /**
- * Telegram Archive Viewer
- * Interactive viewer for Telegram chat export
+ * Telegram Web K Clone
+ * Logic for rendering messages and chat lists
  */
-
-// ===================================
-// State Management
-// ===================================
 
 const state = {
     manifest: null,
     currentChat: null,
     currentChatManifest: null,
-    loadedChunks: new Map(), // chunkNum -> messages array
+    loadedChunks: new Map(),
     allMessages: [],
-    searchIndex: null,
-    searchResults: [],
-
-    // Visible chunk range
+    searchIndex: [],
     minLoadedChunk: null,
     maxLoadedChunk: null
 };
 
-// ===================================
-// DOM Elements
-// ===================================
-
 const elements = {
+    sidebar: document.getElementById('sidebar'),
     chatList: document.getElementById('chat-list'),
     chatSearch: document.getElementById('chat-search'),
-    stats: document.getElementById('stats'),
 
-    welcomeScreen: document.getElementById('welcome-screen'),
-    chatView: document.getElementById('chat-view'),
+    mainContainer: document.getElementById('main-container'),
+    welcomePlaceholder: document.getElementById('welcome-placeholder'),
+    chatHeader: document.getElementById('chat-header'),
     chatTitle: document.getElementById('chat-title'),
-    chatMeta: document.getElementById('chat-meta'),
+    chatStatus: document.getElementById('chat-status'),
+    headerBackBtn: document.getElementById('header-back-btn'),
 
-    searchToggle: document.getElementById('search-toggle'),
-    searchPanel: document.getElementById('search-panel'),
-    messageSearch: document.getElementById('message-search'),
-    searchResults: document.getElementById('search-results'),
+    messagesWrapper: document.getElementById('messages-wrapper'),
+    messagesList: document.getElementById('messages-list'),
 
-    datePickerToggle: document.getElementById('date-picker-toggle'),
-    datePanel: document.getElementById('date-panel'),
-    dateInput: document.getElementById('date-input'),
-    goToDate: document.getElementById('go-to-date'),
-
-    messagesContainer: document.getElementById('messages-container'),
-    messages: document.getElementById('messages'),
     loadOlder: document.getElementById('load-older'),
     loadNewer: document.getElementById('load-newer'),
-    loadOlderBtn: document.getElementById('load-older-btn'),
-    loadNewerBtn: document.getElementById('load-newer-btn'),
-
-    sidebar: document.getElementById('sidebar'),
-    backBtn: document.getElementById('back-btn'),
 
     lightbox: document.getElementById('lightbox'),
-    lightboxContent: document.getElementById('lightbox-content'),
-    lightboxClose: document.getElementById('lightbox-close')
+    lightboxContent: document.getElementById('lightbox-content')
 };
 
 // ===================================
 // Initialization
 // ===================================
 
+document.addEventListener('DOMContentLoaded', init);
+
 async function init() {
     try {
-        // Load global manifest
-        const response = await fetch('./data/manifest.json');
+        const response = await fetch('data/manifest.json');
         if (!response.ok) throw new Error('Failed to load manifest');
-        state.manifest = await response.json();
 
-        // Render chat list
+        state.manifest = await response.json();
         renderChatList(state.manifest.chats);
 
-        // Update stats
-        elements.stats.textContent = `${state.manifest.total_chats} чатів • ${formatNumber(state.manifest.total_messages)} повідомлень`;
-
-        // Setup event listeners
         setupEventListeners();
-
-        // Check for hash in URL (deep link)
         handleHashChange();
 
-    } catch (error) {
-        console.error('Initialization error:', error);
-        elements.chatList.innerHTML = `<div class="loading" style="color: #ff5555;">Помилка завантаження: ${error.message}</div>`;
+    } catch (err) {
+        console.error(err);
+        elements.chatList.innerHTML = `<div class="error">Error loading chats: ${err.message}</div>`;
     }
 }
 
 function setupEventListeners() {
-    // Chat search
+    // Chat search filter
     elements.chatSearch.addEventListener('input', (e) => {
-        filterChatList(e.target.value);
+        const query = e.target.value.toLowerCase();
+        document.querySelectorAll('.chat-item').forEach(item => {
+            const title = item.querySelector('.chat-name').textContent.toLowerCase();
+            item.style.display = title.includes(query) ? 'flex' : 'none';
+        });
     });
 
-    // Search toggle
-    elements.searchToggle.addEventListener('click', () => {
-        elements.searchPanel.classList.toggle('hidden');
-        elements.datePanel.classList.add('hidden');
-        if (!elements.searchPanel.classList.contains('hidden')) {
-            elements.messageSearch.focus();
-        }
-    });
-
-    // Message search
-    let searchTimeout;
-    elements.messageSearch.addEventListener('input', (e) => {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => searchMessages(e.target.value), 300);
-    });
-
-    // Date picker toggle
-    elements.datePickerToggle.addEventListener('click', () => {
-        elements.datePanel.classList.toggle('hidden');
-        elements.searchPanel.classList.add('hidden');
-    });
-
-    // Go to date
-    elements.goToDate.addEventListener('click', () => {
-        goToDate(elements.dateInput.value);
-    });
-
-    // Load more buttons
-    elements.loadOlderBtn.addEventListener('click', loadOlderMessages);
-    elements.loadNewerBtn.addEventListener('click', loadNewerMessages);
-
-    // Back button (mobile)
-    elements.backBtn.addEventListener('click', () => {
-        elements.sidebar.classList.remove('hidden-mobile');
+    // Mobile back button
+    elements.headerBackBtn.addEventListener('click', () => {
+        document.body.classList.remove('view-chat');
+        window.history.pushState(null, null, '#');
     });
 
     // Lightbox
-    elements.lightboxClose.addEventListener('click', closeLightbox);
     elements.lightbox.addEventListener('click', (e) => {
-        if (e.target === elements.lightbox) closeLightbox();
-    });
-
-    // Keyboard shortcuts
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            closeLightbox();
-            elements.searchPanel.classList.add('hidden');
-            elements.datePanel.classList.add('hidden');
+        if (e.target.id === 'lightbox' || e.target.id === 'lightbox-close') {
+            elements.lightbox.classList.add('hidden');
+            elements.lightboxContent.innerHTML = '';
         }
     });
 
-    // Hash change for deep links
+    // Hash change
     window.addEventListener('hashchange', handleHashChange);
-}
-
-// ===================================
-// Chat List
-// ===================================
-
-function renderChatList(chats) {
-    elements.chatList.innerHTML = chats.map(chat => `
-        <div class="chat-item" data-chat-id="${chat.chat_id}">
-            <div class="chat-avatar">${getInitials(chat.title)}</div>
-            <div class="chat-info">
-                <div class="chat-name">${escapeHtml(chat.title)}</div>
-                <div class="chat-preview">${formatNumber(chat.message_count)} повідомлень</div>
-            </div>
-            <div class="chat-meta">
-                <div class="chat-date">${formatDateShort(chat.end_date)}</div>
-            </div>
-        </div>
-    `).join('');
-
-    // Add click handlers
-    elements.chatList.querySelectorAll('.chat-item').forEach(item => {
-        item.addEventListener('click', () => {
-            loadChat(item.dataset.chatId);
-        });
-    });
-}
-
-function filterChatList(query) {
-    const q = query.toLowerCase();
-    elements.chatList.querySelectorAll('.chat-item').forEach(item => {
-        const name = item.querySelector('.chat-name').textContent.toLowerCase();
-        item.style.display = name.includes(q) ? '' : 'none';
-    });
-}
-
-// ===================================
-// Chat Loading
-// ===================================
-
-async function loadChat(chatId) {
-    try {
-        // Update UI state
-        elements.chatList.querySelectorAll('.chat-item').forEach(item => {
-            item.classList.toggle('active', item.dataset.chatId === chatId);
-        });
-
-        // Show chat view
-        elements.welcomeScreen.classList.add('hidden');
-        elements.chatView.classList.remove('hidden');
-        elements.sidebar.classList.add('hidden-mobile');
-
-        // Clear previous state
-        state.currentChat = chatId;
-        state.loadedChunks.clear();
-        state.allMessages = [];
-        state.searchIndex = null;
-        state.minLoadedChunk = null;
-        state.maxLoadedChunk = null;
-        elements.messages.innerHTML = '<div class="loading">Завантаження...</div>';
-
-        // Load chat manifest
-        const manifestResponse = await fetch(`./data/${chatId}/manifest.json`);
-        if (!manifestResponse.ok) throw new Error('Failed to load chat manifest');
-        state.currentChatManifest = await manifestResponse.json();
-
-        // Update header
-        elements.chatTitle.textContent = state.currentChatManifest.title;
-        elements.chatMeta.textContent = `${formatNumber(state.currentChatManifest.message_count)} повідомлень • ${formatDateRange(state.currentChatManifest.start_date, state.currentChatManifest.end_date)}`;
-
-        // Set date input bounds
-        if (state.currentChatManifest.start_date) {
-            elements.dateInput.min = state.currentChatManifest.start_date.split('T')[0];
-        }
-        if (state.currentChatManifest.end_date) {
-            elements.dateInput.max = state.currentChatManifest.end_date.split('T')[0];
-        }
-
-        // Load last chunk (most recent messages)
-        const lastChunkNum = state.currentChatManifest.chunk_count;
-        await loadChunk(lastChunkNum);
-
-        // Scroll to bottom
-        setTimeout(() => {
-            elements.messagesContainer.scrollTop = elements.messagesContainer.scrollHeight;
-        }, 100);
-
-        // Update URL hash
-        window.location.hash = chatId;
-
-        // Load search index in background
-        loadSearchIndex(chatId);
-
-    } catch (error) {
-        console.error('Error loading chat:', error);
-        elements.messages.innerHTML = `<div class="loading" style="color: #ff5555;">Помилка: ${error.message}</div>`;
-    }
-}
-
-async function loadChunk(chunkNum) {
-    if (chunkNum < 1 || chunkNum > state.currentChatManifest.chunk_count) {
-        return false;
-    }
-
-    if (state.loadedChunks.has(chunkNum)) {
-        return true;
-    }
-
-    const chunkInfo = state.currentChatManifest.chunks[chunkNum - 1];
-    const response = await fetch(`./data/${state.currentChat}/chunks/${chunkInfo.filename}`);
-    if (!response.ok) throw new Error(`Failed to load chunk ${chunkNum}`);
-
-    const messages = await response.json();
-    state.loadedChunks.set(chunkNum, messages);
-
-    // Update range
-    if (state.minLoadedChunk === null || chunkNum < state.minLoadedChunk) {
-        state.minLoadedChunk = chunkNum;
-    }
-    if (state.maxLoadedChunk === null || chunkNum > state.maxLoadedChunk) {
-        state.maxLoadedChunk = chunkNum;
-    }
-
-    // Rebuild all messages array
-    rebuildMessagesArray();
-
-    // Render
-    renderMessages();
-
-    // Update load more buttons
-    updateLoadMoreButtons();
-
-    return true;
-}
-
-function rebuildMessagesArray() {
-    state.allMessages = [];
-    const sortedChunks = Array.from(state.loadedChunks.keys()).sort((a, b) => a - b);
-    for (const chunkNum of sortedChunks) {
-        state.allMessages.push(...state.loadedChunks.get(chunkNum));
-    }
-}
-
-async function loadOlderMessages() {
-    if (state.minLoadedChunk > 1) {
-        const scrollHeight = elements.messagesContainer.scrollHeight;
-        await loadChunk(state.minLoadedChunk - 1);
-        // Maintain scroll position
-        const newScrollHeight = elements.messagesContainer.scrollHeight;
-        elements.messagesContainer.scrollTop = newScrollHeight - scrollHeight;
-    }
-}
-
-async function loadNewerMessages() {
-    if (state.maxLoadedChunk < state.currentChatManifest.chunk_count) {
-        await loadChunk(state.maxLoadedChunk + 1);
-    }
-}
-
-function updateLoadMoreButtons() {
-    elements.loadOlder.classList.toggle('hidden', state.minLoadedChunk <= 1);
-    elements.loadNewer.classList.toggle('hidden', state.maxLoadedChunk >= state.currentChatManifest.chunk_count);
-}
-
-// ===================================
-// Message Rendering
-// ===================================
-
-function renderMessages() {
-    let html = '';
-    let lastDate = null;
-    let lastSender = null;
-
-    for (const msg of state.allMessages) {
-        // Date separator
-        const msgDate = msg.dt_iso ? msg.dt_iso.split('T')[0] : null;
-        if (msgDate && msgDate !== lastDate) {
-            html += `<div class="date-separator"><span>${formatDateFull(msg.dt_iso)}</span></div>`;
-            lastDate = msgDate;
-            lastSender = null;
-        }
-
-        // Service message
-        if (msg.is_service) {
-            html += `
-                <div class="message service" id="${msg.message_id}">
-                    <div class="message-bubble">${escapeHtml(msg.plain_text)}</div>
-                </div>
-            `;
-            lastSender = null;
-            continue;
-        }
-
-        // Regular message
-        const isOutgoing = msg.from_name === 'Volodymyr Bugrov' || msg.from_name === 'VB';
-        const showSender = msg.from_name !== lastSender;
-        lastSender = msg.from_name;
-
-        html += `
-            <div class="message ${isOutgoing ? 'outgoing' : 'incoming'}" id="${msg.message_id}">
-                <div class="message-bubble">
-                    ${showSender && msg.from_name ? `<div class="message-sender">${escapeHtml(msg.from_name)}</div>` : ''}
-                    ${msg.reply_to ? `<div class="message-reply" data-reply-to="${msg.reply_to}">↩️ Відповідь на повідомлення</div>` : ''}
-                    ${msg.forwarded_from ? `<div class="message-forward">↪️ Переслано від ${escapeHtml(msg.forwarded_from)}</div>` : ''}
-                    ${msg.html_text ? `<div class="message-text">${sanitizeHtml(msg.html_text)}</div>` : ''}
-                    ${renderAttachments(msg.attachments)}
-                    <div class="message-meta">
-                        <span class="message-time">${formatTime(msg.dt_iso)}</span>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    elements.messages.innerHTML = html;
-
-    // Add reply click handlers
-    elements.messages.querySelectorAll('.message-reply').forEach(el => {
-        el.addEventListener('click', () => {
-            goToMessage(el.dataset.replyTo);
-        });
-    });
-
-    // Add image click handlers for lightbox
-    elements.messages.querySelectorAll('.attachment-photo').forEach(img => {
-        img.addEventListener('click', () => openLightbox(img.src));
-    });
-}
-
-function renderAttachments(attachments) {
-    if (!attachments || attachments.length === 0) return '';
-
-    return `<div class="message-attachments">${attachments.map(att => {
-        switch (att.kind) {
-            case 'photo':
-                return `
-                    <div class="attachment">
-                        <img src="${att.href}" alt="Photo" class="attachment-photo" loading="lazy">
-                    </div>
-                `;
-            case 'sticker':
-                // Check if it's an animated sticker
-                if (att.href.endsWith('.tgs')) {
-                    return `
-                        <div class="attachment">
-                            <div class="attachment-file">
-                                <span class="attachment-file-icon">🎭</span>
-                                <span class="attachment-file-name">Animated Sticker</span>
-                            </div>
-                        </div>
-                    `;
-                }
-                return `
-                    <div class="attachment">
-                        <img src="${att.href}" alt="Sticker" class="attachment-sticker" loading="lazy">
-                    </div>
-                `;
-            case 'video':
-            case 'round_video':
-                return `
-                    <div class="attachment">
-                        <video src="${att.href}" controls class="attachment-video" preload="metadata">
-                            ${att.duration ? `<span>${att.duration}</span>` : ''}
-                        </video>
-                    </div>
-                `;
-            case 'voice':
-                return `
-                    <div class="attachment">
-                        <audio src="${att.href}" controls class="attachment-audio" preload="metadata"></audio>
-                    </div>
-                `;
-            case 'file':
-            default:
-                return `
-                    <div class="attachment">
-                        <a href="${att.href}" class="attachment-file" download>
-                            <span class="attachment-file-icon">📎</span>
-                            <span class="attachment-file-name">${escapeHtml(att.title || 'File')}</span>
-                        </a>
-                    </div>
-                `;
-        }
-    }).join('')}</div>`;
-}
-
-// ===================================
-// Search
-// ===================================
-
-async function loadSearchIndex(chatId) {
-    try {
-        const response = await fetch(`./data/${chatId}/search.json`);
-        if (response.ok) {
-            state.searchIndex = await response.json();
-        }
-    } catch (error) {
-        console.warn('Failed to load search index:', error);
-    }
-}
-
-function searchMessages(query) {
-    if (!query || query.length < 2 || !state.searchIndex) {
-        elements.searchResults.innerHTML = '';
-        return;
-    }
-
-    const q = query.toLowerCase();
-    const results = state.searchIndex
-        .filter(item => item.text.toLowerCase().includes(q))
-        .slice(0, 50); // Limit results
-
-    if (results.length === 0) {
-        elements.searchResults.innerHTML = '<div class="loading">Нічого не знайдено</div>';
-        return;
-    }
-
-    elements.searchResults.innerHTML = results.map(item => `
-        <div class="search-result" data-message-id="${item.id}">
-            <span class="search-result-from">${escapeHtml(item.from || 'Unknown')}</span>
-            <span class="search-result-date">${item.dt || ''}</span>
-            <div class="search-result-text">${highlightText(item.text, query)}</div>
-        </div>
-    `).join('');
-
-    // Add click handlers
-    elements.searchResults.querySelectorAll('.search-result').forEach(el => {
-        el.addEventListener('click', () => {
-            goToMessage(el.dataset.messageId);
-            elements.searchPanel.classList.add('hidden');
-        });
-    });
-}
-
-function highlightText(text, query) {
-    const escaped = escapeHtml(text);
-    const pattern = new RegExp(`(${escapeRegex(query)})`, 'gi');
-    return escaped.replace(pattern, '<mark>$1</mark>');
-}
-
-// ===================================
-// Navigation
-// ===================================
-
-async function goToMessage(messageId) {
-    // First check if message is already loaded
-    let messageEl = document.getElementById(messageId);
-
-    if (!messageEl) {
-        // Find which chunk contains this message
-        const chunkIndex = state.currentChatManifest.chunks.findIndex(chunk => {
-            const startNum = parseInt(chunk.start_id?.replace('message', '') || '0');
-            const endNum = parseInt(chunk.end_id?.replace('message', '') || '0');
-            const targetNum = parseInt(messageId.replace('message', '') || '0');
-            return targetNum >= startNum && targetNum <= endNum;
-        });
-
-        if (chunkIndex !== -1) {
-            await loadChunk(chunkIndex + 1);
-            messageEl = document.getElementById(messageId);
-        }
-    }
-
-    if (messageEl) {
-        messageEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        messageEl.classList.add('highlighted');
-        setTimeout(() => messageEl.classList.remove('highlighted'), 3000);
-    }
-}
-
-async function goToDate(dateStr) {
-    if (!dateStr || !state.searchIndex) return;
-
-    // Find first message on or after this date
-    const targetDate = new Date(dateStr);
-
-    for (const item of state.searchIndex) {
-        if (item.dt) {
-            const itemDate = new Date(item.dt);
-            if (itemDate >= targetDate) {
-                await goToMessage(item.id);
-                elements.datePanel.classList.add('hidden');
-                return;
-            }
-        }
-    }
 }
 
 function handleHashChange() {
     const hash = window.location.hash.slice(1);
     if (hash && state.manifest) {
-        const chat = state.manifest.chats.find(c => c.chat_id === hash);
-        if (chat) {
-            loadChat(hash);
-        }
+        loadChat(hash);
+    } else {
+        document.body.classList.remove('view-chat');
     }
 }
 
 // ===================================
-// Lightbox
+// Rendering
 // ===================================
 
+function renderChatList(chats) {
+    elements.chatList.innerHTML = chats.map(chat => {
+        // Generate a stable color based on chat title
+        const colors = [
+            'linear-gradient(135deg, #FF516A 0%, #F23B55 100%)', // Red
+            'linear-gradient(135deg, #FF885E 0%, #FF516A 100%)', // Orange
+            'linear-gradient(135deg, #54CB68 0%, #A0DE7E 100%)', // Green
+            'linear-gradient(135deg, #2AABEE 0%, #229ED9 100%)', // Blue
+            'linear-gradient(135deg, #665FFF 0%, #82B1FF 100%)', // Purple
+            'linear-gradient(135deg, #46D2F4 0%, #5AC8FB 100%)', // Cyan
+        ];
+        const colorIndex = Math.abs(hashCode(chat.title)) % colors.length;
+        const bgStyle = `background: ${colors[colorIndex]}`;
+        const initials = getInitials(chat.title);
+
+        return `
+            <div class="chat-item" data-id="${chat.chat_id}" onclick="loadChat('${chat.chat_id}')">
+                <div class="chat-avatar-container">
+                    <div class="chat-avatar" style="${bgStyle}">${initials}</div>
+                </div>
+                <div class="chat-content">
+                    <div class="chat-header-row">
+                        <span class="chat-name">${escapeHtml(chat.title)}</span>
+                        <span class="chat-time">${formatDateShort(chat.end_date)}</span>
+                    </div>
+                    <div class="chat-meta-row">
+                        <span class="chat-preview">${chat.message_count} messages</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+async function loadChat(chatId) {
+    if (state.currentChat === chatId) return;
+
+    // Update UI for loading state
+    document.querySelectorAll('.chat-item').forEach(el => {
+        el.classList.toggle('active', el.dataset.id === chatId);
+    });
+
+    elements.welcomePlaceholder.style.display = 'none';
+    elements.chatHeader.classList.remove('hidden');
+    elements.messagesWrapper.classList.remove('hidden');
+    document.body.classList.add('view-chat');
+
+    state.currentChat = chatId;
+    state.loadedChunks.clear();
+    state.allMessages = [];
+    state.minLoadedChunk = null;
+    state.maxLoadedChunk = null;
+
+    elements.messagesList.innerHTML = '<div style="text-align:center; padding:20px; color:var(--tg-text-secondary);">Loading...</div>';
+
+    try {
+        // Fetch manifest
+        const req = await fetch(`data/${chatId}/manifest.json`);
+        state.currentChatManifest = await req.json();
+
+        // Update Header
+        elements.chatTitle.textContent = state.currentChatManifest.title;
+        elements.chatStatus.textContent = `${formatNumber(state.currentChatManifest.message_count)} messages`;
+
+        // Load last chunk
+        const lastChunk = state.currentChatManifest.chunk_count;
+        await loadChunk(lastChunk);
+
+        // Scroll to bottom
+        requestAnimationFrame(() => {
+            elements.messagesWrapper.scrollTop = elements.messagesWrapper.scrollHeight;
+        });
+
+        window.location.hash = chatId;
+
+        // Load search index in bg
+        fetch(`data/${chatId}/search.json`).then(r => r.json()).then(idx => state.searchIndex = idx).catch(() => { });
+
+    } catch (err) {
+        console.error(err);
+        elements.messagesList.innerHTML = `<div class="error">Failed to load chat: ${err.message}</div>`;
+    }
+}
+
+async function loadChunk(chunkNum) {
+    if (chunkNum < 1 || chunkNum > state.currentChatManifest.chunk_count) return;
+    if (state.loadedChunks.has(chunkNum)) return;
+
+    const chunkInfo = state.currentChatManifest.chunks[chunkNum - 1];
+    const res = await fetch(`data/${state.currentChat}/chunks/${chunkInfo.filename}`);
+    const msgs = await res.json();
+
+    state.loadedChunks.set(chunkNum, msgs);
+
+    if (state.minLoadedChunk === null || chunkNum < state.minLoadedChunk) state.minLoadedChunk = chunkNum;
+    if (state.maxLoadedChunk === null || chunkNum > state.maxLoadedChunk) state.maxLoadedChunk = chunkNum;
+
+    rebuildMessages();
+}
+
+function rebuildMessages() {
+    // Sort chunks and flatten
+    const sortedKeys = Array.from(state.loadedChunks.keys()).sort((a, b) => a - b);
+    state.allMessages = [];
+    sortedKeys.forEach(k => {
+        state.allMessages.push(...state.loadedChunks.get(k));
+    });
+
+    renderMessages(state.allMessages);
+}
+
+function renderMessages(messages) {
+    let html = '';
+    let lastDate = null;
+    let lastSender = null;
+    let lastTime = 0;
+
+    messages.forEach((msg, index) => {
+        const msgDate = msg.dt_iso ? msg.dt_iso.split('T')[0] : null;
+        const msgTime = msg.dt_iso ? new Date(msg.dt_iso).getTime() : 0;
+
+        // Sticky Date Header
+        if (msgDate && msgDate !== lastDate) {
+            html += `<div class="date-sticky"><span class="date-badge">${formatDateFull(msg.dt_iso)}</span></div>`;
+            lastDate = msgDate;
+            lastSender = null; // Reset grouping on new day
+        }
+
+        if (msg.is_service) {
+            html += `<div class="date-sticky"><span class="date-badge">${escapeHtml(msg.plain_text)}</span></div>`;
+            return;
+        }
+
+        // Grouping Logic
+        const isOutgoing = (msg.from_name === 'Volodymyr Bugrov' || msg.from_name === 'VB');
+        const sameSender = (msg.from_name === lastSender);
+        const timeDiff = (msgTime - lastTime) / 1000 / 60; // minutes
+        const isGroup = sameSender && timeDiff < 10;
+
+        let rowClass = isOutgoing ? 'outgoing' : 'incoming';
+        if (isGroup) {
+            rowClass += ' group-middle';
+        } else {
+            rowClass += ' group-first';
+        }
+
+        // Look ahead for next message to see if this is "last" in group
+        const nextMsg = messages[index + 1];
+        let isLastInGroup = true;
+        if (nextMsg && !nextMsg.is_service) {
+            const nextIsOutgoing = (nextMsg.from_name === 'Volodymyr Bugrov' || nextMsg.from_name === 'VB');
+            const nextSender = nextMsg.from_name;
+            const nextTime = nextMsg.dt_iso ? new Date(nextMsg.dt_iso).getTime() : 0;
+            const nextDiff = (nextTime - msgTime) / 1000 / 60;
+
+            if (nextIsOutgoing === isOutgoing && nextSender === msg.from_name && nextDiff < 10 && (nextMsg.dt_iso?.split('T')[0] === msgDate)) {
+                isLastInGroup = false;
+            }
+        }
+
+        if (isLastInGroup) rowClass += ' group-last';
+
+        lastSender = msg.from_name;
+        lastTime = msgTime;
+
+        // Render content
+        html += `
+            <div class="message-row ${rowClass}" id="${msg.message_id}">
+                <div class="bubble">
+                    ${isLastInGroup ? '<svg class="bubble-tail" viewBox="0 0 11 20"><path d="M1 20c-.1-5 2.5-9.3 5-11 3.5-1.5 5 0 5 0V6a7 7 0 0 0-7 7v7z"/></svg>' : ''}
+                    
+                    ${(!isOutgoing && !isGroup && msg.from_name) ? `<div class="sender-name">${escapeHtml(msg.from_name)}</div>` : ''}
+                    
+                    ${msg.reply_to ? `<div class="reply-preview" onclick="scrollToMsg('${msg.reply_to}')">
+                        <div class="reply-name">Reply</div>
+                        <div class="reply-text">Click to view</div>
+                    </div>` : ''}
+                    
+                    ${renderAttachments(msg.attachments)}
+                    
+                    ${msg.html_text ? `<div class="message-text">${formatMessageText(msg.html_text)}
+                        <span class="message-meta">
+                            ${formatTime(msg.dt_iso)}
+                            ${isOutgoing ? '<svg class="icon icon-xs" style="fill:#59b1f7;"><use href="#icon-double-check"></use></svg>' : ''}
+                        </span>
+                    </div>` :
+                // If no text, meta goes separate
+                `<div class="message-meta" style="float:right;">
+                        ${formatTime(msg.dt_iso)}
+                        ${isOutgoing ? '<svg class="icon icon-xs" style="fill:#59b1f7;"><use href="#icon-double-check"></use></svg>' : ''}
+                    </div>`
+            }
+                </div>
+            </div>
+        `;
+    });
+
+    elements.messagesList.innerHTML = html;
+}
+
+
+function renderAttachments(atts) {
+    if (!atts || !atts.length) return '';
+
+    return `<div class="media-grid">` + atts.map(att => {
+        if (att.kind === 'photo' || att.kind === 'sticker') {
+            return `<img src="${att.href}" class="media-photo" onclick="openLightbox('${att.href}')" loading="lazy">`;
+        } else if (att.kind === 'video' || att.kind === 'round_video') {
+            return `<video src="${att.href}" class="media-photo" controls></video>`;
+        } else {
+            return `<a href="${att.href}" class="media-file" download>
+                <div class="file-icon">${att.href.split('.').pop().toUpperCase()}</div>
+                <div class="file-info">${escapeHtml(att.title || 'File')}</div>
+             </a>`;
+        }
+    }).join('') + `</div>`;
+}
+
+// ===================================
+// Utils
+// ===================================
+
+function scrollToMsg(id) {
+    const el = document.getElementById(id);
+    if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.querySelector('.bubble').style.animation = 'highlight 1s';
+    }
+}
+
 function openLightbox(src) {
-    elements.lightboxContent.innerHTML = `<img src="${src}" alt="Full size image">`;
+    elements.lightboxContent.innerHTML = `<img src="${src}" style="max-width:100%; max-height:90vh;">`;
     elements.lightbox.classList.remove('hidden');
 }
 
-function closeLightbox() {
-    elements.lightbox.classList.add('hidden');
-    elements.lightboxContent.innerHTML = '';
+function escapeHtml(str) {
+    return str ? str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;") : '';
 }
 
-// ===================================
-// Utility Functions
-// ===================================
-
-function escapeHtml(str) {
-    if (!str) return '';
+function formatMessageText(html) {
+    // Basic sanitization and line break handling
+    // Telegram export usually has clean HTML, but links need checking
     const div = document.createElement('div');
-    div.textContent = str;
+    div.innerHTML = html;
+
+    // Safety: remove scripts
+    div.querySelectorAll('script').forEach(s => s.remove());
+
+    // Add target=_blank to links
+    div.querySelectorAll('a').forEach(a => a.setAttribute('target', '_blank'));
+
     return div.innerHTML;
 }
 
-function sanitizeHtml(html) {
-    // Basic sanitization - allow only safe tags
-    return html
-        .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-        .replace(/on\w+="[^"]*"/gi, '')
-        .replace(/on\w+='[^']*'/gi, '');
-}
-
-function escapeRegex(str) {
-    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
 function formatNumber(num) {
-    if (!num) return '0';
-    return num.toLocaleString('uk-UA');
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+    return num;
 }
 
-function formatTime(isoDate) {
-    if (!isoDate) return '';
-    const date = new Date(isoDate);
-    return date.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
-}
-
-function formatDateShort(isoDate) {
-    if (!isoDate) return '';
-    const date = new Date(isoDate);
-    const now = new Date();
-    const diff = now - date;
-
-    if (diff < 86400000 && date.getDate() === now.getDate()) {
-        return formatTime(isoDate);
+function hashCode(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
     }
-
-    if (date.getFullYear() === now.getFullYear()) {
-        return date.toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' });
-    }
-
-    return date.toLocaleDateString('uk-UA', { day: 'numeric', month: 'short', year: '2-digit' });
-}
-
-function formatDateFull(isoDate) {
-    if (!isoDate) return '';
-    const date = new Date(isoDate);
-    return date.toLocaleDateString('uk-UA', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-    });
-}
-
-function formatDateRange(start, end) {
-    if (!start || !end) return '';
-    const startDate = new Date(start);
-    const endDate = new Date(end);
-
-    const startStr = startDate.toLocaleDateString('uk-UA', { day: 'numeric', month: 'short', year: 'numeric' });
-    const endStr = endDate.toLocaleDateString('uk-UA', { day: 'numeric', month: 'short', year: 'numeric' });
-
-    return `${startStr} — ${endStr}`;
+    return hash;
 }
 
 function getInitials(name) {
-    if (!name) return '?';
-    const words = name.split(/\s+/);
-    if (words.length >= 2) {
-        return (words[0][0] + words[1][0]).toUpperCase();
-    }
-    return name.slice(0, 2).toUpperCase();
+    return name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase();
 }
 
-// ===================================
-// Start Application
-// ===================================
+function formatDateShort(iso) {
+    if (!iso) return '';
+    const date = new Date(iso);
+    const now = new Date();
+    if (date.toDateString() === now.toDateString()) {
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    return date.toLocaleDateString([], { day: 'numeric', month: 'short' });
+}
 
-document.addEventListener('DOMContentLoaded', init);
+function formatDateFull(iso) {
+    if (!iso) return 'Unknown Date';
+    return new Date(iso).toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function formatTime(iso) {
+    if (!iso) return '';
+    return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
