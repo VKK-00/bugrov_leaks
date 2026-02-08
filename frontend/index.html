@@ -62,6 +62,12 @@
                 <div class="fab" title="Scroll to Top" onclick="app.scrollToTop()">⬆️</div>
             </div>
 
+            <!-- Footer Banner -->
+            <div class="footer-banner">
+                Mentioned correspondence was first published on Telegram channel <a href="https://t.me/bugrovleaks/3"
+                    target="_blank">@bugrovleaks</a>
+            </div>
+
             <!-- Calendar Modal -->
             <div class="modal" id="calendar-modal" onclick="if(event.target === this) this.style.display='none'">
                 <div class="modal-content">
@@ -70,6 +76,11 @@
                     <button class="btn" onclick="app.jumpToDate()">Go</button>
                     <div style="clear: both;"></div>
                 </div>
+            </div>
+
+            <!-- Lightbox -->
+            <div class="lightbox" id="lightbox" onclick="this.style.display='none'">
+                <img id="lightbox-img" src="" alt="Full size">
             </div>
         </main>
     </div>

@@ -1,20 +1,24 @@
 :root {
-    --bg-color: #17212b;
-    --sidebar-bg: #17212b;
-    --chat-bg: #0e1621;
-    --header-bg: #17212b;
-    --input-bg: #242f3d;
-    --text-primary: #f5f5f5;
-    --text-secondary: #6c7883;
-    --accent-color: #2b5278;
-    /* Selected chat bg */
-    --message-bg-in: #182533;
-    --message-bg-out: #2b5278;
-    --link-color: #64b5f6;
-    --border-color: #0e1621;
-    /* Separator lines */
-    --hover-color: #202b36;
-    --scroll-thumb: rgba(255, 255, 255, 0.2);
+    /* Telegram Web Light Theme Variables */
+    --bg-color: #ffffff;
+    --sidebar-bg: #ffffff;
+    --chat-bg: #9ac2de;
+    /* Basic blueish tint, will be covered by pattern */
+    --header-bg: #ffffff;
+    --input-bg: #f1f1f1;
+    --text-primary: #000000;
+    --text-secondary: #707579;
+    --accent-color: #3390ec;
+    /* Active state */
+
+    --message-bg-in: #ffffff;
+    --message-bg-out: #effdde;
+    /* Light green for outgoing */
+
+    --link-color: #3390ec;
+    --border-color: #dfe1e5;
+    --hover-color: #f1f1f1;
+    --scroll-thumb: rgba(0, 0, 0, 0.2);
 }
 
 * {
@@ -60,6 +64,16 @@ body {
     outline: none;
 }
 
+/* Global Search Toggle */
+#global-search-label {
+    font-size: 13px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+}
+
 .chat-list {
     overflow-y: auto;
     flex: 1;
@@ -77,7 +91,13 @@ body {
 }
 
 .chat-item.active {
-    background-color: var(--accent-color);
+    background-color: #3390ec;
+    /* Active blue */
+}
+
+.chat-item.active .chat-name,
+.chat-item.active .last-message {
+    color: white !important;
 }
 
 .avatar {
@@ -125,9 +145,9 @@ body {
     flex: 1;
     display: flex;
     flex-direction: column;
-    background-color: #0e1621;
+    background-color: var(--chat-bg);
+    /* Light pattern */
     background-image: url('https://web.telegram.org/img/bg_0.png');
-    /* Pattern */
     background-size: 500px;
     background-repeat: repeat;
     background-attachment: fixed;
@@ -179,6 +199,28 @@ body {
     padding: 20px;
     display: flex;
     flex-direction: column;
+    padding-bottom: 60px;
+    /* Space for footer */
+}
+
+/* Footer Banner */
+.footer-banner {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 10px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-secondary);
+    border-top: 1px solid var(--border-color);
+    z-index: 10;
+}
+
+.footer-banner a {
+    color: var(--link-color);
+    text-decoration: none;
 }
 
 .messages-container.searching .message:not(.match) {
@@ -191,7 +233,7 @@ body {
     justify-content: center;
     height: 100%;
     color: var(--text-secondary);
-    background: rgba(14, 22, 33, 0.8);
+    background: rgba(255, 255, 255, 0.6);
     border-radius: 10px;
     margin: 20px;
     padding: 20px;
@@ -200,7 +242,8 @@ body {
 /* Messages */
 .message {
     max-width: 85%;
-    /* Wider bubbles like Telegram Desktop */
+    /* Max width like Telegram Desktop */
+    width: fit-content;
     margin-bottom: 4px;
     /* Tighter spacing */
     padding: 6px 10px;
@@ -210,21 +253,23 @@ body {
     font-size: 15px;
     line-height: 1.4;
     transition: background-color 0.2s ease, transform 0.1s ease;
-    /* Ensure smoothness on hover/click */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
+/* Outgoing: Right aligned + Light Green */
 .message.outgoing {
-    align-self: flex-start;
-    /* Move Bugrov to left */
+    align-self: flex-end;
     background-color: var(--message-bg-out);
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 6px;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 6px;
 }
 
+/* Incoming: Left aligned + White */
 .message.incoming {
     align-self: flex-start;
     background-color: var(--message-bg-in);
     border-bottom-left-radius: 0;
+    border-bottom-right-radius: 6px;
 }
 
 /* Highlighted message (from search or reply click) */
@@ -234,12 +279,12 @@ body {
 
 @keyframes flashHighlight {
     0% {
-        background-color: rgba(100, 181, 246, 0.4);
+        background-color: rgba(51, 144, 236, 0.4);
         transform: scale(1.02);
     }
 
     50% {
-        background-color: rgba(100, 181, 246, 0.2);
+        background-color: rgba(51, 144, 236, 0.2);
         transform: scale(1.01);
     }
 
@@ -256,52 +301,61 @@ body {
     cursor: pointer;
 }
 
-/* Round Video Messages */
+/* Round Video Messages - Enforced Circle */
 .media-round-video {
     width: 240px;
     height: 240px;
     border-radius: 50% !important;
     object-fit: cover;
     background-color: #000;
+    display: block;
 }
 
-/* Sender Name Colors (Text Only) */
+/* Ensure container doesn't break shape */
+.media-container.round-container {
+    width: 240px;
+    height: 240px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: inline-block;
+}
+
+/* Sender Name Colors (Text Only) - Tweaked for Light Mode */
 .message-sender.color1 {
-    color: #ff5555;
+    color: #cc3333;
 }
 
 .message-sender.color2 {
-    color: #64bf47;
+    color: #339933;
 }
 
 .message-sender.color3 {
-    color: #ffab00;
+    color: #e69500;
 }
 
 .message-sender.color4 {
-    color: #4f9cd9;
+    color: #3377cc;
 }
 
 .message-sender.color5 {
-    color: #9884e8;
+    color: #7744aa;
 }
 
 .message-sender.color6 {
-    color: #e671a5;
+    color: #b74477;
 }
 
 .message-sender.color7 {
-    color: #47bcd1;
+    color: #3399aa;
 }
 
 .message-sender.color8 {
-    color: #ff8c44;
+    color: #d66633;
 }
 
 .message-content {
     white-space: pre-wrap;
     overflow-wrap: break-word;
-    /* Handle long URLs better */
 }
 
 .message-meta {
@@ -309,19 +363,25 @@ body {
     margin-left: 8px;
     margin-top: 6px;
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.5);
+    color: #a0a0a0;
+    /* Greyer timestamp */
+}
+
+.message.outgoing .message-meta {
+    color: #559c36;
+    /* Greenish timestamp for outgoing */
 }
 
 /* Service Messages (Dates, System) */
 .service-message {
     align-self: center;
-    background-color: rgba(0, 0, 0, 0.2);
-    color: var(--text-secondary);
+    background-color: rgba(0, 0, 0, 0.25);
+    color: #fff;
     padding: 4px 12px;
     border-radius: 12px;
     margin: 10px 0;
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 /* Sticky Date Header */
@@ -331,21 +391,21 @@ body {
     z-index: 10;
     margin-bottom: 10px;
     align-self: center;
-    background-color: rgba(23, 33, 43, 0.85);
-    /* Proper backdrop */
-    backdrop-filter: blur(4px);
-    color: var(--text-primary);
+    background-color: rgba(0, 0, 0, 0.25);
+    /* Semi-transparent tag like Telegram */
+    backdrop-filter: blur(2px);
+    color: #fff;
     padding: 4px 12px;
     border-radius: 12px;
     font-size: 13px;
-    font-weight: 500;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    font-weight: 600;
 }
 
 /* Calendar Button & Scroll Top */
 .fab-container {
     position: absolute;
-    bottom: 20px;
+    bottom: 50px;
+    /* Moved up for footer */
     right: 30px;
     display: flex;
     flex-direction: column;
@@ -357,9 +417,8 @@ body {
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    background-color: var(--Sidebar-bg, #242f3d);
-    /* Dark button */
-    color: var(--text-primary);
+    background-color: #fff;
+    color: #707579;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -370,11 +429,11 @@ body {
 }
 
 .fab:hover {
-    background-color: var(--hover-color, #2b3846);
+    background-color: #f1f1f1;
     transform: scale(1.1);
 }
 
-/* Date Picker Modal (simple implementation) */
+/* Date Picker Modal */
 .modal {
     position: fixed;
     top: 0;
@@ -389,7 +448,7 @@ body {
 }
 
 .modal-content {
-    background-color: var(--bg-color);
+    background-color: #fff;
     padding: 20px;
     border-radius: 8px;
     min-width: 300px;
@@ -400,18 +459,13 @@ body {
     font-size: 18px;
     margin-bottom: 15px;
     font-weight: 500;
+    color: #000;
 }
 
 input[type="date"] {
-    background-color: var(--input-bg);
+    background-color: #f1f1f1;
     border: none;
-    color: var(--text-primary);
-    padding: 10px;
-    border-radius: 4px;
-    font-family: inherit;
-    width: 100%;
-    font-size: 16px;
-    margin-bottom: 15px;
+    color: #000;
 }
 
 .btn {
@@ -425,73 +479,60 @@ input[type="date"] {
     float: right;
 }
 
-.btn:hover {
-    filter: brightness(1.1);
-}
-
 /* Media */
 .media-container {
     margin-top: 5px;
 }
 
-.media-photo,
-.media-video {
-    max-width: 100%;
+.media-photo {
+    max-width: 200px;
+    /* Small default size */
+    max-height: 200px;
+    width: auto;
+    height: auto;
     border-radius: 4px;
     display: block;
     cursor: zoom-in;
-    /* Indicate clickable */
+    object-fit: contain;
 }
 
-/* Prevent double click selection */
-.media-photo {
-    -webkit-user-drag: none;
+.media-video {
+    max-width: 100%;
+    border-radius: 4px;
 }
 
 .reply-preview {
     border-left: 2px solid var(--link-color);
     padding-left: 8px;
     margin-bottom: 4px;
-    opacity: 0.8;
+    opacity: 1;
+    /* Reset opacity */
     font-size: 13px;
     cursor: pointer;
-    background-color: rgba(0, 0, 0, 0.1);
-    /* Subtle background */
+    background-color: rgba(51, 144, 236, 0.1);
     padding: 4px 8px;
-    border-radius: 0 4px 4px 0;
+    border-radius: 4px;
 }
 
-/* Colors for avatars */
-.userpic1 {
-    background-color: #ff5555;
+/* Lightbox */
+.lightbox {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 300;
+    cursor: zoom-out;
 }
 
-.userpic2 {
-    background-color: #64bf47;
-}
-
-.userpic3 {
-    background-color: #ffab00;
-}
-
-.userpic4 {
-    background-color: #4f9cd9;
-}
-
-.userpic5 {
-    background-color: #9884e8;
-}
-
-.userpic6 {
-    background-color: #e671a5;
-}
-
-.userpic7 {
-    background-color: #47bcd1;
-}
-
-.userpic8 {
-    background-color: #ff8c44;
+.lightbox img {
+    max-width: 90%;
+    max-height: 90%;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
 }
 
 /* Scrollbar */
@@ -504,10 +545,10 @@ input[type="date"] {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: var(--scroll-thumb);
+    background: rgba(0, 0, 0, 0.2);
     border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(0, 0, 0, 0.3);
 }

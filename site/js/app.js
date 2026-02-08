@@ -379,19 +379,30 @@ const app = {
     },
 
     renderAttachment: function (att) {
-        if (att.kind === 'photo') {
-            return `<div class="media-container"><img src="${att.href}" class="media-photo" loading="lazy"></div>`;
+        if (att.kind === 'photo' || att.kind === 'sticker') {
+            const isSticker = att.kind === 'sticker';
+            const cls = isSticker ? 'media-sticker' : 'media-photo';
+            const onclick = isSticker ? '' : `onclick="app.openLightbox('${att.href}')"`;
+            // For photos, we use a smaller preview if possible (but we only have one href here).
+            // We rely on CSS to size it down (max-width: 200px) and click to enlarge.
+            return `<div class="media-container"><img src="${att.href}" class="${cls}" loading="lazy" ${onclick}></div>`;
         } else if (att.kind === 'video') {
             return `<div class="media-container"><video src="${att.href}" controls class="media-video"></video></div>`;
         } else if (att.kind === 'round_video') {
-            return `<div class="media-container"><video src="${att.href}" autoplay loop muted controls class="media-round-video"></video></div>`;
-        } else if (att.kind === 'sticker') {
-            return `<div class="media-container"><img src="${att.href}" class="media-sticker" loading="lazy"></div>`;
+            // Strict round container
+            return `<div class="media-container round-container"><video src="${att.href}" autoplay loop muted class="media-round-video"></video></div>`;
         } else if (att.kind === 'voice') {
             return `<div class="media-container"><audio src="${att.href}" controls></audio></div>`;
         } else {
             return `<div class="media-container"><a href="${att.href}" target="_blank" style="color: var(--link-color)">📄 ${att.kind}</a></div>`;
         }
+    },
+
+    openLightbox: function (src) {
+        const lb = document.getElementById('lightbox');
+        const img = document.getElementById('lightbox-img');
+        img.src = src;
+        lb.style.display = 'flex';
     },
 
     scrollToMessage: function (msgId) {
