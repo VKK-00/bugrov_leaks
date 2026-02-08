@@ -325,9 +325,7 @@ body {
     /* Usually outgoing messages on TDesktop don't show name unless group? Let's hide it for "Me" behavior or keep it subtle */
 }
 
-/* Re-enable name if needed, but standard PM/Channel behavior usually hides self name.
-   User asked for "Special color text box", not necessarily hiding name.
-   Let's keep name but style it standard green. */
+/* Re-enable name if needed. User asked for "Special color text box". */
 .message.bugrov-message .message-sender {
     display: block;
     color: #4b9231 !important;
@@ -395,8 +393,7 @@ body {
 }
 
 /* Round Video Messages - Enforced Circle */
-/* Sticky Date Header - REMOVED STICKY to prevent cascading overlap */
-/* Date Header - STICKY RESTORED */
+/* Date Header */
 .date-header {
     position: sticky;
     top: 10px;

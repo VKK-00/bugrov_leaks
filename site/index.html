@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram Archive</title>
+    <title>Telegram Chat Export</title>
+    <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/media_gallery.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -110,6 +111,71 @@
                     <button class="btn" onclick="app.acceptDisclaimer()"
                         style="float: none; font-size: 16px; padding: 10px 20px;">Я погоджуюсь / I Agree</button>
                     <div style="clear: both;"></div>
+                </div>
+            </div>
+
+            <!-- Info Modal -->
+            <div class="modal" id="info-modal" onclick="if(event.target === this) this.style.display='none'">
+                <div class="modal-content" style="max-width: 700px; max-height: 90vh; overflow-y: auto;">
+                    <div class="modal-header"
+                        style="border-bottom: 1px solid #eee; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                        <span>Довідка та Контекст</span>
+                        <button class="icon-btn" onclick="document.getElementById('info-modal').style.display='none'"
+                            style="font-size: 24px;">✕</button>
+                    </div>
+
+                    <div style="margin-top: 20px;">
+                        <h3 style="color: var(--accent-color); margin-bottom: 10px;">📜 Словник скорочень</h3>
+                        <div class="abbrev-grid"
+                            style="display: grid; grid-template-columns: auto 1fr; gap: 8px 15px; background: #f9f9f9; padding: 15px; border-radius: 8px; font-size: 14px;">
+                            <strong>ММ/КМ</strong> <span>Марія Миколаївна (Горбань)</span>
+                            <strong>ОЛ</strong> <span>Олена Леонідівна (Добржанська)</span>
+                            <strong>ВА</strong> <span>Володимир Анатолійович (Бугров)</span>
+                            <strong>ІО</strong> <span>Інна Олександрівна (Степанець)</span>
+                            <strong>ЛВ</strong> <span>Леонід Васильович (Губерський)</span>
+                            <strong>Пог</strong> <span>Погорецький (Микола Анатолійович)</span>
+                            <strong>Вітр</strong> <span>Вітренко (Андрій Олександрович)</span>
+                            <strong>РО</strong> <span>Руслан Олексійович (Стефанчук)</span>
+                            <strong>Ш</strong> <span>Шкарлет (Сергій Миколайович)</span>
+                            <strong>Ю</strong> <span>Юлія (Тарасівна Кузів)</span>
+                            <strong>Шеп</strong> <span>Шепелева (Анна Ігорівна)</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 30px;">
+                        <h3 style="color: var(--accent-color); margin-bottom: 10px;">🕵️‍♂️ Розслідування</h3>
+
+                        <div style="margin-bottom: 20px;">
+                            <a href="https://graph.org/Sprobi-zam%D1%96tannya-sl%D1%96d%D1%96v-02-07" target="_blank"
+                                style="text-decoration: none; color: #333; display: block; background: #fff; border: 1px solid #eee; border-radius: 8px; overflow: hidden; transition: box-shadow 0.2s;">
+                                <div style="padding: 15px;">
+                                    <div
+                                        style="font-weight: bold; font-size: 16px; margin-bottom: 5px; color: var(--link-color);">
+                                        Спроби замітання слідів</div>
+                                    <p style="font-size: 14px; color: #555; margin: 0;">Аналіз того, як адміністрація
+                                        намагалася приховати докази та вплинути на ситуацію після витоку інформації.</p>
+                                    <div style="margin-top: 8px; font-size: 12px; color: #999;">telegra.ph • Читати
+                                        статтю ↗</div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <div>
+                            <a href="https://red-guber.medium.com/bugrovleaks-%D1%81%D0%B5%D0%BA%D1%81-%D1%81%D0%BA%D0%B0%D0%BD%D0%B0%D0%BB-%D1%89%D0%BE%D0%B4%D0%BE-%D1%80%D0%B5%D0%BA%D1%82%D0%BE%D1%80%D0%B0-%D0%BA%D0%BD%D1%83-%D1%8F%D0%BA%D0%B8%D0%B9-%D0%B2%D0%BF%D0%BB%D0%B8%D0%B2%D0%B0%D1%94-%D0%BD%D0%B0-%D0%B2%D1%81%D1%8E-%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D1%83-%D0%B2%D0%B8%D1%89%D0%BE%D1%97-%D0%BE%D1%81%D0%B2%D1%96%D1%82%D0%B8-659b7aab28d1"
+                                target="_blank"
+                                style="text-decoration: none; color: #333; display: block; background: #fff; border: 1px solid #eee; border-radius: 8px; overflow: hidden; transition: box-shadow 0.2s;">
+                                <div style="padding: 15px;">
+                                    <div
+                                        style="font-weight: bold; font-size: 16px; margin-bottom: 5px; color: var(--link-color);">
+                                        Секс-скандал та вплив на систему освіти</div>
+                                    <p style="font-size: 14px; color: #555; margin: 0;">Детальний розбір подій та їх
+                                        впливу на репутацію університету та систему вищої освіти в цілому.</p>
+                                    <div style="margin-top: 8px; font-size: 12px; color: #999;">medium.com • Читати
+                                        статтю ↗</div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
 
