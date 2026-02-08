@@ -761,3 +761,99 @@ input[type="date"] {
     width: 40px;
     text-align: right;
 }
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+
+    /* 1. Sidebar - Drawer Style */
+    .sidebar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        z-index: 1000;
+        width: 80%;
+        /* Cover most of screen */
+        max-width: 300px;
+        transform: translateX(-100%);
+        /* Hidden by default */
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .sidebar.open {
+        /* Class toggled by JS */
+        transform: translateX(0);
+    }
+
+    /* When sidebar is "collapsed" in logic, it means "hidden" on mobile. 
+       We reuse existing classes but override behavior. 
+       Our existing JS toggles .collapsed on .sidebar. 
+       In desktop: .collapsed = width 0. 
+       In mobile: .collapsed = translateX(-100%).
+    */
+    .sidebar.collapsed {
+        transform: translateX(-100%);
+        width: 80%;
+        /* Restore width for when it slides in */
+    }
+
+    .sidebar:not(.collapsed) {
+        transform: translateX(0);
+    }
+
+    /* Overlay for when sidebar is open */
+    .sidebar-overlay {
+        display: none;
+        /* Add via JS if needed, or just rely on clicking toggle */
+    }
+
+    /* 2. Messages & Replies */
+    .message {
+        max-width: 85%;
+        /* Slightly wider on mobile */
+    }
+
+    .reply {
+        max-width: 100%;
+        /* Constraint reply width */
+        overflow: hidden;
+    }
+
+    .reply-content {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: block;
+        /* Ensure block for rounding */
+    }
+
+    .reply-sender {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* 3. Media & Videos */
+    .message-content img,
+    .message-content video,
+    .media-round-video {
+        max-width: 100% !important;
+        height: auto !important;
+        display: block;
+    }
+
+    .media-container.round-container {
+        /* Scale down round videos if they are too big for small screens */
+        max-width: 200px;
+        max-height: 200px;
+        width: 100%;
+        /* Responsive */
+        aspect-ratio: 1/1;
+    }
+
+    /* Adjust FAB position */
+    .fab-container {
+        right: 15px;
+        bottom: 70px;
+    }
+}
