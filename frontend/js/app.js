@@ -1082,6 +1082,23 @@ var app = {
     },
 
 
+    getInitials: function (name) {
+        if (!name) return '??';
+        const parts = name.split(' ').filter(n => n.length > 0);
+        if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+        if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+        return '??';
+    },
+
+    escapeHtml: function (text) {
+        if (!text) return '';
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    },
 };
 
 document.addEventListener('DOMContentLoaded', () => {
