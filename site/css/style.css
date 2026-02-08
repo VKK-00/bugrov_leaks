@@ -1,0 +1,470 @@
+:root {
+    --bg-color: #17212b;
+    --sidebar-bg: #17212b;
+    --chat-bg: #0e1621;
+    --header-bg: #17212b;
+    --input-bg: #242f3d;
+    --text-primary: #f5f5f5;
+    --text-secondary: #6c7883;
+    --accent-color: #2b5278;
+    /* Selected chat bg */
+    --message-bg-in: #182533;
+    --message-bg-out: #2b5278;
+    --link-color: #64b5f6;
+    --border-color: #0e1621;
+    /* Separator lines */
+    --hover-color: #202b36;
+    --scroll-thumb: rgba(255, 255, 255, 0.2);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    height: 100vh;
+    overflow: hidden;
+}
+
+#app {
+    display: flex;
+    height: 100%;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 320px;
+    background-color: var(--sidebar-bg);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+}
+
+.sidebar-header {
+    padding: 10px;
+}
+
+.search-bar input {
+    width: 100%;
+    padding: 10px;
+    background-color: var(--input-bg);
+    border: none;
+    border-radius: 4px;
+    color: var(--text-primary);
+    outline: none;
+}
+
+.chat-list {
+    overflow-y: auto;
+    flex: 1;
+}
+
+.chat-item {
+    display: flex;
+    padding: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.chat-item:hover {
+    background-color: var(--hover-color);
+}
+
+.chat-item.active {
+    background-color: var(--accent-color);
+}
+
+.avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: #555;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: bold;
+    margin-right: 10px;
+    flex-shrink: 0;
+    color: #fff;
+    text-transform: uppercase;
+}
+
+.chat-preview {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.chat-name {
+    font-weight: 500;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.last-message {
+    color: var(--text-secondary);
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Chat Area */
+.chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: #0e1621;
+    background-image: url('https://web.telegram.org/img/bg_0.png');
+    /* Pattern */
+    background-size: 500px;
+    background-repeat: repeat;
+    background-attachment: fixed;
+    position: relative;
+}
+
+.chat-header {
+    padding: 10px 20px;
+    background-color: var(--header-bg);
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    height: 56px;
+    flex-shrink: 0;
+    z-index: 20;
+}
+
+.header-tools {
+    margin-left: auto;
+    display: flex;
+    gap: 15px;
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.icon-btn:hover {
+    color: var(--text-primary);
+}
+
+.chat-title {
+    font-size: 16px;
+    margin-bottom: 2px;
+}
+
+.chat-status {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.messages-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.messages-container.searching .message:not(.match) {
+    opacity: 0.3;
+}
+
+.empty-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-secondary);
+    background: rgba(14, 22, 33, 0.8);
+    border-radius: 10px;
+    margin: 20px;
+    padding: 20px;
+}
+
+/* Messages */
+.message {
+    max-width: 85%;
+    /* Wider bubbles like Telegram Desktop */
+    margin-bottom: 4px;
+    /* Tighter spacing */
+    padding: 6px 10px;
+    border-radius: 6px;
+    position: relative;
+    word-wrap: break-word;
+    font-size: 15px;
+    line-height: 1.4;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    /* Ensure smoothness on hover/click */
+}
+
+.message.outgoing {
+    align-self: flex-end;
+    background-color: var(--message-bg-out);
+    border-bottom-right-radius: 0;
+}
+
+.message.incoming {
+    align-self: flex-start;
+    background-color: var(--message-bg-in);
+    border-bottom-left-radius: 0;
+}
+
+/* Highlighted message (from search or reply click) */
+.message.highlight {
+    animation: flashHighlight 1.5s ease-out;
+}
+
+@keyframes flashHighlight {
+    0% {
+        background-color: rgba(100, 181, 246, 0.4);
+        transform: scale(1.02);
+    }
+
+    50% {
+        background-color: rgba(100, 181, 246, 0.2);
+        transform: scale(1.01);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.message-sender {
+    color: var(--link-color);
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    display: block;
+    cursor: pointer;
+}
+
+.message-content {
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    /* Handle long URLs better */
+}
+
+.message-meta {
+    float: right;
+    margin-left: 8px;
+    margin-top: 6px;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* Service Messages (Dates, System) */
+.service-message {
+    align-self: center;
+    background-color: rgba(0, 0, 0, 0.2);
+    color: var(--text-secondary);
+    padding: 4px 12px;
+    border-radius: 12px;
+    margin: 10px 0;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+/* Sticky Date Header */
+.date-header {
+    position: sticky;
+    top: 10px;
+    z-index: 10;
+    margin-bottom: 10px;
+    align-self: center;
+    background-color: rgba(23, 33, 43, 0.85);
+    /* Proper backdrop */
+    backdrop-filter: blur(4px);
+    color: var(--text-primary);
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Calendar Button & Scroll Top */
+.fab-container {
+    position: absolute;
+    bottom: 20px;
+    right: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 100;
+}
+
+.fab {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: var(--Sidebar-bg, #242f3d);
+    /* Dark button */
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    transition: background-color 0.2s, transform 0.2s;
+    font-size: 20px;
+}
+
+.fab:hover {
+    background-color: var(--hover-color, #2b3846);
+    transform: scale(1.1);
+}
+
+/* Date Picker Modal (simple implementation) */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+}
+
+.modal-content {
+    background-color: var(--bg-color);
+    padding: 20px;
+    border-radius: 8px;
+    min-width: 300px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+    font-size: 18px;
+    margin-bottom: 15px;
+    font-weight: 500;
+}
+
+input[type="date"] {
+    background-color: var(--input-bg);
+    border: none;
+    color: var(--text-primary);
+    padding: 10px;
+    border-radius: 4px;
+    font-family: inherit;
+    width: 100%;
+    font-size: 16px;
+    margin-bottom: 15px;
+}
+
+.btn {
+    background-color: var(--link-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    float: right;
+}
+
+.btn:hover {
+    filter: brightness(1.1);
+}
+
+/* Media */
+.media-container {
+    margin-top: 5px;
+}
+
+.media-photo,
+.media-video {
+    max-width: 100%;
+    border-radius: 4px;
+    display: block;
+    cursor: zoom-in;
+    /* Indicate clickable */
+}
+
+/* Prevent double click selection */
+.media-photo {
+    -webkit-user-drag: none;
+}
+
+.reply-preview {
+    border-left: 2px solid var(--link-color);
+    padding-left: 8px;
+    margin-bottom: 4px;
+    opacity: 0.8;
+    font-size: 13px;
+    cursor: pointer;
+    background-color: rgba(0, 0, 0, 0.1);
+    /* Subtle background */
+    padding: 4px 8px;
+    border-radius: 0 4px 4px 0;
+}
+
+/* Colors for avatars */
+.userpic1 {
+    background-color: #ff5555;
+}
+
+.userpic2 {
+    background-color: #64bf47;
+}
+
+.userpic3 {
+    background-color: #ffab00;
+}
+
+.userpic4 {
+    background-color: #4f9cd9;
+}
+
+.userpic5 {
+    background-color: #9884e8;
+}
+
+.userpic6 {
+    background-color: #e671a5;
+}
+
+.userpic7 {
+    background-color: #47bcd1;
+}
+
+.userpic8 {
+    background-color: #ff8c44;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--scroll-thumb);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}

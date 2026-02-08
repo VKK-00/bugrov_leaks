@@ -406,6 +406,20 @@ def main():
             encoding="utf-8"
         )
     
+    # Copy Frontend Code
+    frontend_dir = Path(__file__).parent / "frontend"
+    if frontend_dir.exists():
+        print(f"Copying frontend from {frontend_dir}...")
+        for item in frontend_dir.iterdir():
+            s = item
+            d = OUTPUT_DIR / item.name
+            if s.is_dir():
+                if d.exists():
+                    shutil.rmtree(d)
+                shutil.copytree(s, d)
+            else:
+                shutil.copy2(s, d)
+    
     print("\n" + "=" * 60)
     print("BUILD COMPLETE!")
     print("=" * 60)

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Archive</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div id="app">
+        <aside class="sidebar">
+            <header class="sidebar-header">
+                <div class="search-bar">
+                    <input type="text" placeholder="Search" id="chat-search">
+                </div>
+            </header>
+            <div class="chat-list" id="chat-list">
+                <!-- Chat items will be injected here -->
+            </div>
+        </aside>
+        <main class="chat-area">
+            <header class="chat-header" id="chat-header" style="display: none;">
+                <div class="chat-info">
+                    <h3 class="chat-title">Select a chat</h3>
+                    <span class="chat-status">to start messaging</span>
+                </div>
+                <div class="header-tools">
+                    <button class="icon-btn" onclick="app.toggleSearch()">🔍</button>
+                    <button class="icon-btn" onclick="app.showCalendar()">📅</button>
+                </div>
+            </header>
+            <div id="search-bar-chat"
+                style="display:none; padding: 10px; background: var(--header-bg); border-bottom: 1px solid var(--border-color);">
+                <input type="text" id="msg-search-input" placeholder="Search in this chat..."
+                    style="width: 100%; padding: 8px; border-radius: 4px; border: none; background: var(--input-bg); color: white;">
+            </div>
+            <div class="messages-container" id="messages-container">
+                <div class="empty-state">
+                    <p>Select a chat from the sidebar</p>
+                </div>
+            </div>
+
+            <!-- FAB Container -->
+            <div class="fab-container" id="fab-container" style="display: none;">
+                <div class="fab" title="Calendar" onclick="app.showCalendar()">📅</div>
+                <div class="fab" title="Scroll to Top" onclick="app.scrollToTop()">⬆️</div>
+            </div>
+
+            <!-- Calendar Modal -->
+            <div class="modal" id="calendar-modal" onclick="if(event.target === this) this.style.display='none'">
+                <div class="modal-content">
+                    <div class="modal-header">Select Date</div>
+                    <input type="date" id="calendar-input">
+                    <button class="btn" onclick="app.jumpToDate()">Go</button>
+                    <div style="clear: both;"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="js/app.js"></script>
+</body>
+
+</html>
