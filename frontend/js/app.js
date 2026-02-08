@@ -5,7 +5,16 @@ var app = {
         currentChatMessages: [],
         chunksLoaded: new Set(),
         messageMap: new Map(),
-        lastRenderedDate: null
+        lastRenderedDate: null,
+        profiles: {},
+        searchMatches: [],
+        currentMatchIndex: -1,
+        isSearching: false
+    },
+
+    setTheme: function (theme) {
+        document.body.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
     },
 
     checkPassword: function () {
@@ -385,117 +394,26 @@ var app = {
             const messages = await response.json();
             this.state.chunksLoaded.add(filename);
 
-            // Prepend to state (sort order?)
-            // Messages in chunk are chronologically sorted. 
-            // Chunk N is older than Chunk N+1.
-            // So we prepend this chunk's messages to currentChatMessages.
+            // Prepend new messages to current state
             this.state.currentChatMessages = [...messages, ...this.state.currentChatMessages];
 
-            // Map update
+            // Update Map
             messages.forEach(m => {
                 if (m.message_id) this.state.messageMap.set(m.message_id, m);
             });
 
-            // Render Prepend
-            this.renderMessagesPrepend(messages);
-
-        } catch (e) { console.error(e); }
-    },
-
-    renderMessagesPrepend: function (messages) {
-        // This is complex because we need to insert nodes at top.
-        // And assume date headers etc.
-        // Quick hack: Just render all? No, that defeats the purpose.
-        // We render these messages into a fragment, then insertBefore first message.
-        // But we must handle date headers.
-        // Simplification for prototype: Just reload all loaded messages?
-        // No, rendering 32k messages is fast in JS, inserting to DOM is slow.
-        // If we have 2 chunks (2000 msgs), re-rendering is fine.
-        // Max 10 chunks? 10k messages. 
-        // Let's iterate and create elements.
-
-        const container = document.getElementById('messages-container');
-        const firstChild = container.firstChild; // Might be the "Load More" button or first msg
-        // Actually we inserted "Load More" button at top. So we insert after it?
-        // No, prependLoadMore inserts at top. 
-        // The button that was clicked is removed in the onclick handler.
-        // So we just insert at top.
-
-        // We need to render messages in order.
-        // messages is array of objects.
-
-        // Temporarily, we can use existing renderMessages but targeting a temporary container, 
-        // then move children to main container?
-        // But renderMessages clears container? No, it appends.
-        // Let's create `renderBatch(messages)` that returns a DocumentFragment.
-
-        // REFACTOR: Extract rendering logic.
-        const fragment = document.createDocumentFragment();
-        this._renderMessagesToContainer(messages, fragment);
-
-        // Insert fragment at top (but after the Load More button if we added a new one? No, we add new button AFTER loading).
-        // If there is currently a load more button (from recursive call?), we should check.
-        // In my logic `btn.remove()` happens before this.
-        // Next button is added after.
-
-        // We simply insert at top.
-        container.insertBefore(fragment, container.firstChild);
-    },
-
-    // Helper to allow rendering to any container/fragment
-    _renderMessagesToContainer: function (messages, container) {
-        let lastSenderName = null;
-        // We need to handle date headers correctly for the FIRST message of this batch
-        // compared to the LAST message of previous batch (which is now below us)? 
-        // No, this batch is older.
-        // We just render date headers for this batch normally.
-        // But the connection between this batch's last message and next batch's first message 
-        // might need a date header? 
-        // If `lastMsg` of this batch has different date than `firstMsg` of existing DOM...
-        // Existing DOM starts with `firstMsg`. 
-        // We should check that.
-
-        messages.forEach(msg => {
-            // ... existing render logic ...
-            // Copied logic provided below in replacement
-            // Date Header
-            if (msg.dt_iso) {
-                const dateKey = msg.dt_iso.split('T')[0];
-                // Check if this date is different from previous in THIS batch
-                // What about state.lastRenderedDate? That tracks the global last rendered.
-                // Here we are rendering older messages.
-                // We need local tracking.
-
-                // Note: duplicating render logic is risky. 
-                // Ideally I'd refactor `renderMessages` to use `_renderMessagesToContainer`.
-            }
-            // ...
-        });
-        // Since I cannot easily refactor everything in one tool call safely without reading full file,
-        // I will stick to "Re-render ALL loaded messages" strategy for "Load Previous".
-        // It's suboptimal but safer than breaking DOM order.
-        // If user loads 5 chunks (5000 messages), re-rendering takes ~200ms. Acceptable.
-        // Browsers handle 5000 nodes okay. 16000 was the issue.
-    },
-
-    loadPreviousChunk_Simple: async function (chatId, filename) {
-        if (this.state.chunksLoaded.has(filename)) return;
-        try {
-            const response = await fetch(`data/${chatId}/chunks/${filename}`);
-            if (!response.ok) return;
-            const messages = await response.json();
-            this.state.chunksLoaded.add(filename);
-
-            // Prepend to state
-            this.state.currentChatMessages = [...messages, ...this.state.currentChatMessages];
-
-            // Re-render ALL (Safe & Simple)
-            document.getElementById('messages-container').innerHTML = ''; // Clear
-
-            // Re-add "Load More" button for even older chunks if needed?
-            // Handled by the caller (prependLoadMore).
-
+            // Re-render all messages to ensure correct order and date headers
+            // Clearing container is handled by renderMessages logic or we force clear if needed
+            // But renderMessages usually appends? 
+            // We need to clear and re-render.
+            document.getElementById('messages-container').innerHTML = '';
+            this.state.lastRenderedDate = null; // Reset date tracking
             this.renderMessages(this.state.currentChatMessages);
+
+            // Restore scroll position logic would be needed here ideally, 
+            // but for now we rely on the caller (prependLoadMore) to handle scroll adjustments 
+            // if it could measure before/after. 
+            // Since we cleared innerHTML, the scroll jump might be visible.
 
         } catch (e) { console.error(e); }
     },
@@ -669,8 +587,8 @@ var app = {
             container.appendChild(msgDiv);
         });
 
-        this.generateTimeline();
     },
+
 
     renderAttachment: function (att) {
         if (att.kind === 'photo' || att.kind === 'sticker') {
@@ -757,16 +675,7 @@ var app = {
     },
 
     // Search functionality state
-    state: {
-        chats: [],
-        currentChatId: null,
-        currentChatMessages: [],
-        chunksLoaded: new Set(),
-        messageMap: new Map(),
-        lastRenderedDate: null,
-        searchMatches: [],
-        currentMatchIndex: -1
-    },
+
 
     filterMessages: function (query) {
         const container = document.getElementById('messages-container');
@@ -1039,7 +948,13 @@ var app = {
                 // Swipe Right -> Prev
                 this.navigateMedia('prev');
             }
+
         }, { passive: true });
+    },
+
+    navigateMedia: function (direction) {
+        // Stub for media navigation
+        console.log("Media navigation not implemented yet", direction);
     },
 
     initPWA: function () {
@@ -1166,23 +1081,7 @@ var app = {
         return `${m}:${s < 10 ? '0' + s : s}`;
     },
 
-    getInitials: function (name) {
-        if (!name) return '??';
-        const parts = name.split(' ').filter(n => n.length > 0);
-        if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-        if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
-        return '??';
-    },
 
-    escapeHtml: function (text) {
-        if (!text) return '';
-        return text
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-    },
 };
 
 document.addEventListener('DOMContentLoaded', () => {

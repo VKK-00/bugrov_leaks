@@ -694,24 +694,7 @@ input[type="date"] {
     background: rgba(0, 0, 0, 0.3);
 }
 
-[data-theme="dark"] {
-    --bg-color: #17212b;
-    --sidebar-bg: #17212b;
-    --chat-bg: #0e1621;
-    --header-bg: #17212b;
-    --input-bg: #242f3d;
-    --text-primary: #f5f5f5;
-    --text-secondary: #7f91a4;
-    --accent-color: #64b5f6;
-    --message-bg-in: #182533;
-    --message-bg-out: #2b5278;
-    --msg-text: #ffffff;
-    --msg-meta: #5e7084;
-    --link-color: #64b5f6;
-    --border-color: #10161b;
-    --hover-color: #2b3947;
-    --scroll-thumb: rgba(255, 255, 255, 0.2);
-}
+
 
 /* Timeline Scrubber */
 .timeline-container {
