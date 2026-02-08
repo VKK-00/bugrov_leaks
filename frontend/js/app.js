@@ -13,7 +13,7 @@ const app = {
 
         // Load Profiles
         try {
-            const pRes = await fetch('data/profiles.json');
+            const pRes = await fetch('profiles.json');
             if (pRes.ok) {
                 const pData = await pRes.json();
                 this.state.profiles = pData.profiles || {};
