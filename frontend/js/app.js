@@ -11,6 +11,18 @@ const app = {
     init: async function () {
         console.log("App initializing...");
 
+        // Load Profiles
+        try {
+            const pRes = await fetch('data/profiles.json');
+            if (pRes.ok) {
+                const pData = await pRes.json();
+                this.state.profiles = pData.profiles || {};
+            }
+        } catch (e) {
+            console.error("Profiles load error:", e);
+            this.state.profiles = {};
+        }
+
         // Check Consent
         if (!localStorage.getItem('bugrov_consent')) {
             document.getElementById('disclaimer-modal').style.display = 'flex';
@@ -356,7 +368,41 @@ const app = {
 
                 let content = '';
 
-                // Reply Logic (Show FIRST)
+                // Name Logic (Grouping) - SHOW FIRST
+                const currentName = msg.from_name || 'Unknown';
+                const showName = (currentName !== lastSenderName);
+
+                // Profile Lookup
+                const profile = this.state.profiles && this.state.profiles[currentName];
+                const profileLink = profile ? profile.link : null;
+
+                if (showName && msg.from_name) {
+                    let nameHtml = '';
+                    if (isBugrov) {
+                        // For Bugrov, checking if we want to hide name or show it specially.
+                        // User request: "ім'я профілю ... потім текст"
+                        // TDesktop shows name for everyone in groups. In PM, it might hide.
+                        // Let's show it to be safe as per "має бути: імя..."
+                        nameHtml = `<span class="message-sender">${this.escapeHtml(msg.from_name)}</span>`;
+                    } else {
+                        let hash = 0;
+                        for (let i = 0; i < msg.from_name.length; i++) {
+                            hash = msg.from_name.charCodeAt(i) + ((hash << 5) - hash);
+                        }
+                        const colorIndex = (Math.abs(hash) % 8) + 1;
+                        nameHtml = `<span class="message-sender color${colorIndex}">${this.escapeHtml(msg.from_name)}</span>`;
+                    }
+
+                    if (profileLink) {
+                        content += `<a href="${profileLink}" target="_blank" style="text-decoration:none;">${nameHtml}</a>`;
+                    } else {
+                        content += nameHtml;
+                    }
+                }
+
+                lastSenderName = currentName;
+
+                // Reply Logic - SHOW SECOND
                 if (msg.reply_to) {
                     const replyMsg = this.state.messageMap.get(msg.reply_to);
                     const replyName = replyMsg ? (replyMsg.from_name || 'Someone') : 'Message';
@@ -364,29 +410,10 @@ const app = {
 
                     content += `
                         <div class="reply-preview" onclick="app.scrollToMessage('${msg.reply_to}')">
-                            <div style="color: var(--link-color); font-size: 13px; font-weight: 600;">${this.escapeHtml(replyName)}</div>
-                            <div style="font-size: 13px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--text-primary);">${this.escapeHtml(replyText)}</div>
+                            <div class="reply-name">${this.escapeHtml(replyName)}</div>
+                            <div class="reply-text">${this.escapeHtml(replyText)}</div>
                         </div>`;
                 }
-
-                // Name Logic (Grouping)
-                const currentName = msg.from_name || 'Unknown';
-                const showName = (currentName !== lastSenderName);
-
-                if (showName && msg.from_name) {
-                    if (isBugrov) {
-                        content += `<span class="message-sender">${this.escapeHtml(msg.from_name)}</span>`;
-                    } else {
-                        let hash = 0;
-                        for (let i = 0; i < msg.from_name.length; i++) {
-                            hash = msg.from_name.charCodeAt(i) + ((hash << 5) - hash);
-                        }
-                        const colorIndex = (Math.abs(hash) % 8) + 1;
-                        content += `<span class="message-sender color${colorIndex}">${this.escapeHtml(msg.from_name)}</span>`;
-                    }
-                }
-
-                lastSenderName = currentName;
 
                 const hasAttachments = msg.attachments && msg.attachments.length > 0;
 

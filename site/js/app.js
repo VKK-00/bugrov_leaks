@@ -356,25 +356,16 @@ const app = {
 
                 let content = '';
 
-                // Reply Logic (Show FIRST)
-                if (msg.reply_to) {
-                    const replyMsg = this.state.messageMap.get(msg.reply_to);
-                    const replyName = replyMsg ? (replyMsg.from_name || 'Someone') : 'Message';
-                    const replyText = replyMsg ? (replyMsg.plain_text || 'Media') : '...';
-
-                    content += `
-                        <div class="reply-preview" onclick="app.scrollToMessage('${msg.reply_to}')">
-                            <div style="color: var(--link-color); font-size: 13px; font-weight: 600;">${this.escapeHtml(replyName)}</div>
-                            <div style="font-size: 13px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--text-primary);">${this.escapeHtml(replyText)}</div>
-                        </div>`;
-                }
-
-                // Name Logic (Grouping)
+                // Name Logic (Grouping) - SHOW FIRST
                 const currentName = msg.from_name || 'Unknown';
                 const showName = (currentName !== lastSenderName);
 
                 if (showName && msg.from_name) {
                     if (isBugrov) {
+                        // For Bugrov, checking if we want to hide name or show it specially.
+                        // User request: "ім'я профілю ... потім текст"
+                        // TDesktop shows name for everyone in groups. In PM, it might hide.
+                        // Let's show it to be safe as per "має бути: імя..."
                         content += `<span class="message-sender">${this.escapeHtml(msg.from_name)}</span>`;
                     } else {
                         let hash = 0;
@@ -387,6 +378,19 @@ const app = {
                 }
 
                 lastSenderName = currentName;
+
+                // Reply Logic - SHOW SECOND
+                if (msg.reply_to) {
+                    const replyMsg = this.state.messageMap.get(msg.reply_to);
+                    const replyName = replyMsg ? (replyMsg.from_name || 'Someone') : 'Message';
+                    const replyText = replyMsg ? (replyMsg.plain_text || 'Media') : '...';
+
+                    content += `
+                        <div class="reply-preview" onclick="app.scrollToMessage('${msg.reply_to}')">
+                            <div class="reply-name">${this.escapeHtml(replyName)}</div>
+                            <div class="reply-text">${this.escapeHtml(replyText)}</div>
+                        </div>`;
+                }
 
                 const hasAttachments = msg.attachments && msg.attachments.length > 0;
 

@@ -142,7 +142,16 @@ def extract_attachments(msg_div, chat_id: str) -> List[Attachment]:
     uniq = {}
     for att in out:
         uniq[att.href] = att
-    return list(uniq.values())
+    
+    # Filter out thumbnails (ending in _thumb.jpg/png etc)
+    final_atts = []
+    for att in uniq.values():
+        # Check for _thumb pattern
+        if "_thumb" in att.href.lower():
+            continue
+        final_atts.append(att)
+        
+    return final_atts
 
 
 def parse_messages_html(path: Path, chat_id: str, last_sender: Dict[str, str]) -> List[Message]:
@@ -201,7 +210,14 @@ def parse_messages_html(path: Path, chat_id: str, last_sender: Dict[str, str]) -
             details = msg_div.select_one("div.body.details")
             if details:
                 plain_text = norm_text(details.get_text(" ", strip=True))
-        
+                
+                # IGNORE Date Service Messages
+                # Telegram export uses service messages for dates like "7 August 2021"
+                # We identify them by regex or simple property
+                # Regex for "D Month YYYY"
+                if re.match(r"^\d{1,2} [A-Za-z]+ \d{4}$", plain_text):
+                    continue 
+
         attachments = extract_attachments(msg_div, chat_id)
         
         messages.append(Message(

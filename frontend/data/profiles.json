@@ -1,0 +1,24 @@
+{
+    "profiles": {
+        "Марія Горбань": {
+            "id": "441902465",
+            "link": "tg://user?id=441902465",
+            "photo": "profiles/441902465.jpg"
+        },
+        "Volodymyr Bugrov": {
+            "id": "176808119",
+            "link": "tg://user?id=176808119",
+            "photo": "profiles/176808119.jpg"
+        },
+        "Aнна Шепелєва": {
+            "id": "390865646",
+            "link": "tg://user?id=390865646",
+            "photo": "profiles/390865646.jpg"
+        },
+        "Kateryna Gan": {
+            "id": "238777894",
+            "link": "tg://user?id=238777894",
+            "photo": "profiles/238777894.jpg"
+        }
+    }
+}
