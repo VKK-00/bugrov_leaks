@@ -32,6 +32,7 @@
         </aside>
         <main class="chat-area">
             <header class="chat-header" id="chat-header" style="display: none;">
+                <button id="sidebar-toggle-btn" onclick="app.toggleSidebar()" title="Toggle Sidebar">☰</button>
                 <div class="chat-info">
                     <h3 class="chat-title">Select a chat</h3>
                     <span class="chat-status">to start messaging</span>
@@ -81,6 +82,32 @@
             <!-- Lightbox -->
             <div class="lightbox" id="lightbox" onclick="this.style.display='none'">
                 <img id="lightbox-img" src="" alt="Full size">
+            </div>
+
+            <!-- Disclaimer Modal -->
+            <div class="modal" id="disclaimer-modal" style="display: flex; background: rgba(0,0,0,0.9); z-index: 9999;">
+                <div class="modal-content" style="max-width: 600px; text-align: center;">
+                    <h2 style="margin-bottom: 20px; color: #cc3333;">⚠️ УВАГА / WARNING</h2>
+                    <p style="margin-bottom: 15px; line-height: 1.6;">
+                        Ви отримали доступ до архіву листування ректора КНУ ім. Тараса Шевченка Володимира Бугрова.
+                    </p>
+                    <p style="margin-bottom: 15px; line-height: 1.6;">
+                        Матеріали містять нецензурну лексику та контент 18+ (інтимного характеру), який був надісланий
+                        студенткам та співробітницям університету.
+                    </p>
+                    <p style="margin-bottom: 15px; line-height: 1.6;">
+                        Ці дані вперше були оприлюднені на Telegram-каналі <a href="https://t.me/bugrovleaks/3"
+                            target="_blank">@bugrovleaks</a> незадовго до повномасштабного вторгнення Росії в Україну
+                        (лютий 2022).
+                    </p>
+                    <p style="margin-bottom: 25px; font-weight: bold;">
+                        Продовжуючи, ви підтверджуєте, що вам виповнилося 18 років і ви усвідомлюєте характер
+                        матеріалів.
+                    </p>
+                    <button class="btn" onclick="app.acceptDisclaimer()"
+                        style="float: none; font-size: 16px; padding: 10px 20px;">Я погоджуюсь / I Agree</button>
+                    <div style="clear: both;"></div>
+                </div>
             </div>
         </main>
     </div>

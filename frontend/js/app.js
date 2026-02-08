@@ -116,6 +116,11 @@ const app = {
         this.renderSidebar(input.value);
     },
 
+    toggleSidebar: function () {
+        const sidebar = document.querySelector('.sidebar');
+        sidebar.classList.toggle('collapsed');
+    },
+
     performGlobalSearch: async function (text) {
         if (this.searchTimer) clearTimeout(this.searchTimer);
 
@@ -317,21 +322,13 @@ const app = {
                 msgDiv.textContent = msg.plain_text;
             } else {
                 // Sender Logic
-                // Update 2026: User requested Bugrov to be on the LEFT again.
-                // We use 'incoming' style for him, or a custom class if we want distinct color but left alignment.
-                // Let's keep him as standard 'incoming' so he aligns left, but we can style his name differently.
-
                 const isBugrov = msg.from_name &&
                     (msg.from_name.includes('Volodymyr Bugrov') || msg.from_name.includes('Bugrov'));
 
-                // FORCE LEFT ALIGNMENT for everyone, including Bugrov.
-                // If we want Bugrov to have a different background color, we can add a specific class, 
-                // but 'outgoing' class forces right alignment in our CSS.
-                // So we will use 'incoming-bugrov' if we want special styling on the left.
-
                 let msgClass = 'message incoming';
                 if (isBugrov) {
-                    msgClass = 'message incoming bugrov-message'; // We can add special CSS for this if needed
+                    // Bugrov goes to the RIGHT with a distinct style
+                    msgClass = 'message bugrov-message';
                 }
 
                 msgDiv.className = msgClass;
@@ -353,12 +350,18 @@ const app = {
 
                 // Name Logic
                 if (msg.from_name) {
-                    let hash = 0;
-                    for (let i = 0; i < msg.from_name.length; i++) {
-                        hash = msg.from_name.charCodeAt(i) + ((hash << 5) - hash);
+                    // For Bugrov, we still show his name but the styling is handled by CSS (blue color)
+                    // For others, we use the random color logic
+                    if (isBugrov) {
+                        content += `<span class="message-sender">${this.escapeHtml(msg.from_name)}</span>`;
+                    } else {
+                        let hash = 0;
+                        for (let i = 0; i < msg.from_name.length; i++) {
+                            hash = msg.from_name.charCodeAt(i) + ((hash << 5) - hash);
+                        }
+                        const colorIndex = (Math.abs(hash) % 8) + 1;
+                        content += `<span class="message-sender color${colorIndex}">${this.escapeHtml(msg.from_name)}</span>`;
                     }
-                    const colorIndex = (Math.abs(hash) % 8) + 1;
-                    content += `<span class="message-sender color${colorIndex}">${this.escapeHtml(msg.from_name)}</span>`;
                 }
 
                 const hasAttachments = msg.attachments && msg.attachments.length > 0;
@@ -411,9 +414,38 @@ const app = {
             const isSticker = att.kind === 'sticker';
             const cls = isSticker ? 'media-sticker' : 'media-photo';
             const onclick = isSticker ? '' : `onclick="app.openLightbox('${att.href}')"`;
-            // For photos, we use a smaller preview if possible (but we only have one href here).
-            // We rely on CSS to size it down (max-width: 200px) and click to enlarge.
-            return `<div class="media-container"><img src="${att.href}" class="${cls}" loading="lazy" ${onclick}></div>`;
+
+            // Thumbnail Logic: Try to use _thumb.jpg if available
+            // We blindly assume a thumb might exist or fallback to full image.
+            // Since we can't check existence easily without 404s, we will use the full image as src,
+            // BUT for the lightbox we definitely use the full image.
+            // OPTIMIZATION: If the file is huge, this is slow. 
+            // Telegram export usually names photos like "photo_123.jpg". 
+            // Thumbs are usually embedded or separate. 
+            // Users request implies "thumbnails" exist.
+            // Let's try to construct a thumb path if it's a standard format.
+            // Standard export: "photo_1@01-01-2021_12-00-00.jpg" -> "photo_1@01-01-2021_12-00-00_thumb.jpg" ??
+            // Actually standard export:
+            // photos/photo_1.jpg
+            // photos/photo_1_thumb.jpg (sometimes)
+            // Let's try to infer thumb path.
+
+            let src = att.href;
+            // Hacky attempt: if path ends in .jpg, try inserting _thumb
+            // We will stick to using the main image for now unless we are sure.
+            // User said: "картинки есть с подписью thumb и без неё".
+            // So if `att.href` is `photo_123.jpg`, there is `photo_123_thumb.jpg`.
+
+            if (!isSticker && src.toLowerCase().endsWith('.jpg')) {
+                // Try to use thumb for display
+                const thumbSrc = src.replace('.jpg', '_thumb.jpg');
+                // We render the thumb, but keep full href for lightbox
+                // Note: If _thumb doesn't exist, this will show broken image.
+                // We can add onerror to fallback.
+                return `<div class="media-container"><img src="${thumbSrc}" onerror="this.onerror=null;this.src='${src}'" class="${cls}" loading="lazy" ${onclick}></div>`;
+            }
+
+            return `<div class="media-container"><img src="${src}" class="${cls}" loading="lazy" ${onclick}></div>`;
         } else if (att.kind === 'video') {
             return `<div class="media-container"><video src="${att.href}" controls class="media-video"></video></div>`;
         } else if (att.kind === 'round_video') {

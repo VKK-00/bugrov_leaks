@@ -10,6 +10,14 @@ const app = {
 
     init: async function () {
         console.log("App initializing...");
+
+        // Check Consent
+        if (!localStorage.getItem('bugrov_consent')) {
+            document.getElementById('disclaimer-modal').style.display = 'flex';
+        } else {
+            document.getElementById('disclaimer-modal').style.display = 'none';
+        }
+
         await this.loadManifest();
         this.renderSidebar();
 
@@ -29,6 +37,11 @@ const app = {
                 this.filterMessages(e.target.value);
             });
         }
+    },
+
+    acceptDisclaimer: function () {
+        localStorage.setItem('bugrov_consent', 'true');
+        document.getElementById('disclaimer-modal').style.display = 'none';
     },
 
     loadManifest: async function () {
@@ -101,6 +114,11 @@ const app = {
     toggleGlobalSearch: function () {
         const input = document.getElementById('chat-search');
         this.renderSidebar(input.value);
+    },
+
+    toggleSidebar: function () {
+        const sidebar = document.querySelector('.sidebar');
+        sidebar.classList.toggle('collapsed');
     },
 
     performGlobalSearch: async function (text) {
@@ -304,11 +322,24 @@ const app = {
                 msgDiv.textContent = msg.plain_text;
             } else {
                 // Sender Logic
-                // If name contains "Volodymyr Bugrov", treat as "outgoing" class (for distinct background)
+                // Update 2026: User requested Bugrov to be on the LEFT again.
+                // We use 'incoming' style for him, or a custom class if we want distinct color but left alignment.
+                // Let's keep him as standard 'incoming' so he aligns left, but we can style his name differently.
+
                 const isBugrov = msg.from_name &&
                     (msg.from_name.includes('Volodymyr Bugrov') || msg.from_name.includes('Bugrov'));
 
-                msgDiv.className = `message ${isBugrov ? 'outgoing' : 'incoming'}`;
+                // FORCE LEFT ALIGNMENT for everyone, including Bugrov.
+                // If we want Bugrov to have a different background color, we can add a specific class, 
+                // but 'outgoing' class forces right alignment in our CSS.
+                // So we will use 'incoming-bugrov' if we want special styling on the left.
+
+                let msgClass = 'message incoming';
+                if (isBugrov) {
+                    msgClass = 'message incoming bugrov-message'; // We can add special CSS for this if needed
+                }
+
+                msgDiv.className = msgClass;
 
                 let content = '';
 
@@ -325,15 +356,21 @@ const app = {
                         </div>`;
                 }
 
-                // Name Logic: Show for everyone, colourized
-                // Use .colorX classes instead of .userpicX to avoid background color conflict
+                // Name Logic
                 if (msg.from_name) {
-                    let hash = 0;
-                    for (let i = 0; i < msg.from_name.length; i++) {
-                        hash = msg.from_name.charCodeAt(i) + ((hash << 5) - hash);
+                    // Check for Bugrov
+                    const isBugrovSender = (msg.from_name.includes('Volodymyr Bugrov') || msg.from_name.includes('Bugrov'));
+
+                    if (isBugrovSender) {
+                        content += `<span class="message-sender user-bugrov">${this.escapeHtml(msg.from_name)}</span>`;
+                    } else {
+                        let hash = 0;
+                        for (let i = 0; i < msg.from_name.length; i++) {
+                            hash = msg.from_name.charCodeAt(i) + ((hash << 5) - hash);
+                        }
+                        const colorIndex = (Math.abs(hash) % 8) + 1;
+                        content += `<span class="message-sender color${colorIndex}">${this.escapeHtml(msg.from_name)}</span>`;
                     }
-                    const colorIndex = (Math.abs(hash) % 8) + 1;
-                    content += `<span class="message-sender color${colorIndex}">${this.escapeHtml(msg.from_name)}</span>`;
                 }
 
                 const hasAttachments = msg.attachments && msg.attachments.length > 0;
@@ -345,11 +382,14 @@ const app = {
                     });
                 }
 
+                // Text Logic - STRICT DUPLICATE PREVENTION
                 let textToShow = null;
                 if (hasAttachments) {
-                    // IF attachments exist, FORCE plain_text to avoid duplicates.
-                    // This assumes HTML text is just a wrapper for the image/video which are already rendered above.
-                    // Links in captions might be lost if only in html_text, but this is the safest way to fix the duplicate bug.
+                    // IGNORE ALL TEXT unless it's a caption that is clearly distinct.
+                    // Telegram export often puts the image inside the HTML text.
+                    // We will ONLY show plain_text if it seems to be a caption.
+                    // But to be 100% safe against duplication, we might just use plain_text and rely on it.
+                    // If plain_text is empty, we show nothing.
                     if (msg.plain_text && msg.plain_text.trim().length > 0) {
                         textToShow = this.escapeHtml(msg.plain_text);
                     }
@@ -383,9 +423,38 @@ const app = {
             const isSticker = att.kind === 'sticker';
             const cls = isSticker ? 'media-sticker' : 'media-photo';
             const onclick = isSticker ? '' : `onclick="app.openLightbox('${att.href}')"`;
-            // For photos, we use a smaller preview if possible (but we only have one href here).
-            // We rely on CSS to size it down (max-width: 200px) and click to enlarge.
-            return `<div class="media-container"><img src="${att.href}" class="${cls}" loading="lazy" ${onclick}></div>`;
+
+            // Thumbnail Logic: Try to use _thumb.jpg if available
+            // We blindly assume a thumb might exist or fallback to full image.
+            // Since we can't check existence easily without 404s, we will use the full image as src,
+            // BUT for the lightbox we definitely use the full image.
+            // OPTIMIZATION: If the file is huge, this is slow. 
+            // Telegram export usually names photos like "photo_123.jpg". 
+            // Thumbs are usually embedded or separate. 
+            // Users request implies "thumbnails" exist.
+            // Let's try to construct a thumb path if it's a standard format.
+            // Standard export: "photo_1@01-01-2021_12-00-00.jpg" -> "photo_1@01-01-2021_12-00-00_thumb.jpg" ??
+            // Actually standard export:
+            // photos/photo_1.jpg
+            // photos/photo_1_thumb.jpg (sometimes)
+            // Let's try to infer thumb path.
+
+            let src = att.href;
+            // Hacky attempt: if path ends in .jpg, try inserting _thumb
+            // We will stick to using the main image for now unless we are sure.
+            // User said: "картинки есть с подписью thumb и без неё".
+            // So if `att.href` is `photo_123.jpg`, there is `photo_123_thumb.jpg`.
+
+            if (!isSticker && src.toLowerCase().endsWith('.jpg')) {
+                // Try to use thumb for display
+                const thumbSrc = src.replace('.jpg', '_thumb.jpg');
+                // We render the thumb, but keep full href for lightbox
+                // Note: If _thumb doesn't exist, this will show broken image.
+                // We can add onerror to fallback.
+                return `<div class="media-container"><img src="${thumbSrc}" onerror="this.onerror=null;this.src='${src}'" class="${cls}" loading="lazy" ${onclick}></div>`;
+            }
+
+            return `<div class="media-container"><img src="${src}" class="${cls}" loading="lazy" ${onclick}></div>`;
         } else if (att.kind === 'video') {
             return `<div class="media-container"><video src="${att.href}" controls class="media-video"></video></div>`;
         } else if (att.kind === 'round_video') {
