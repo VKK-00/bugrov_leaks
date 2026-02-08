@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram Archive</title>
+    <title>Telegram Chat Export</title>
+    <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/media_gallery.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -39,6 +40,7 @@
                     <span class="chat-status">to start messaging</span>
                 </div>
                 <div class="header-tools">
+                    <button class="icon-btn" onclick="app.openMediaGallery()" title="Media Gallery">🖼️</button>
                     <button class="icon-btn" onclick="app.toggleSearch()">🔍</button>
                     <button class="icon-btn" onclick="app.showCalendar()">📅</button>
                 </div>
@@ -123,7 +125,6 @@
                     <div class="media-tab active" onclick="app.filterGallery('photo', this)">Photos</div>
                     <div class="media-tab" onclick="app.filterGallery('video', this)">Videos</div>
                     <div class="media-tab" onclick="app.filterGallery('voice', this)">Voice</div>
-                    <div class="media-tab" onclick="app.filterGallery('round', this)">Round</div>
                 </div>
                 <div class="media-grid" id="media-grid">
                     <!-- Media items injected here -->

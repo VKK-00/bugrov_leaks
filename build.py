@@ -422,14 +422,6 @@ def main():
         encoding="utf-8"
     )
     
-    # Copy original CSS (optional, for reference)
-    orig_css = EXPORT_DIR / "css" / "style.css"
-    if orig_css.exists():
-        (OUTPUT_DIR / "original_style.css").write_text(
-            orig_css.read_text(encoding="utf-8", errors="ignore"),
-            encoding="utf-8"
-        )
-    
     # Copy Frontend Code
     frontend_dir = Path(__file__).parent / "frontend"
     if frontend_dir.exists():

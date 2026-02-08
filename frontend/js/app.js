@@ -24,17 +24,19 @@ const app = {
         }
 
         // Check Consent - ALWAYS SHOW
-        // if (!localStorage.getItem('bugrov_consent')) {
         document.getElementById('disclaimer-modal').style.display = 'flex';
-        // } else {
-        //     document.getElementById('disclaimer-modal').style.display = 'none';
-        // }
 
         await this.loadManifest();
         this.renderSidebar();
 
         window.addEventListener('hashchange', () => this.handleHashChange());
         this.handleHashChange();
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log('SW register success', reg))
+                .catch(err => console.log('SW register fail', err));
+        }
 
         const searchInput = document.getElementById('chat-search');
         if (searchInput) {
@@ -320,19 +322,8 @@ const app = {
         // However, we can just rely on local logic for the chunk, assuming chunks are large enough that boundary issues are minor.
         // Better: check the last element in container.
 
-        let lastSenderName = null;
-        let lastDateKey = this.state.lastRenderedDate;
-
-        // Try to get context from DOM if appending
-        const lastMsgNode = container.lastElementChild;
-        if (lastMsgNode && lastMsgNode.classList.contains('message')) {
-            // This is hard because we don't store raw name in DOM easily accessible.
-            // We'll trust the state or just reset for new chunks. 
-            // Resetting is safer to avoid hiding name if we scroll up/down.
-            // Actually, if we just blindly compare to previous in this array, it works for the batch.
-        }
-
-        messages.forEach((msg, index) => {
+        // Local state for this batch
+        let lastSenderName = null; messages.forEach((msg, index) => {
             // Date Header
             if (msg.dt_iso) {
                 const dateKey = msg.dt_iso.split('T')[0];
@@ -680,10 +671,10 @@ const app = {
         grid.innerHTML = '';
 
         // Filter messages with attachments of 'type'
-        // types: photo, video, voice, round (mapped to round_video)
+        // types: photo, video (includes round), voice
 
         let targetType = type;
-        if (type === 'round') targetType = 'round_video';
+        if (type === 'video') targetType = 'video';
 
         const mediaItems = [];
 
@@ -691,12 +682,15 @@ const app = {
             if (msg.attachments && msg.attachments.length > 0) {
                 msg.attachments.forEach(att => {
                     const k = att.kind || '';
-                    if (k === targetType || (type === 'video' && k === 'video')) {
-                        mediaItems.push({
-                            ...att,
-                            msgId: msg.message_id,
-                            dt: msg.dt_iso
-                        });
+                    // IF filter is 'video', include both 'video' and 'round_video'
+                    if (type === 'video') {
+                        if (k === 'video' || k === 'round_video') {
+                            mediaItems.push({ ...att, msgId: msg.message_id, dt: msg.dt_iso });
+                        }
+                    } else {
+                        if (k === type) {
+                            mediaItems.push({ ...att, msgId: msg.message_id, dt: msg.dt_iso });
+                        }
                     }
                 });
             }

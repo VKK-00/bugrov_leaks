@@ -680,10 +680,10 @@ const app = {
         grid.innerHTML = '';
 
         // Filter messages with attachments of 'type'
-        // types: photo, video, voice, round (mapped to round_video)
+        // types: photo, video (includes round), voice
 
         let targetType = type;
-        if (type === 'round') targetType = 'round_video';
+        if (type === 'video') targetType = 'video';
 
         const mediaItems = [];
 
@@ -691,12 +691,15 @@ const app = {
             if (msg.attachments && msg.attachments.length > 0) {
                 msg.attachments.forEach(att => {
                     const k = att.kind || '';
-                    if (k === targetType || (type === 'video' && k === 'video')) {
-                        mediaItems.push({
-                            ...att,
-                            msgId: msg.message_id,
-                            dt: msg.dt_iso
-                        });
+                    // IF filter is 'video', include both 'video' and 'round_video'
+                    if (type === 'video') {
+                        if (k === 'video' || k === 'round_video') {
+                            mediaItems.push({ ...att, msgId: msg.message_id, dt: msg.dt_iso });
+                        }
+                    } else {
+                        if (k === type) {
+                            mediaItems.push({ ...att, msgId: msg.message_id, dt: msg.dt_iso });
+                        }
                     }
                 });
             }

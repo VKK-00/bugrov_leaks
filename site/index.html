@@ -39,6 +39,7 @@
                     <span class="chat-status">to start messaging</span>
                 </div>
                 <div class="header-tools">
+                    <button class="icon-btn" onclick="app.openMediaGallery()" title="Media Gallery">🖼️</button>
                     <button class="icon-btn" onclick="app.toggleSearch()">🔍</button>
                     <button class="icon-btn" onclick="app.showCalendar()">📅</button>
                 </div>
@@ -123,7 +124,6 @@
                     <div class="media-tab active" onclick="app.filterGallery('photo', this)">Photos</div>
                     <div class="media-tab" onclick="app.filterGallery('video', this)">Videos</div>
                     <div class="media-tab" onclick="app.filterGallery('voice', this)">Voice</div>
-                    <div class="media-tab" onclick="app.filterGallery('round', this)">Round</div>
                 </div>
                 <div class="media-grid" id="media-grid">
                     <!-- Media items injected here -->

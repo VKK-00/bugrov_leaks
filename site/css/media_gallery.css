@@ -27,9 +27,12 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.9);
+    background: rgba(0, 0, 0, 0.95);
     z-index: 500;
     flex-direction: column;
+    height: 100vh;
+    /* Force full height */
+    width: 100vw;
 }
 
 .media-gallery-header {
