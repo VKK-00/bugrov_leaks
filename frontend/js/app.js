@@ -23,12 +23,12 @@ const app = {
             this.state.profiles = {};
         }
 
-        // Check Consent
-        if (!localStorage.getItem('bugrov_consent')) {
-            document.getElementById('disclaimer-modal').style.display = 'flex';
-        } else {
-            document.getElementById('disclaimer-modal').style.display = 'none';
-        }
+        // Check Consent - ALWAYS SHOW
+        // if (!localStorage.getItem('bugrov_consent')) {
+        document.getElementById('disclaimer-modal').style.display = 'flex';
+        // } else {
+        //     document.getElementById('disclaimer-modal').style.display = 'none';
+        // }
 
         await this.loadManifest();
         this.renderSidebar();

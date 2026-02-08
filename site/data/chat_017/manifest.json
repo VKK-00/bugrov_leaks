@@ -1,0 +1,19 @@
+{
+  "chat_id": "chat_017",
+  "title": "Сергій Юрійович Козьяков",
+  "message_count": 582,
+  "chunk_count": 1,
+  "chunks": [
+    {
+      "filename": "chunk_0001.json",
+      "message_count": 582,
+      "start_id": "message41471",
+      "end_id": "message178668",
+      "start_date": "2020-06-24T09:15:19",
+      "end_date": "2021-11-09T19:17:05"
+    }
+  ],
+  "start_date": "2020-06-24T09:15:19",
+  "end_date": "2021-11-09T19:17:05",
+  "search_file": "search.json"
+}

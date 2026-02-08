@@ -1,0 +1,19 @@
+{
+  "chat_id": "chat_002",
+  "title": "Volodymyr Bugrov",
+  "message_count": 469,
+  "chunk_count": 1,
+  "chunks": [
+    {
+      "filename": "chunk_0001.json",
+      "message_count": 469,
+      "start_id": "message1400993",
+      "end_id": "message1420277",
+      "start_date": null,
+      "end_date": null
+    }
+  ],
+  "start_date": null,
+  "end_date": null,
+  "search_file": "search.json"
+}

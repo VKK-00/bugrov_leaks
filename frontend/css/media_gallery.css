@@ -1,0 +1,102 @@
+/* Service Messages (Joined, Invited, etc) */
+.service-message {
+    background-color: rgba(0, 0, 0, 0.2);
+    color: #fff;
+    padding: 5px 12px;
+    border-radius: 16px;
+    font-size: 13px;
+    font-weight: 500;
+    margin: 10px auto;
+    width: fit-content;
+    text-align: center;
+    max-width: 80%;
+}
+
+.theme-light .service-message {
+    background-color: rgba(0, 0, 0, 0.1);
+    /* Darker on light theme */
+    color: #555;
+    text-shadow: none;
+}
+
+/* Media Gallery Modal */
+.media-gallery-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 500;
+    flex-direction: column;
+}
+
+.media-gallery-header {
+    padding: 15px;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.media-tabs {
+    display: flex;
+    gap: 20px;
+    padding: 10px;
+    justify-content: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.media-tab {
+    color: #aaa;
+    cursor: pointer;
+    padding-bottom: 5px;
+    font-weight: 500;
+}
+
+.media-tab.active {
+    color: white;
+    border-bottom: 2px solid var(--link-color);
+}
+
+.media-grid {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+    align-content: start;
+}
+
+.media-grid-item {
+    aspect-ratio: 1;
+    background: #222;
+    border-radius: 4px;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.media-grid-item img,
+.media-grid-item video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.media-grid-item .type-icon {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    font-size: 12px;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 2px 4px;
+    border-radius: 4px;
+    color: white;
+}

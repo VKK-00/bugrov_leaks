@@ -1,0 +1,19 @@
+{
+  "chat_id": "chat_001",
+  "title": "Вікторія Лукянцева",
+  "message_count": 1283,
+  "chunk_count": 1,
+  "chunks": [
+    {
+      "filename": "chunk_0001.json",
+      "message_count": 1283,
+      "start_id": "message120492",
+      "end_id": "message178853",
+      "start_date": "2021-03-27T21:31:50",
+      "end_date": "2021-11-10T13:48:33"
+    }
+  ],
+  "start_date": "2021-03-27T21:31:50",
+  "end_date": "2021-11-10T13:48:33",
+  "search_file": "search.json"
+}
