@@ -269,55 +269,108 @@ body {
     padding: 20px;
 }
 
-/* Messages */
+/* Message Bubbles - Telegram Desktop Style */
 .message {
-    max-width: 85%;
-    /* Max width like Telegram Desktop */
+    max-width: 480px;
+    /* PC monitor optimized width */
     width: fit-content;
-    margin-bottom: 4px;
-    /* Tighter spacing */
-    padding: 6px 10px;
-    border-radius: 6px;
+    margin-bottom: 6px;
+    padding: 6px 12px 6px 10px;
+    /* Tuned padding */
+    border-radius: 12px;
     position: relative;
-    /* FIX: Force wrapping for long words/urls */
     word-wrap: break-word;
+    /* Legacy support */
     word-break: break-word;
     overflow-wrap: break-word;
     font-size: 15px;
-    line-height: 1.4;
-    transition: background-color 0.2s ease, transform 0.1s ease;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    line-height: 1.5;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+    /* Subtle shadow */
 }
 
-/* Outgoing: Right aligned + Light Green */
-/* Outgoing: Right aligned + Light Green */
-/* REVERTED: User wants everyone on left */
-.message.outgoing,
+/* Incoming (Left) */
 .message.incoming {
     align-self: flex-start;
+    background-color: #ffffff;
     border-bottom-left-radius: 0;
-    border-bottom-right-radius: 6px;
 }
 
-.message.outgoing {
-    background-color: var(--message-bg-out);
+/* Outgoing / Bugrov (Right) */
+/* Explicitly targeting the class we add in JS */
+.message.bugrov-message {
+    align-self: flex-end;
+    background-color: #effdde;
+    /* Standard Telegram Green */
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 12px;
+    /* Reset the left corner */
+    margin-left: auto;
 }
 
-.message.incoming {
-    background-color: var(--message-bg-in);
+/* Sender Name Colors */
+.message-sender {
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 2px;
+    display: block;
+    cursor: pointer;
+    line-height: 1.2;
 }
 
-/* Specific styling for Bugrov if handled via ID/Class logic - usually outgoing color is enough distinction */
-.bugrov-message {
-    background-color: var(--message-bg-out);
+.message.bugrov-message .message-sender {
+    color: #559c36 !important;
+    /* Greenish name for outgoing */
+    display: none;
+    /* Usually outgoing messages on TDesktop don't show name unless group? Let's hide it for "Me" behavior or keep it subtle */
 }
 
-/* Incoming: Left aligned + White */
-.message.incoming {
-    align-self: flex-start;
-    background-color: var(--message-bg-in);
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 6px;
+/* Re-enable name if needed, but standard PM/Channel behavior usually hides self name.
+   User asked for "Special color text box", not necessarily hiding name.
+   Let's keep name but style it standard green. */
+.message.bugrov-message .message-sender {
+    display: block;
+    color: #4b9231 !important;
+}
+
+
+/* Message Content & Meta Layout */
+.message-content {
+    display: block;
+    /* Ensure text breaks to new line if needed */
+    clear: both;
+}
+
+.message-meta {
+    float: right;
+    margin-left: 10px;
+    margin-top: 4px;
+    font-size: 11px;
+    color: #a0acb6;
+    /* Incoming meta color */
+    position: relative;
+    top: 4px;
+    /* Slight optical adjustment */
+    user-select: none;
+    pointer-events: none;
+}
+
+.message.bugrov-message .message-meta {
+    color: #5eb54c;
+    /* Outgoing meta color (Green) */
+}
+
+/* Sticker specifics */
+.media-sticker {
+    width: 180px;
+    height: 180px;
+    object-fit: contain;
+}
+
+.message:has(.media-sticker) {
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0;
 }
 
 /* Highlighted message (from search or reply click) */
@@ -341,29 +394,25 @@ body {
     }
 }
 
-.message-sender {
-    font-weight: 600;
-    font-size: 13px;
-    margin-bottom: 4px;
-    display: block;
-    cursor: pointer;
-}
-
 /* Round Video Messages - Enforced Circle */
 /* Sticky Date Header - REMOVED STICKY to prevent cascading overlap */
+/* Date Header - STICKY RESTORED */
 .date-header {
-    position: relative;
-    /* Changed from sticky */
-    margin: 15px auto;
-    /* Centered with margin */
+    position: sticky;
+    top: 10px;
+    z-index: 100;
+    /* Lower than lightbox */
+    margin: 10px auto;
     width: fit-content;
-    background-color: rgba(0, 0, 0, 0.4);
+    background-color: rgba(65, 159, 217, 0.4);
+    /* Classic Telegram overlay color */
     color: #fff;
-    padding: 6px 14px;
-    border-radius: 14px;
+    padding: 5px 12px;
+    border-radius: 16px;
     font-size: 13px;
     font-weight: 600;
-    z-index: 1;
+    backdrop-filter: blur(2px);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
 }
 
 /* Round Video Messages - Strict Styling */
@@ -390,55 +439,40 @@ body {
 /* Sender Name Colors */
 /* Custom colors for users to be distinct */
 .message-sender.color1 {
-    color: #c42d2d;
+    color: #c03d33;
 }
 
 .message-sender.color2 {
-    color: #36a636;
+    color: #4fad2d;
 }
 
 .message-sender.color3 {
-    color: #d99100;
+    color: #d09306;
 }
 
 .message-sender.color4 {
-    color: #2f74c2;
+    color: #358cd4;
 }
 
+/* Telegram Blue */
 .message-sender.color5 {
-    color: #7641ad;
+    color: #8544d6;
 }
 
 .message-sender.color6 {
-    color: #b03a6e;
+    color: #cd4073;
 }
 
 .message-sender.color7 {
-    color: #2e8b9b;
+    color: #2996ad;
 }
 
 .message-sender.color8 {
-    color: #cc602e;
+    color: #ce671b;
 }
 
 /* Special Bugrov Styling (Message Bubble) */
 /* This class is applied to the .message DIV, not just the name */
-.message.bugrov-message {
-    align-self: flex-end;
-    /* Right align */
-    background-color: #e3f2fd;
-    /* Light Blue distinct from standard Green */
-    border-bottom-left-radius: 6px;
-    border-bottom-right-radius: 0;
-    margin-left: auto;
-    /* Push to right */
-}
-
-.message.bugrov-message .message-sender {
-    color: #3390ec !important;
-    /* Blue name */
-}
-
 /* Calendar Button & Scroll Top */
 .fab-container {
     position: absolute;

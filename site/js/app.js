@@ -299,7 +299,25 @@ const app = {
     renderMessages: function (messages) {
         const container = document.getElementById('messages-container');
 
-        messages.forEach(msg => {
+        // Reset lastSender for this batch if it's a new render (not append). 
+        // But renderMessages is called by loadChunk which appends. 
+        // We should track the last message rendered in the container to be sure.
+        // However, we can just rely on local logic for the chunk, assuming chunks are large enough that boundary issues are minor.
+        // Better: check the last element in container.
+
+        let lastSenderName = null;
+        let lastDateKey = this.state.lastRenderedDate;
+
+        // Try to get context from DOM if appending
+        const lastMsgNode = container.lastElementChild;
+        if (lastMsgNode && lastMsgNode.classList.contains('message')) {
+            // This is hard because we don't store raw name in DOM easily accessible.
+            // We'll trust the state or just reset for new chunks. 
+            // Resetting is safer to avoid hiding name if we scroll up/down.
+            // Actually, if we just blindly compare to previous in this array, it works for the batch.
+        }
+
+        messages.forEach((msg, index) => {
             // Date Header
             if (msg.dt_iso) {
                 const dateKey = msg.dt_iso.split('T')[0];
@@ -309,6 +327,9 @@ const app = {
                     dateDiv.textContent = this.formatDateHeader(msg.dt_iso);
                     container.appendChild(dateDiv);
                     this.state.lastRenderedDate = dateKey;
+
+                    // Reset sender grouping on new day
+                    lastSenderName = null;
                 }
             }
 
@@ -320,6 +341,7 @@ const app = {
                 msgDiv.className = 'service-message';
                 msgDiv.dataset.isServiceMsg = "true";
                 msgDiv.textContent = msg.plain_text;
+                lastSenderName = null; // Reset grouping on service msg
             } else {
                 // Sender Logic
                 const isBugrov = msg.from_name &&
@@ -327,7 +349,6 @@ const app = {
 
                 let msgClass = 'message incoming';
                 if (isBugrov) {
-                    // Bugrov goes to the RIGHT with a distinct style
                     msgClass = 'message bugrov-message';
                 }
 
@@ -335,7 +356,7 @@ const app = {
 
                 let content = '';
 
-                // Reply Logic
+                // Reply Logic (Show FIRST)
                 if (msg.reply_to) {
                     const replyMsg = this.state.messageMap.get(msg.reply_to);
                     const replyName = replyMsg ? (replyMsg.from_name || 'Someone') : 'Message';
@@ -343,15 +364,16 @@ const app = {
 
                     content += `
                         <div class="reply-preview" onclick="app.scrollToMessage('${msg.reply_to}')">
-                            <div style="color: var(--link-color); font-size: 12px; font-weight: 500;">${this.escapeHtml(replyName)}</div>
-                            <div style="font-size: 13px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">${this.escapeHtml(replyText)}</div>
+                            <div style="color: var(--link-color); font-size: 13px; font-weight: 600;">${this.escapeHtml(replyName)}</div>
+                            <div style="font-size: 13px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--text-primary);">${this.escapeHtml(replyText)}</div>
                         </div>`;
                 }
 
-                // Name Logic
-                if (msg.from_name) {
-                    // For Bugrov, we still show his name but the styling is handled by CSS (blue color)
-                    // For others, we use the random color logic
+                // Name Logic (Grouping)
+                const currentName = msg.from_name || 'Unknown';
+                const showName = (currentName !== lastSenderName);
+
+                if (showName && msg.from_name) {
                     if (isBugrov) {
                         content += `<span class="message-sender">${this.escapeHtml(msg.from_name)}</span>`;
                     } else {
@@ -364,6 +386,8 @@ const app = {
                     }
                 }
 
+                lastSenderName = currentName;
+
                 const hasAttachments = msg.attachments && msg.attachments.length > 0;
 
                 // Media
@@ -373,19 +397,13 @@ const app = {
                     });
                 }
 
-                // Text Logic - STRICT DUPLICATE PREVENTION
+                // Text Logic
                 let textToShow = null;
                 if (hasAttachments) {
-                    // IGNORE ALL TEXT unless it's a caption that is clearly distinct.
-                    // Telegram export often puts the image inside the HTML text.
-                    // We will ONLY show plain_text if it seems to be a caption.
-                    // But to be 100% safe against duplication, we might just use plain_text and rely on it.
-                    // If plain_text is empty, we show nothing.
                     if (msg.plain_text && msg.plain_text.trim().length > 0) {
                         textToShow = this.escapeHtml(msg.plain_text);
                     }
                 } else {
-                    // No attachments: prefer html_text
                     if (msg.html_text) {
                         textToShow = msg.html_text;
                     } else if (msg.plain_text) {
