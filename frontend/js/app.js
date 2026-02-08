@@ -10,6 +10,14 @@ const app = {
 
     init: async function () {
         console.log("App initializing...");
+
+        // Check Consent
+        if (!localStorage.getItem('bugrov_consent')) {
+            document.getElementById('disclaimer-modal').style.display = 'flex';
+        } else {
+            document.getElementById('disclaimer-modal').style.display = 'none';
+        }
+
         await this.loadManifest();
         this.renderSidebar();
 
@@ -29,6 +37,11 @@ const app = {
                 this.filterMessages(e.target.value);
             });
         }
+    },
+
+    acceptDisclaimer: function () {
+        localStorage.setItem('bugrov_consent', 'true');
+        document.getElementById('disclaimer-modal').style.display = 'none';
     },
 
     loadManifest: async function () {
@@ -304,11 +317,24 @@ const app = {
                 msgDiv.textContent = msg.plain_text;
             } else {
                 // Sender Logic
-                // If name contains "Volodymyr Bugrov", treat as "outgoing" class (for distinct background)
+                // Update 2026: User requested Bugrov to be on the LEFT again.
+                // We use 'incoming' style for him, or a custom class if we want distinct color but left alignment.
+                // Let's keep him as standard 'incoming' so he aligns left, but we can style his name differently.
+
                 const isBugrov = msg.from_name &&
                     (msg.from_name.includes('Volodymyr Bugrov') || msg.from_name.includes('Bugrov'));
 
-                msgDiv.className = `message ${isBugrov ? 'outgoing' : 'incoming'}`;
+                // FORCE LEFT ALIGNMENT for everyone, including Bugrov.
+                // If we want Bugrov to have a different background color, we can add a specific class, 
+                // but 'outgoing' class forces right alignment in our CSS.
+                // So we will use 'incoming-bugrov' if we want special styling on the left.
+
+                let msgClass = 'message incoming';
+                if (isBugrov) {
+                    msgClass = 'message incoming bugrov-message'; // We can add special CSS for this if needed
+                }
+
+                msgDiv.className = msgClass;
 
                 let content = '';
 
@@ -325,8 +351,7 @@ const app = {
                         </div>`;
                 }
 
-                // Name Logic: Show for everyone, colourized
-                // Use .colorX classes instead of .userpicX to avoid background color conflict
+                // Name Logic
                 if (msg.from_name) {
                     let hash = 0;
                     for (let i = 0; i < msg.from_name.length; i++) {
@@ -345,11 +370,14 @@ const app = {
                     });
                 }
 
+                // Text Logic - STRICT DUPLICATE PREVENTION
                 let textToShow = null;
                 if (hasAttachments) {
-                    // IF attachments exist, FORCE plain_text to avoid duplicates.
-                    // This assumes HTML text is just a wrapper for the image/video which are already rendered above.
-                    // Links in captions might be lost if only in html_text, but this is the safest way to fix the duplicate bug.
+                    // IGNORE ALL TEXT unless it's a caption that is clearly distinct.
+                    // Telegram export often puts the image inside the HTML text.
+                    // We will ONLY show plain_text if it seems to be a caption.
+                    // But to be 100% safe against duplication, we might just use plain_text and rely on it.
+                    // If plain_text is empty, we show nothing.
                     if (msg.plain_text && msg.plain_text.trim().length > 0) {
                         textToShow = this.escapeHtml(msg.plain_text);
                     }

@@ -257,11 +257,26 @@ body {
 }
 
 /* Outgoing: Right aligned + Light Green */
+/* Outgoing: Right aligned + Light Green */
+/* REVERTED: User wants everyone on left */
+.message.outgoing,
+.message.incoming {
+    align-self: flex-start;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 6px;
+}
+
 .message.outgoing {
-    align-self: flex-end;
     background-color: var(--message-bg-out);
-    border-bottom-right-radius: 0;
-    border-bottom-left-radius: 6px;
+}
+
+.message.incoming {
+    background-color: var(--message-bg-in);
+}
+
+/* Specific styling for Bugrov if handled via ID/Class logic - usually outgoing color is enough distinction */
+.bugrov-message {
+    background-color: var(--message-bg-out);
 }
 
 /* Incoming: Left aligned + White */
