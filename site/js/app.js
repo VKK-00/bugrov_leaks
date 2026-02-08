@@ -181,7 +181,7 @@ const app = {
                 msgDiv.textContent = msg.plain_text;
             } else {
                 // Sender Logic
-                // If name contains "Volodymyr Bugrov", treat as outgoing (right side)
+                // If name contains "Volodymyr Bugrov", treat as "outgoing" class (for distinct background)
                 const isBugrov = msg.from_name &&
                     (msg.from_name.includes('Volodymyr Bugrov') || msg.from_name.includes('Bugrov'));
 
@@ -202,9 +202,14 @@ const app = {
                         </div>`;
                 }
 
-                // Name (only for incoming messages usually, but in group chats we show names)
-                if (!isBugrov && msg.from_name) {
-                    content += `<span class="message-sender">${this.escapeHtml(msg.from_name)}</span>`;
+                // Name Logic: Show for everyone, colourized
+                if (msg.from_name) {
+                    let hash = 0;
+                    for (let i = 0; i < msg.from_name.length; i++) {
+                        hash = msg.from_name.charCodeAt(i) + ((hash << 5) - hash);
+                    }
+                    const colorIndex = (Math.abs(hash) % 8) + 1;
+                    content += `<span class="message-sender userpic${colorIndex}">${this.escapeHtml(msg.from_name)}</span>`;
                 }
 
                 const hasAttachments = msg.attachments && msg.attachments.length > 0;

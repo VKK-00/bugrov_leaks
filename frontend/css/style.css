@@ -256,35 +256,45 @@ body {
     cursor: pointer;
 }
 
-.message-sender.userpic1 {
+/* Round Video Messages */
+.media-round-video {
+    width: 240px;
+    height: 240px;
+    border-radius: 50% !important;
+    object-fit: cover;
+    background-color: #000;
+}
+
+/* Sender Name Colors (Text Only) */
+.message-sender.color1 {
     color: #ff5555;
 }
 
-.message-sender.userpic2 {
+.message-sender.color2 {
     color: #64bf47;
 }
 
-.message-sender.userpic3 {
+.message-sender.color3 {
     color: #ffab00;
 }
 
-.message-sender.userpic4 {
+.message-sender.color4 {
     color: #4f9cd9;
 }
 
-.message-sender.userpic5 {
+.message-sender.color5 {
     color: #9884e8;
 }
 
-.message-sender.userpic6 {
+.message-sender.color6 {
     color: #e671a5;
 }
 
-.message-sender.userpic7 {
+.message-sender.color7 {
     color: #47bcd1;
 }
 
-.message-sender.userpic8 {
+.message-sender.color8 {
     color: #ff8c44;
 }
 

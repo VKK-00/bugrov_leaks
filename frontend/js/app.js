@@ -59,6 +59,19 @@ const app = {
     renderSidebar: function (filterText = '') {
         const list = document.getElementById('chat-list');
         list.innerHTML = '';
+
+        // Check Global Search Mode
+        const isGlobal = document.getElementById('global-search-toggle')?.checked;
+
+        if (isGlobal && filterText.trim().length > 0) {
+            // Global search is async and handled by performGlobalSearch
+            // Here we just show a placeholder if search hasn't started or is clearing
+            if (!this.state.isSearching) {
+                this.performGlobalSearch(filterText);
+            }
+            return;
+        }
+
         const chats = this.state.chats.filter(c =>
             (c.title || 'Unknown').toLowerCase().includes(filterText.toLowerCase())
         );
@@ -82,8 +95,104 @@ const app = {
         });
     },
 
+    // Debounce timer
+    searchTimer: null,
+
+    toggleGlobalSearch: function () {
+        const input = document.getElementById('chat-search');
+        this.renderSidebar(input.value);
+    },
+
+    performGlobalSearch: async function (text) {
+        if (this.searchTimer) clearTimeout(this.searchTimer);
+
+        this.searchTimer = setTimeout(async () => {
+            this.state.isSearching = true;
+            const list = document.getElementById('chat-list');
+            const status = document.getElementById('global-search-status');
+
+            list.innerHTML = '<div class="empty-state" style="margin:0; padding:20px; background:none;">Searching...</div>';
+            status.textContent = "Scanning...";
+
+            let totalFound = 0;
+            const results = [];
+
+            // Iterate all chats
+            // To avoid freezing UI, we might need to batch, but let's try simple loop first
+            for (const chat of this.state.chats) {
+                try {
+                    const response = await fetch(`data/${chat.chat_id}/search.json`);
+                    if (response.ok) {
+                        const searchData = await response.json();
+                        const matches = searchData.filter(m => m.text && m.text.toLowerCase().includes(text.toLowerCase()));
+                        if (matches.length > 0) {
+                            results.push({ chat, matches });
+                            totalFound += matches.length;
+                        }
+                    }
+                } catch (e) {
+                    console.warn(`Failed to search in ${chat.chat_id}`);
+                }
+            }
+
+            status.textContent = `Found ${totalFound} messages`;
+            list.innerHTML = '';
+
+            if (results.length === 0) {
+                list.innerHTML = '<div class="empty-state" style="margin:0; padding:20px; background:none;">No matches found</div>';
+            } else {
+                results.forEach(item => {
+                    // Render Chat Header in results
+                    const header = document.createElement('div');
+                    header.style.padding = '8px 12px';
+                    header.style.backgroundColor = 'var(--header-bg)';
+                    header.style.fontSize = '12px';
+                    header.style.fontWeight = 'bold';
+                    header.style.opacity = '0.7';
+                    header.textContent = item.chat.title;
+                    list.appendChild(header);
+
+                    item.matches.forEach(match => {
+                        const rDiv = document.createElement('div');
+                        rDiv.className = 'chat-item'; // Reuse class for hover effect
+                        rDiv.style.flexDirection = 'column';
+                        rDiv.style.alignItems = 'flex-start';
+                        rDiv.style.borderBottom = '1px solid rgba(0,0,0,0.1)';
+
+                        rDiv.onclick = () => {
+                            // Load chat and scroll
+                            window.location.hash = item.chat.chat_id;
+                            // We need to wait for chat load then scroll. 
+                            // We can use a global 'pendingScrollId' in state
+                            this.state.pendingScrollId = match.id;
+                        };
+
+                        const snippet = match.text.substring(0, 60) + (match.text.length > 60 ? '...' : '');
+
+                        rDiv.innerHTML = `
+                            <div style="font-size: 13px; font-weight: 500; color: var(--link-color); margin-bottom: 2px;">${this.escapeHtml(match.from || 'User')} <span style="font-weight:normal; color: var(--text-secondary); float:right;">${match.dt || ''}</span></div>
+                            <div style="font-size: 13px; color: var(--text-primary);">${this.escapeHtml(snippet)}</div>
+                         `;
+                        list.appendChild(rDiv);
+                    });
+                });
+            }
+
+            this.state.isSearching = false;
+        }, 500); // 500ms delay
+    },
+
     loadChat: async function (chatId) {
-        if (this.state.currentChatId === chatId && this.state.currentChatMessages.length > 0) return;
+        if (this.state.currentChatId === chatId && this.state.currentChatMessages.length > 0) {
+            // Check pending scroll even if already loaded
+            if (this.state.pendingScrollId) {
+                setTimeout(() => {
+                    this.scrollToMessage(this.state.pendingScrollId);
+                    this.state.pendingScrollId = null;
+                }, 500);
+            }
+            return;
+        }
 
         this.state.currentChatId = chatId;
         this.state.chunksLoaded.clear();
@@ -91,9 +200,17 @@ const app = {
         this.state.messageMap.clear();
         this.state.lastRenderedDate = null;
 
-        this.renderSidebar();
+        // Reset Search UI in main chat if we switch chats
+        if (document.getElementById('search-bar-chat')) document.getElementById('search-bar-chat').style.display = 'none';
+
+        // Perform standard sidebar render (unless global search is active? 
+        // If global search is active, we might want to keep results or switch back to chat list.
+        // For now, let's keep Global Search active if it is checked.)
+        if (!document.getElementById('global-search-toggle')?.checked) {
+            this.renderSidebar();
+        }
+
         document.getElementById('fab-container').style.display = 'flex';
-        document.getElementById('search-bar-chat').style.display = 'none';
 
         const chat = this.state.chats.find(c => c.chat_id === chatId);
         const header = document.getElementById('chat-header');
@@ -115,8 +232,14 @@ const app = {
                 await this.loadChunk(chatId, chunk.filename);
             }
 
+            // Scroll Logic
             setTimeout(() => {
-                container.scrollTop = container.scrollHeight;
+                if (this.state.pendingScrollId) {
+                    this.scrollToMessage(this.state.pendingScrollId);
+                    this.state.pendingScrollId = null;
+                } else {
+                    container.scrollTop = container.scrollHeight;
+                }
             }, 100);
 
         } catch (e) {
@@ -203,13 +326,14 @@ const app = {
                 }
 
                 // Name Logic: Show for everyone, colourized
+                // Use .colorX classes instead of .userpicX to avoid background color conflict
                 if (msg.from_name) {
                     let hash = 0;
                     for (let i = 0; i < msg.from_name.length; i++) {
                         hash = msg.from_name.charCodeAt(i) + ((hash << 5) - hash);
                     }
                     const colorIndex = (Math.abs(hash) % 8) + 1;
-                    content += `<span class="message-sender userpic${colorIndex}">${this.escapeHtml(msg.from_name)}</span>`;
+                    content += `<span class="message-sender color${colorIndex}">${this.escapeHtml(msg.from_name)}</span>`;
                 }
 
                 const hasAttachments = msg.attachments && msg.attachments.length > 0;
@@ -223,37 +347,14 @@ const app = {
 
                 let textToShow = null;
                 if (hasAttachments) {
-                    // Try to extract useful info from html_text if it's NOT just the media
-                    if (msg.html_text) {
-                        try {
-                            const tempDiv = document.createElement('div');
-                            tempDiv.innerHTML = msg.html_text;
-
-                            // Remove media links that are already handled as attachments
-                            const mediaLinks = tempDiv.querySelectorAll('a[href*="photos/"], a[href*="video_files/"], a[href*="stickers/"], a[href*="voice_messages/"], a[href*="round_video_messages/"]');
-                            mediaLinks.forEach(l => l.remove());
-
-                            // Also remove images directly if present
-                            const images = tempDiv.querySelectorAll('img');
-                            images.forEach(img => img.remove());
-
-                            const remaining = tempDiv.innerHTML.trim();
-                            if (remaining.length > 0) {
-                                // If there's text remaining (like a real caption or link), use it
-                                textToShow = remaining;
-                            } else if (msg.plain_text && msg.plain_text.trim().length > 0) {
-                                // Fallback to plain text caption if html reduction ended up empty
-                                textToShow = this.escapeHtml(msg.plain_text);
-                            }
-                        } catch (e) {
-                            // Fallback
-                            if (msg.plain_text) textToShow = this.escapeHtml(msg.plain_text);
-                        }
-                    } else if (msg.plain_text && msg.plain_text.trim().length > 0) {
+                    // IF attachments exist, FORCE plain_text to avoid duplicates.
+                    // This assumes HTML text is just a wrapper for the image/video which are already rendered above.
+                    // Links in captions might be lost if only in html_text, but this is the safest way to fix the duplicate bug.
+                    if (msg.plain_text && msg.plain_text.trim().length > 0) {
                         textToShow = this.escapeHtml(msg.plain_text);
                     }
                 } else {
-                    // No attachments
+                    // No attachments: prefer html_text
                     if (msg.html_text) {
                         textToShow = msg.html_text;
                     } else if (msg.plain_text) {
@@ -305,26 +406,103 @@ const app = {
     toggleSearch: function () {
         const bar = document.getElementById('search-bar-chat');
         bar.style.display = bar.style.display === 'none' ? 'block' : 'none';
-        if (bar.style.display === 'block') document.getElementById('msg-search-input').focus();
+
+        if (bar.style.display === 'block') {
+            document.getElementById('msg-search-input').focus();
+            // Reset search state
+            this.state.searchMatches = [];
+            this.state.currentMatchIndex = -1;
+            this.updateSearchCount();
+        } else {
+            // Clear search
+            this.filterMessages('');
+        }
+    },
+
+    // Search functionality state
+    state: {
+        chats: [],
+        currentChatId: null,
+        currentChatMessages: [],
+        chunksLoaded: new Set(),
+        messageMap: new Map(),
+        lastRenderedDate: null,
+        searchMatches: [],
+        currentMatchIndex: -1
     },
 
     filterMessages: function (text) {
         const container = document.getElementById('messages-container');
         const msgs = container.querySelectorAll('.message');
+
+        // Reset highlights
+        msgs.forEach(m => m.classList.remove('match', 'current-match'));
+        this.state.searchMatches = [];
+        this.state.currentMatchIndex = -1;
+
         if (!text) {
             container.classList.remove('searching');
-            msgs.forEach(m => m.classList.remove('match'));
+            this.updateSearchCount();
             return;
         }
 
         container.classList.add('searching');
+        const matches = [];
         msgs.forEach(m => {
+            // Check plain text content
             if (m.textContent.toLowerCase().includes(text.toLowerCase())) {
                 m.classList.add('match');
-            } else {
-                m.classList.remove('match');
+                matches.push(m);
             }
         });
+
+        this.state.searchMatches = matches;
+        this.state.currentMatchIndex = matches.length > 0 ? 0 : -1;
+
+        if (this.state.currentMatchIndex >= 0) {
+            this.highlightCurrentMatch();
+        }
+        this.updateSearchCount();
+    },
+
+    navigateSearch: function (direction) {
+        if (this.state.searchMatches.length === 0) return;
+
+        if (direction === 'next') {
+            this.state.currentMatchIndex++;
+            if (this.state.currentMatchIndex >= this.state.searchMatches.length) {
+                this.state.currentMatchIndex = 0;
+            }
+        } else {
+            this.state.currentMatchIndex--;
+            if (this.state.currentMatchIndex < 0) {
+                this.state.currentMatchIndex = this.state.searchMatches.length - 1;
+            }
+        }
+        this.highlightCurrentMatch();
+        this.updateSearchCount();
+    },
+
+    highlightCurrentMatch: function () {
+        // Remove previous current-match
+        document.querySelectorAll('.current-match').forEach(el => el.classList.remove('current-match'));
+
+        const currentEl = this.state.searchMatches[this.state.currentMatchIndex];
+        if (currentEl) {
+            currentEl.classList.add('current-match');
+            currentEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    },
+
+    updateSearchCount: function () {
+        const countSpan = document.getElementById('search-count');
+        if (!countSpan) return;
+
+        if (this.state.searchMatches.length === 0) {
+            countSpan.textContent = '';
+        } else {
+            countSpan.textContent = `${this.state.currentMatchIndex + 1}/${this.state.searchMatches.length}`;
+        }
     },
 
     showCalendar: function () {
