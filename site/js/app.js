@@ -245,7 +245,10 @@ const app = {
         const chat = this.state.chats.find(c => c.chat_id === chatId);
         const header = document.getElementById('chat-header');
         header.style.display = 'flex';
-        header.querySelector('.chat-title').textContent = chat ? chat.title : 'Unknown Chat';
+        const titleEl = header.querySelector('.chat-title');
+        titleEl.textContent = chat ? chat.title : 'Unknown Chat';
+        titleEl.style.cursor = 'pointer';
+        titleEl.onclick = () => this.openMediaGallery();
         header.querySelector('.chat-status').textContent = chat ? `${chat.message_count} messages` : '';
 
         const container = document.getElementById('messages-container');
@@ -657,6 +660,85 @@ const app = {
                 alert("No messages found on or after this date.");
             }
         }
+    },
+
+    openMediaGallery: function () {
+        if (!this.state.currentChatMessages || this.state.currentChatMessages.length === 0) return;
+
+        document.getElementById('media-gallery-modal').style.display = 'flex';
+        // Default to photo
+        const photoTab = document.querySelector('.media-tab');
+        this.filterGallery('photo', photoTab);
+    },
+
+    filterGallery: function (type, tabElement) {
+        // Update tabs
+        document.querySelectorAll('.media-tab').forEach(t => t.classList.remove('active'));
+        if (tabElement) tabElement.classList.add('active');
+
+        const grid = document.getElementById('media-grid');
+        grid.innerHTML = '';
+
+        // Filter messages with attachments of 'type'
+        // types: photo, video, voice, round (mapped to round_video)
+
+        let targetType = type;
+        if (type === 'round') targetType = 'round_video';
+
+        const mediaItems = [];
+
+        this.state.currentChatMessages.forEach(msg => {
+            if (msg.attachments && msg.attachments.length > 0) {
+                msg.attachments.forEach(att => {
+                    const k = att.kind || '';
+                    if (k === targetType || (type === 'video' && k === 'video')) {
+                        mediaItems.push({
+                            ...att,
+                            msgId: msg.message_id,
+                            dt: msg.dt_iso
+                        });
+                    }
+                });
+            }
+        });
+
+        if (mediaItems.length === 0) {
+            grid.innerHTML = '<div style="color:#aaa; text-align:center; padding:20px; width:100%;">No media found</div>';
+            return;
+        }
+
+        mediaItems.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'media-grid-item';
+            div.onclick = () => {
+                // Determine action
+                if (type === 'photo' || type === 'video') {
+                    // For videos, openLightbox might need tweaking if it only supports images?
+                    // app.openLightbox currently sets img.src. 
+                    // Let's modify openLightbox to support video or just open image.
+                    if (type === 'photo') this.openLightbox(item.href);
+                    else window.open(item.href, '_blank');
+                } else {
+                    document.getElementById('media-gallery-modal').style.display = 'none';
+                    this.scrollToMessage(item.msgId);
+                }
+            };
+
+            let inner = '';
+            if (type === 'photo') {
+                // Try thumb
+                let src = item.href;
+                if (src.toLowerCase().endsWith('.jpg')) src = src.replace('.jpg', '_thumb.jpg');
+                inner = `<img src="${src}" onerror="this.onerror=null;this.src='${item.href}'" loading="lazy">`;
+            } else if (type === 'video' || type === 'round') {
+                inner = `<video src="${item.href}" muted preload="metadata"></video><div class="type-icon">▶</div>`;
+            } else if (type === 'voice') {
+                inner = `<div style="color:white; font-size:24px;">🎤</div><div class="type-icon">${item.duration || ''}</div>`;
+            }
+
+            div.innerHTML = inner;
+            grid.appendChild(div);
+        });
     },
 
     scrollToTop: function () {

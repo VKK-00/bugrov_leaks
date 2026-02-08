@@ -42,7 +42,7 @@
     },
     {
       "chat_id": "chat_002",
-      "title": "Volodymyr Bugrov",
+      "title": "фрагмент з Ярослава Хоменко",
       "message_count": 469,
       "chunk_count": 1,
       "start_date": null,
@@ -67,5 +67,5 @@
   ],
   "total_chats": 8,
   "total_messages": 32173,
-  "generated_at": "2026-02-08T18:30:51.169362"
+  "generated_at": "2026-02-08T18:41:40.367479"
 }

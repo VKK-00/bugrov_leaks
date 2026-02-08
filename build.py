@@ -28,6 +28,11 @@ OUTPUT_DIR = Path(__file__).parent / "site"
 
 DT_RE = re.compile(r"^\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}:\d{2}$")
 
+# Custom Title Overrides
+TITLE_OVERRIDES = {
+    "chat_002": "фрагмент з Ярослава Хоменко"
+}
+
 
 @dataclass
 class Attachment:
@@ -259,7 +264,10 @@ def process_chat(chat_dir: Path, output_data_dir: Path, output_media_dir: Path) 
         return None
     
     # Get chat title
-    title = get_chat_title(html_files[0])
+    if chat_id in TITLE_OVERRIDES:
+        title = TITLE_OVERRIDES[chat_id]
+    else:
+        title = get_chat_title(html_files[0])
     
     # Parse all messages
     all_messages: List[Message] = []
