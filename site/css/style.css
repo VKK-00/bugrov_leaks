@@ -377,6 +377,10 @@ body {
     display: block;
     /* Ensure text breaks to new line if needed */
     clear: both;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+    max-width: 100%;
 }
 
 .message-meta {
@@ -396,6 +400,31 @@ body {
 .message.bugrov-message .message-meta {
     color: #5eb54c;
     /* Outgoing meta color (Green) */
+}
+
+/* GLOBAL OVERFLOW PROTECTION */
+.reply-preview {
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.reply-text, .reply-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    display: block;
+}
+
+.message img, .message video {
+    max-width: 100% !important;
+    height: auto !important;
+}
+
+.modal-content {
+    max-width: 95vw !important;
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 /* Sticker specifics */
@@ -763,97 +792,172 @@ input[type="date"] {
 }
 
 /* Mobile Responsive Styles */
-@media (max-width: 768px) {
+/* Mobile Responsive Styles */
 
-    /* 1. Sidebar - Drawer Style */
+/* Base Logic for touch devices */
+@media (hover: none) and (pointer: coarse) {
+    /* Prevent pull-to-refresh */
+    body {
+        overscroll-behavior-y: contain;
+    }
+    
+    /* Better tap targets */
+    button, .icon-btn, .chat-item, .media-grid-item {
+        touch-action: manipulation;
+    }
+}
+
+/* Valid for all mobile/tablet sizes */
+@media (max-width: 1024px) {
+    /* Modals centered and smaller */
+    .modal-content {
+        width: 90%;
+        max-width: 600px;
+        margin: auto;
+    }
+    
+    /* Scroll fix */
+    .chat-area, .messages-container {
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* Tablet (481px - 1024px) */
+@media (min-width: 481px) and (max-width: 1024px) {
+    .sidebar {
+        width: 280px; /* Slightly narrower sidebar */
+        flex-shrink: 0;
+    }
+    
+    .message {
+        max-width: 65%;
+    }
+    
+    .media-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    }
+}
+
+/* Phone (max-width: 480px) */
+@media (max-width: 480px) {
+    
+    /* 1. Sidebar - Overlay Drawer Style */
     .sidebar {
         position: absolute;
         top: 0;
         left: 0;
         height: 100%;
         z-index: 1000;
-        width: 80%;
-        /* Cover most of screen */
-        max-width: 300px;
+        width: 85%;
+        max-width: 320px;
         transform: translateX(-100%);
-        /* Hidden by default */
-        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
+        box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+        transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
     }
 
     .sidebar.open {
-        /* Class toggled by JS */
         transform: translateX(0);
     }
-
-    /* When sidebar is "collapsed" in logic, it means "hidden" on mobile. 
-       We reuse existing classes but override behavior. 
-       Our existing JS toggles .collapsed on .sidebar. 
-       In desktop: .collapsed = width 0. 
-       In mobile: .collapsed = translateX(-100%).
-    */
-    .sidebar.collapsed {
-        transform: translateX(-100%);
-        width: 80%;
-        /* Restore width for when it slides in */
-    }
-
-    .sidebar:not(.collapsed) {
-        transform: translateX(0);
-    }
-
-    /* Overlay for when sidebar is open */
+    
+    /* Sidebar Overlay Backdrop */
     .sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 999; /* Below sidebar, above content */
         display: none;
-        /* Add via JS if needed, or just rely on clicking toggle */
+        animation: fadeIn 0.3s;
     }
-
-    /* 2. Messages & Replies */
-    .message {
-        max-width: 85%;
-        /* Slightly wider on mobile */
-    }
-
-    .reply {
-        max-width: 100%;
-        /* Constraint reply width */
-        overflow: hidden;
-    }
-
-    .reply-content {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+    
+    .sidebar-overlay.active {
         display: block;
-        /* Ensure block for rounding */
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
     }
 
-    .reply-sender {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+    /* 2. Messages & Chat Area */
+    .message {
+        max-width: 92%; /* Wider messages on phone */
+        font-size: 14px;
+    }
+    
+    .message-meta {
+        font-size: 10px;
+    }
+    
+    .chat-area {
+        width: 100%;
+        min-width: 100%;
     }
 
-    /* 3. Media & Videos */
+    /* 3. Global Overflow Fixes */
     .message-content img,
     .message-content video,
     .media-round-video {
         max-width: 100% !important;
         height: auto !important;
-        display: block;
+        border-radius: 8px;
     }
-
+    
     .media-container.round-container {
-        /* Scale down round videos if they are too big for small screens */
-        max-width: 200px;
-        max-height: 200px;
+        max-width: 160px;
+        max-height: 160px;
         width: 100%;
-        /* Responsive */
         aspect-ratio: 1/1;
     }
-
-    /* Adjust FAB position */
+    
+    /* 4. UI Elements */
     .fab-container {
         right: 15px;
-        bottom: 70px;
+        bottom: 90px; /* Higher to avoid footer */
+    }
+    
+    .footer-banner {
+        flex-direction: column;
+        gap: 5px;
+        padding-bottom: env(safe-area-inset-bottom, 10px);
+    }
+    
+    /* Full screen modals */
+    .modal-content {
+        width: 100% !important;
+        height: 100% !important;
+        max-width: 100% !important;
+        max-height: 100% !important;
+        border-radius: 0;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .media-grid {
+        grid-template-columns: repeat(2, 1fr); /* 2 columns */
+        gap: 8px;
+    }
+    
+    /* Sticky Player Compact */
+    .sticky-player {
+        padding: 5px 10px;
+        font-size: 12px;
+        bottom: env(safe-area-inset-bottom, 0);
+    }
+    
+    .player-controls button {
+        font-size: 18px;
+        margin: 0 5px;
+    }
+    
+    /* Search Bar */
+    #search-bar-chat {
+        flex-wrap: wrap;
+    }
+    
+    #msg-search-input {
+        min-width: 150px;
     }
 }
