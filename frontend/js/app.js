@@ -190,7 +190,25 @@ var app = {
 
     toggleSidebar: function () {
         const sidebar = document.querySelector('.sidebar');
-        sidebar.classList.toggle('collapsed');
+        const overlay = document.getElementById('sidebar-overlay');
+        sidebar.classList.toggle('open'); // Use 'open' instead of 'collapsed' for mobile logic clarity
+        // But wait, desktop uses 'collapsed' to hide. Mobile uses 'open' to show?
+        // Let's unify or handle both.
+        // CSS: .sidebar.collapsed { width: 0 } (Desktop)
+        // CSS: .sidebar { transform: translateX(-100%) } (Mobile)
+        // CSS: .sidebar.open { transform: translateX(0) } (Mobile)
+
+        // Let's keep existing desktop logic 'collapsed' and add 'open' for mobile
+        if (window.innerWidth <= 480) {
+            sidebar.classList.toggle('open');
+            if (sidebar.classList.contains('open')) {
+                overlay.classList.add('active');
+            } else {
+                overlay.classList.remove('active');
+            }
+        } else {
+            sidebar.classList.toggle('collapsed');
+        }
     },
 
     closeChat: function () {
@@ -199,11 +217,26 @@ var app = {
 
         // Mobile Logic: Show sidebar, hide back button
         if (window.innerWidth <= 768) {
-            document.querySelector('.sidebar').classList.remove('collapsed');
+            // For phone (<=480), we just clear the covering char area? 
+            // Actually on phone, sidebar is overlay. 
+            // If we "close chat", we probably want to see the sidebar relative to the chat list?
+            // "Full screen chat view" -> "Sidebar hidden entirely".
+            // So closing chat means showing sidebar.
+
+            const sidebar = document.querySelector('.sidebar');
+            // If we are on phone, we want sidebar to be OPEN (visible).
+            if (window.innerWidth <= 480) {
+                sidebar.classList.add('open'); // Show sidebar
+                document.getElementById('sidebar-overlay').classList.add('active');
+            } else {
+                sidebar.classList.remove('collapsed');
+            }
+
             const backBtn = document.getElementById('mobile-back-btn');
             if (backBtn) backBtn.style.display = 'none';
+
             const toggleBtn = document.getElementById('sidebar-toggle-btn');
-            if (toggleBtn) toggleBtn.style.display = 'block'; // Show burger again if needed
+            if (toggleBtn) toggleBtn.style.display = 'block';
         }
 
         // Hide chat header and cleared container
@@ -337,7 +370,15 @@ var app = {
         // Mobile Navigation Logic
         if (window.innerWidth <= 768) {
             // Auto-hide sidebar to show chat
-            document.querySelector('.sidebar').classList.add('collapsed');
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+
+            if (window.innerWidth <= 480) {
+                sidebar.classList.remove('open');
+                if (overlay) overlay.classList.remove('active');
+            } else {
+                sidebar.classList.add('collapsed');
+            }
 
             // Show Back Button, Hide Burger
             const backBtn = document.getElementById('mobile-back-btn');
@@ -746,6 +787,11 @@ var app = {
         const img = document.getElementById('lightbox-img');
         img.src = src;
         lb.style.display = 'flex';
+
+        // Touch to close
+        lb.onclick = () => {
+            lb.style.display = 'none';
+        };
     },
 
     scrollToMessage: function (msgId) {
@@ -1027,27 +1073,54 @@ var app = {
     },
 
     initGestures: function () {
+        // Media Gallery Swipe
         const gallery = document.getElementById('media-gallery-modal');
         let touchStartX = 0;
         let touchEndX = 0;
 
-        if (!gallery) return;
+        if (gallery) {
+            gallery.addEventListener('touchstart', e => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, { passive: true });
 
-        gallery.addEventListener('touchstart', e => {
+            gallery.addEventListener('touchend', e => {
+                touchEndX = e.changedTouches[0].screenX;
+                if (touchStartX - touchEndX > 50) this.navigateMedia('next'); // Swipe Left
+                if (touchEndX - touchStartX > 50) this.navigateMedia('prev'); // Swipe Right
+            }, { passive: true });
+        }
+
+        // Sidebar Swipe (Global)
+        // Swipe Right from left edge to open sidebar
+        // Swipe Left on sidebar to close it
+
+        document.addEventListener('touchstart', e => {
             touchStartX = e.changedTouches[0].screenX;
         }, { passive: true });
 
-        gallery.addEventListener('touchend', e => {
+        document.addEventListener('touchend', e => {
             touchEndX = e.changedTouches[0].screenX;
-            if (touchStartX - touchEndX > 50) {
-                // Swipe Left -> Next
-                this.navigateMedia('next');
-            }
-            if (touchEndX - touchStartX > 50) {
-                // Swipe Right -> Prev
-                this.navigateMedia('prev');
+            const swipeDist = touchEndX - touchStartX;
+
+            // Open Sidebar: Swipe Right (>70px) starting from left edge (<30px)
+            if (touchStartX < 30 && swipeDist > 70) {
+                if (window.innerWidth <= 480) {
+                    const sidebar = document.querySelector('.sidebar');
+                    if (!sidebar.classList.contains('open')) {
+                        this.toggleSidebar();
+                    }
+                }
             }
 
+            // Close Sidebar: Swipe Left (<-70px)
+            if (swipeDist < -70) {
+                if (window.innerWidth <= 480) {
+                    const sidebar = document.querySelector('.sidebar');
+                    if (sidebar.classList.contains('open')) {
+                        this.toggleSidebar();
+                    }
+                }
+            }
         }, { passive: true });
     },
 
