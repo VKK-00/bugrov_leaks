@@ -86,6 +86,7 @@ var app = {
 
         window.addEventListener('hashchange', () => this.handleHashChange());
         this.handleHashChange();
+        window.addEventListener('resize', () => this.resetResponsiveSidebarState());
 
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js')
@@ -191,23 +192,32 @@ var app = {
     toggleSidebar: function () {
         const sidebar = document.querySelector('.sidebar');
         const overlay = document.getElementById('sidebar-overlay');
-        sidebar.classList.toggle('open'); // Use 'open' instead of 'collapsed' for mobile logic clarity
-        // But wait, desktop uses 'collapsed' to hide. Mobile uses 'open' to show?
-        // Let's unify or handle both.
-        // CSS: .sidebar.collapsed { width: 0 } (Desktop)
-        // CSS: .sidebar { transform: translateX(-100%) } (Mobile)
-        // CSS: .sidebar.open { transform: translateX(0) } (Mobile)
+        if (!sidebar || !overlay) return;
 
-        // Let's keep existing desktop logic 'collapsed' and add 'open' for mobile
-        if (window.innerWidth <= 480) {
-            sidebar.classList.toggle('open');
-            if (sidebar.classList.contains('open')) {
-                overlay.classList.add('active');
-            } else {
-                overlay.classList.remove('active');
-            }
-        } else {
-            sidebar.classList.toggle('collapsed');
+        const isPhone = window.innerWidth <= 480;
+        const isTablet = window.innerWidth > 480 && window.innerWidth <= 1024;
+
+        if (isPhone || isTablet) {
+            const nextOpen = !sidebar.classList.contains('open');
+            sidebar.classList.toggle('open', nextOpen);
+            overlay.classList.toggle('active', nextOpen);
+            document.body.classList.toggle('sidebar-open-mobile', isPhone && nextOpen);
+            document.body.classList.toggle('sidebar-open-tablet', isTablet && nextOpen);
+            return;
+        }
+
+        sidebar.classList.toggle('collapsed');
+    },
+
+    resetResponsiveSidebarState: function () {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        if (!sidebar || !overlay) return;
+
+        if (window.innerWidth > 1024) {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+            document.body.classList.remove('sidebar-open-mobile', 'sidebar-open-tablet');
         }
     },
 
@@ -215,29 +225,23 @@ var app = {
         window.location.hash = '';
         this.state.currentChatId = null;
 
-        // Mobile Logic: Show sidebar, hide back button
-        if (window.innerWidth <= 768) {
-            // For phone (<=480), we just clear the covering char area? 
-            // Actually on phone, sidebar is overlay. 
-            // If we "close chat", we probably want to see the sidebar relative to the chat list?
-            // "Full screen chat view" -> "Sidebar hidden entirely".
-            // So closing chat means showing sidebar.
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        const isPhone = window.innerWidth <= 480;
+        const isTablet = window.innerWidth > 480 && window.innerWidth <= 1024;
 
-            const sidebar = document.querySelector('.sidebar');
-            // If we are on phone, we want sidebar to be OPEN (visible).
-            if (window.innerWidth <= 480) {
-                sidebar.classList.add('open'); // Show sidebar
-                document.getElementById('sidebar-overlay').classList.add('active');
-            } else {
-                sidebar.classList.remove('collapsed');
-            }
-
-            const backBtn = document.getElementById('mobile-back-btn');
-            if (backBtn) backBtn.style.display = 'none';
-
-            const toggleBtn = document.getElementById('sidebar-toggle-btn');
-            if (toggleBtn) toggleBtn.style.display = 'block';
+        if (isPhone || isTablet) {
+            if (sidebar) sidebar.classList.add('open');
+            if (overlay) overlay.classList.add('active');
+            document.body.classList.toggle('sidebar-open-mobile', isPhone);
+            document.body.classList.toggle('sidebar-open-tablet', isTablet);
         }
+
+        const backBtn = document.getElementById('mobile-back-btn');
+        if (backBtn) backBtn.style.display = 'none';
+
+        const toggleBtn = document.getElementById('sidebar-toggle-btn');
+        if (toggleBtn) toggleBtn.style.display = 'block';
 
         // Hide chat header and cleared container
         document.getElementById('chat-header').style.display = 'none';
@@ -367,26 +371,23 @@ var app = {
         // Reset UI
         if (document.getElementById('search-bar-chat')) document.getElementById('search-bar-chat').style.display = 'none';
 
-        // Mobile Navigation Logic
-        if (window.innerWidth <= 768) {
-            // Auto-hide sidebar to show chat
-            const sidebar = document.querySelector('.sidebar');
-            const overlay = document.getElementById('sidebar-overlay');
+        // Responsive navigation logic
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        const isPhone = window.innerWidth <= 480;
+        const isTablet = window.innerWidth > 480 && window.innerWidth <= 1024;
 
-            if (window.innerWidth <= 480) {
-                sidebar.classList.remove('open');
-                if (overlay) overlay.classList.remove('active');
-            } else {
-                sidebar.classList.add('collapsed');
-            }
-
-            // Show Back Button, Hide Burger
-            const backBtn = document.getElementById('mobile-back-btn');
-            if (backBtn) backBtn.style.display = 'block';
-
-            const toggleBtn = document.getElementById('sidebar-toggle-btn');
-            if (toggleBtn) toggleBtn.style.display = 'none';
+        if (isPhone || isTablet) {
+            if (sidebar) sidebar.classList.remove('open');
+            if (overlay) overlay.classList.remove('active');
+            document.body.classList.remove('sidebar-open-mobile', 'sidebar-open-tablet');
         }
+
+        const backBtn = document.getElementById('mobile-back-btn');
+        if (backBtn) backBtn.style.display = isPhone ? 'block' : 'none';
+
+        const toggleBtn = document.getElementById('sidebar-toggle-btn');
+        if (toggleBtn) toggleBtn.style.display = 'block';
 
         document.getElementById('fab-container').style.display = 'flex';
 
@@ -1104,7 +1105,7 @@ var app = {
 
             // Open Sidebar: Swipe Right (>70px) starting from left edge (<30px)
             if (touchStartX < 30 && swipeDist > 70) {
-                if (window.innerWidth <= 480) {
+                if (window.innerWidth <= 1024) {
                     const sidebar = document.querySelector('.sidebar');
                     if (!sidebar.classList.contains('open')) {
                         this.toggleSidebar();
@@ -1114,7 +1115,7 @@ var app = {
 
             // Close Sidebar: Swipe Left (<-70px)
             if (swipeDist < -70) {
-                if (window.innerWidth <= 480) {
+                if (window.innerWidth <= 1024) {
                     const sidebar = document.querySelector('.sidebar');
                     if (sidebar.classList.contains('open')) {
                         this.toggleSidebar();
