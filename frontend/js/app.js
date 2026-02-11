@@ -87,6 +87,7 @@ var app = {
         window.addEventListener('hashchange', () => this.handleHashChange());
         this.handleHashChange();
         window.addEventListener('resize', () => this.resetResponsiveSidebarState());
+        this.resetResponsiveSidebarState();
 
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js')
@@ -139,6 +140,17 @@ var app = {
             // Hide search bar if open
             const bar = document.getElementById('search-bar-chat');
             if (bar) bar.style.display = 'none';
+
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            const isMobileOrTablet = window.innerWidth <= 1024;
+            if (isMobileOrTablet && sidebar && overlay) {
+                sidebar.classList.add('open');
+                overlay.classList.remove('active');
+                document.body.classList.remove('sidebar-open-mobile', 'sidebar-open-tablet');
+            }
+
+            this.updateSidebarCloseButton();
         }
     },
 
@@ -203,6 +215,7 @@ var app = {
             overlay.classList.toggle('active', nextOpen);
             document.body.classList.toggle('sidebar-open-mobile', isPhone && nextOpen);
             document.body.classList.toggle('sidebar-open-tablet', isTablet && nextOpen);
+            this.updateSidebarCloseButton();
             return;
         }
 
@@ -219,6 +232,18 @@ var app = {
             overlay.classList.remove('active');
             document.body.classList.remove('sidebar-open-mobile', 'sidebar-open-tablet');
         }
+
+        this.updateSidebarCloseButton();
+    },
+
+    updateSidebarCloseButton: function () {
+        const closeBtn = document.getElementById('sidebar-close-btn');
+        const sidebar = document.querySelector('.sidebar');
+        if (!closeBtn || !sidebar) return;
+
+        const isMobileOrTablet = window.innerWidth <= 1024;
+        const isOpen = sidebar.classList.contains('open');
+        closeBtn.style.display = isMobileOrTablet && isOpen ? 'inline-flex' : 'none';
     },
 
     closeChat: function () {
@@ -235,6 +260,7 @@ var app = {
             if (overlay) overlay.classList.add('active');
             document.body.classList.toggle('sidebar-open-mobile', isPhone);
             document.body.classList.toggle('sidebar-open-tablet', isTablet);
+            this.updateSidebarCloseButton();
         }
 
         const backBtn = document.getElementById('mobile-back-btn');
@@ -381,6 +407,7 @@ var app = {
             if (sidebar) sidebar.classList.remove('open');
             if (overlay) overlay.classList.remove('active');
             document.body.classList.remove('sidebar-open-mobile', 'sidebar-open-tablet');
+            this.updateSidebarCloseButton();
         }
 
         const backBtn = document.getElementById('mobile-back-btn');
