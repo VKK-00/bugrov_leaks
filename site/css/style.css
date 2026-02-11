@@ -100,12 +100,23 @@ body.sidebar-open-tablet {
     color: var(--text-primary);
 }
 
+
 #sidebar-close-btn {
-    color: var(--text-secondary);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--border-color);
+    background: var(--input-bg);
+    color: var(--text-primary);
+    font-size: 18px;
+    line-height: 1;
 }
 
-#sidebar-close-btn:hover {
-    color: var(--text-primary);
+#sidebar-close-btn:active {
+    transform: scale(0.98);
 }
 
 .search-bar input {
@@ -869,6 +880,9 @@ input[type="date"] {
         transform: translateX(0);
     }
 
+    body.sidebar-open-tablet .chat-area {
+        transform: translateX(220px);
+    }
 
     .chat-area {
         width: 100%;
@@ -950,9 +964,8 @@ input[type="date"] {
 
     .reply-name,
     .reply-text {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        white-space: normal;
+        overflow-wrap: anywhere;
     }
     
     .message-meta {
@@ -982,6 +995,12 @@ input[type="date"] {
     }
     
     /* 4. UI Elements */
+    #sidebar-close-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 20px;
+    }
+
     .fab-container {
         right: 15px;
         bottom: 90px; /* Higher to avoid footer */

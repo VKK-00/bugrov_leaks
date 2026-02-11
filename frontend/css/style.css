@@ -100,6 +100,25 @@ body.sidebar-open-tablet {
     color: var(--text-primary);
 }
 
+
+#sidebar-close-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--border-color);
+    background: var(--input-bg);
+    color: var(--text-primary);
+    font-size: 18px;
+    line-height: 1;
+}
+
+#sidebar-close-btn:active {
+    transform: scale(0.98);
+}
+
 .search-bar input {
     width: 100%;
     padding: 10px;
@@ -976,6 +995,12 @@ input[type="date"] {
     }
     
     /* 4. UI Elements */
+    #sidebar-close-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 20px;
+    }
+
     .fab-container {
         right: 15px;
         bottom: 90px; /* Higher to avoid footer */

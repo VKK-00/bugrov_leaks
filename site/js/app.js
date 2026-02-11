@@ -9,8 +9,7 @@ var app = {
         profiles: {},
         searchMatches: [],
         currentMatchIndex: -1,
-        isSearching: false,
-        sidebarOpen: false
+        isSearching: false
     },
 
     toggleTheme: function () {
@@ -87,8 +86,8 @@ var app = {
 
         window.addEventListener('hashchange', () => this.handleHashChange());
         this.handleHashChange();
-        this.applySidebarState();
         window.addEventListener('resize', () => this.resetResponsiveSidebarState());
+        this.resetResponsiveSidebarState();
 
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js')
@@ -141,6 +140,17 @@ var app = {
             // Hide search bar if open
             const bar = document.getElementById('search-bar-chat');
             if (bar) bar.style.display = 'none';
+
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            const isMobileOrTablet = window.innerWidth <= 1024;
+            if (isMobileOrTablet && sidebar && overlay) {
+                sidebar.classList.add('open');
+                overlay.classList.remove('active');
+                document.body.classList.remove('sidebar-open-mobile', 'sidebar-open-tablet');
+            }
+
+            this.updateSidebarCloseButton();
         }
     },
 
@@ -191,67 +201,67 @@ var app = {
         this.renderSidebar(input.value);
     },
 
-    getViewportMode: function () {
-        if (window.innerWidth <= 480) return 'mobile';
-        if (window.innerWidth <= 1024) return 'tablet';
-        return 'desktop';
-    },
-
-    applySidebarState: function () {
+    toggleSidebar: function () {
         const sidebar = document.querySelector('.sidebar');
         const overlay = document.getElementById('sidebar-overlay');
-        const closeBtn = document.getElementById('sidebar-close-btn');
-        const toggleBtn = document.getElementById('sidebar-toggle-btn');
-        const mode = this.getViewportMode();
         if (!sidebar || !overlay) return;
 
-        if (mode === 'desktop') {
-            sidebar.classList.remove('open');
-            overlay.classList.remove('active');
-            document.body.classList.remove('sidebar-open-mobile', 'sidebar-open-tablet');
-            if (closeBtn) closeBtn.style.display = 'none';
-            if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
+        const isPhone = window.innerWidth <= 480;
+        const isTablet = window.innerWidth > 480 && window.innerWidth <= 1024;
+
+        if (isPhone || isTablet) {
+            const nextOpen = !sidebar.classList.contains('open');
+            sidebar.classList.toggle('open', nextOpen);
+            overlay.classList.toggle('active', nextOpen);
+            document.body.classList.toggle('sidebar-open-mobile', isPhone && nextOpen);
+            document.body.classList.toggle('sidebar-open-tablet', isTablet && nextOpen);
+            this.updateSidebarCloseButton();
             return;
         }
-
-        sidebar.classList.toggle('open', this.state.sidebarOpen);
-        overlay.classList.toggle('active', this.state.sidebarOpen);
-        document.body.classList.toggle('sidebar-open-mobile', mode === 'mobile' && this.state.sidebarOpen);
-        document.body.classList.toggle('sidebar-open-tablet', mode === 'tablet' && this.state.sidebarOpen);
-        if (closeBtn) closeBtn.style.display = this.state.sidebarOpen ? 'block' : 'none';
-        if (toggleBtn) toggleBtn.setAttribute('aria-expanded', this.state.sidebarOpen ? 'true' : 'false');
-    },
-
-    setSidebarOpen: function (isOpen) {
-        this.state.sidebarOpen = !!isOpen;
-        this.applySidebarState();
-    },
-
-    toggleSidebar: function () {
-        if (this.getViewportMode() !== 'desktop') {
-            this.setSidebarOpen(!this.state.sidebarOpen);
-            return;
-        }
-
-        const sidebar = document.querySelector('.sidebar');
-        if (!sidebar) return;
 
         sidebar.classList.toggle('collapsed');
     },
 
     resetResponsiveSidebarState: function () {
-        if (this.getViewportMode() === 'desktop') {
-            this.state.sidebarOpen = false;
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        if (!sidebar || !overlay) return;
+
+        if (window.innerWidth > 1024) {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+            document.body.classList.remove('sidebar-open-mobile', 'sidebar-open-tablet');
         }
-        this.applySidebarState();
+
+        this.updateSidebarCloseButton();
+    },
+
+    updateSidebarCloseButton: function () {
+        const closeBtn = document.getElementById('sidebar-close-btn');
+        const sidebar = document.querySelector('.sidebar');
+        if (!closeBtn || !sidebar) return;
+
+        const isMobileOrTablet = window.innerWidth <= 1024;
+        const isOpen = sidebar.classList.contains('open');
+        closeBtn.style.display = isMobileOrTablet && isOpen ? 'inline-flex' : 'none';
     },
 
     closeChat: function () {
         window.location.hash = '';
         this.state.currentChatId = null;
 
-        const mode = this.getViewportMode();
-        if (mode !== 'desktop') this.setSidebarOpen(true);
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        const isPhone = window.innerWidth <= 480;
+        const isTablet = window.innerWidth > 480 && window.innerWidth <= 1024;
+
+        if (isPhone || isTablet) {
+            if (sidebar) sidebar.classList.add('open');
+            if (overlay) overlay.classList.add('active');
+            document.body.classList.toggle('sidebar-open-mobile', isPhone);
+            document.body.classList.toggle('sidebar-open-tablet', isTablet);
+            this.updateSidebarCloseButton();
+        }
 
         const backBtn = document.getElementById('mobile-back-btn');
         if (backBtn) backBtn.style.display = 'none';
@@ -388,11 +398,20 @@ var app = {
         if (document.getElementById('search-bar-chat')) document.getElementById('search-bar-chat').style.display = 'none';
 
         // Responsive navigation logic
-        const mode = this.getViewportMode();
-        if (mode !== 'desktop') this.setSidebarOpen(false);
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        const isPhone = window.innerWidth <= 480;
+        const isTablet = window.innerWidth > 480 && window.innerWidth <= 1024;
+
+        if (isPhone || isTablet) {
+            if (sidebar) sidebar.classList.remove('open');
+            if (overlay) overlay.classList.remove('active');
+            document.body.classList.remove('sidebar-open-mobile', 'sidebar-open-tablet');
+            this.updateSidebarCloseButton();
+        }
 
         const backBtn = document.getElementById('mobile-back-btn');
-        if (backBtn) backBtn.style.display = mode === 'mobile' ? 'block' : 'none';
+        if (backBtn) backBtn.style.display = isPhone ? 'block' : 'none';
 
         const toggleBtn = document.getElementById('sidebar-toggle-btn');
         if (toggleBtn) toggleBtn.style.display = 'block';
@@ -687,7 +706,7 @@ var app = {
                 if (msg.reply_to) {
                     const replyMsg = this.state.messageMap.get(msg.reply_to);
                     const replyName = replyMsg ? (replyMsg.from_name || 'Someone') : 'Message';
-                    const replyText = replyMsg ? this.buildReplySnippet(replyMsg) : '...';
+                    const replyText = replyMsg ? (replyMsg.plain_text || 'Media') : '...';
 
                     content += `
                         <div class="reply-preview" onclick="app.scrollToMessage('${msg.reply_to}')">
@@ -735,30 +754,6 @@ var app = {
         });
 
         // this.generateTimeline(); // Removed
-    },
-
-    normalizeText: function (text) {
-        return String(text || '').replace(/\s+/g, ' ').trim();
-    },
-
-    truncateForReply: function (text, maxLen) {
-        if (text.length <= maxLen) return text;
-        return `${text.slice(0, maxLen - 3)}...`;
-    },
-
-    buildReplySnippet: function (replyMsg) {
-        const mode = this.getViewportMode();
-        const maxLen = mode === 'mobile' ? 56 : 80;
-        const normalized = this.normalizeText(replyMsg.plain_text);
-        if (normalized) return this.truncateForReply(normalized, maxLen);
-
-        const firstAtt = replyMsg.attachments && replyMsg.attachments[0];
-        if (!firstAtt) return '...';
-        if (firstAtt.kind === 'photo') return '📷 Фото';
-        if (firstAtt.kind === 'video') return '🎬 Відео';
-        if (firstAtt.kind === 'sticker') return '🙂 Стікер';
-        if (firstAtt.kind === 'file') return '📎 Файл';
-        return '📎 Медіа';
     },
 
 
@@ -1140,7 +1135,7 @@ var app = {
                 if (window.innerWidth <= 1024) {
                     const sidebar = document.querySelector('.sidebar');
                     if (!sidebar.classList.contains('open')) {
-                        this.setSidebarOpen(true);
+                        this.toggleSidebar();
                     }
                 }
             }
@@ -1150,7 +1145,7 @@ var app = {
                 if (window.innerWidth <= 1024) {
                     const sidebar = document.querySelector('.sidebar');
                     if (sidebar.classList.contains('open')) {
-                        this.setSidebarOpen(false);
+                        this.toggleSidebar();
                     }
                 }
             }
