@@ -100,6 +100,14 @@ body.sidebar-open-tablet {
     color: var(--text-primary);
 }
 
+#sidebar-close-btn {
+    color: var(--text-secondary);
+}
+
+#sidebar-close-btn:hover {
+    color: var(--text-primary);
+}
+
 .search-bar input {
     width: 100%;
     padding: 10px;
@@ -861,9 +869,6 @@ input[type="date"] {
         transform: translateX(0);
     }
 
-    body.sidebar-open-tablet .chat-area {
-        transform: translateX(220px);
-    }
 
     .chat-area {
         width: 100%;
@@ -945,8 +950,9 @@ input[type="date"] {
 
     .reply-name,
     .reply-text {
-        white-space: normal;
-        overflow-wrap: anywhere;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     
     .message-meta {
