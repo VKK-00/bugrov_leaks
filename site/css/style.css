@@ -60,6 +60,7 @@ body.sidebar-open-tablet {
 #app {
     display: flex;
     height: 100%;
+    min-height: 0;
 }
 
 /* Sidebar */
@@ -219,6 +220,7 @@ body.sidebar-open-tablet {
     position: relative;
     /* FIX: Allow shrinking below content size to prevent overflow */
     min-width: 0;
+    min-height: 0;
 }
 
 .chat-header {
@@ -270,6 +272,7 @@ body.sidebar-open-tablet {
     /* Space for footer */
     /* FIX: Allow shrinking below content size */
     min-width: 0;
+    min-height: 0;
     overflow-x: hidden;
     /* Prevent horizontal scroll */
 }
@@ -352,7 +355,7 @@ body.sidebar-open-tablet {
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
     /* Subtle shadow */
     min-width: 0;
-    overflow: hidden;
+    overflow: visible;
 }
 
 /* Incoming (Left) */

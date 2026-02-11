@@ -1157,29 +1157,6 @@ var app = {
         console.log("Media navigation not implemented yet", direction);
     },
 
-    initPWA: function () {
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            this.state.deferredPrompt = e;
-            // Create Install Button if not exists
-            const sidebarHeader = document.querySelector('.sidebar-header');
-            if (!sidebarHeader) return;
-
-            const installBtn = document.createElement('button');
-            installBtn.textContent = '📲';
-            installBtn.title = 'Install App';
-            installBtn.className = 'icon-btn';
-            installBtn.style.fontSize = '12px';
-            installBtn.onclick = () => {
-                this.state.deferredPrompt.prompt();
-                this.state.deferredPrompt.userChoice.then((choiceResult) => {
-                    this.state.deferredPrompt = null;
-                    installBtn.remove();
-                });
-            };
-            sidebarHeader.insertBefore(installBtn, sidebarHeader.firstChild);
-        });
-    },
     // --- Analytics ---
     openAnalytics: function () {
         if (!this.state.currentChatId) {
@@ -1304,5 +1281,4 @@ var app = {
 document.addEventListener('DOMContentLoaded', () => {
     app.init();
     app.initGestures();
-    app.initPWA();
 });
