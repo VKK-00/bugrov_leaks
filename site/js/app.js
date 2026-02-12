@@ -129,13 +129,8 @@ var app = {
         const scrollBtn = document.getElementById('scroll-bottom-btn');
         const container = document.getElementById('messages-container');
         if (container && scrollBtn) {
-            container.addEventListener('scroll', () => {
-                if (container.scrollTop < container.scrollHeight - container.clientHeight - 300) {
-                    scrollBtn.classList.add('visible');
-                } else {
-                    scrollBtn.classList.remove('visible');
-                }
-            });
+            // Static buttons: Always visible.
+            scrollBtn.style.display = 'flex';
         }
 
         // Initialize Theme
@@ -1209,6 +1204,16 @@ var app = {
         analyticsBtn.title = 'Analytics';
         analyticsBtn.onclick = () => app.openAnalytics();
         stack.appendChild(analyticsBtn);
+
+        // Scroll Bottom (Lowest)
+        const scrollBottomBtn = document.createElement('div');
+        scrollBottomBtn.id = 'scroll-bottom-btn';
+        scrollBottomBtn.className = 'fab';
+        scrollBottomBtn.innerHTML = '⬇️<div class="scroll-badge" id="scroll-badge" style="display:none">0</div>';
+        scrollBottomBtn.title = 'Scroll to Bottom';
+        scrollBottomBtn.onclick = () => app.scrollToBottom();
+        scrollBottomBtn.style.display = 'flex'; // Always visible
+        stack.appendChild(scrollBottomBtn);
 
         // Scroll Top
         const scrollTopBtn = document.createElement('div');

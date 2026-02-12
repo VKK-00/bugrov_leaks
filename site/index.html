@@ -28,27 +28,27 @@
         <div id="sidebar-overlay" class="sidebar-overlay" onclick="app.toggleSidebar()"></div>
         <aside class="sidebar">
             <header class="sidebar-header">
-                <div style="display: flex; align-items: center; margin-bottom: 5px;">
-                    <div class="search-bar" style="flex:1; margin-right: 10px;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                    <div class="search-bar" style="flex:1;">
                         <input type="text" placeholder="Search" id="chat-search">
                     </div>
+                    <button class="theme-toggle-btn" onclick="app.toggleTheme()" title="Toggle Theme"
+                        style="border: none; background: none; font-size: 20px; cursor: pointer;">
+                        🌙
+                    </button>
                     <!-- Mobile Close Sidebar Button -->
                     <button id="sidebar-close-btn" onclick="app.toggleSidebar()"
                         style="display: none; background:none; border:none; font-size: 20px; cursor: pointer;">✕</button>
                 </div>
 
-                <div
-                    style="margin-top: 10px; display: flex; align-items: center; justify-content: space-between; padding: 0 5px;">
+                <div style="display: flex; align-items: center; padding: 0 5px;">
                     <label
                         style="font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 5px; cursor: pointer;">
                         <input type="checkbox" id="global-search-toggle" onchange="app.toggleGlobalSearch()"> Global
                         Search
                     </label>
-                    <span id="global-search-status" style="font-size: 11px; color: var(--accent-color);"></span>
-                    <button class="theme-toggle-btn" onclick="app.toggleTheme()" title="Toggle Theme"
-                        style="border: none; background: none; font-size: 16px; cursor: pointer;">
-                        🌙
-                    </button>
+                    <span id="global-search-status"
+                        style="font-size: 11px; color: var(--accent-color); margin-left: 10px;"></span>
                 </div>
             </header>
             <div class="chat-list" id="chat-list">
@@ -266,11 +266,7 @@
         </main>
     </div>
     <div class="fab-stack" id="fab-stack">
-        <!-- Buttons are stacked bottom-up -->
-        <button id="scroll-bottom-btn" class="scroll-bottom-btn" onclick="app.scrollToBottom()" title="Go to Bottom">
-            ⬇️
-            <div class="scroll-badge" id="scroll-badge">0</div>
-        </button>
+        <!-- Buttons are stacked dynamically via JS -->
     </div>
 
     <script src="js/app.js"></script>

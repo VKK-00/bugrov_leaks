@@ -19,24 +19,24 @@
 }
 
 [data-theme="dark"] {
-    /* Premium Dark Theme - Neo-Glass */
-    --bg-color: #0f0f0f;
-    --sidebar-bg: #1c1c1d;
-    --chat-bg: #000000;
-    --header-bg: #1c1c1d;
+    /* Premium Dark Theme - Modern Graphite */
+    --bg-color: #181818;
+    --sidebar-bg: #212121;
+    --chat-bg: #0f0f0f;
+    --header-bg: #212121;
     --input-bg: #2c2c2e;
-    --text-primary: #ffffff;
+    --text-primary: #e0e0e0;
     --text-secondary: #aaaaaa;
-    --accent-color: #3e88f7;
-    --message-bg-in: #2c2c2e;
-    --message-bg-out: #2b5278;
-    /* Deep Blue */
+    --accent-color: #5288c1;
+    --message-bg-in: #2b2b2b;
+    --message-bg-out: #3e5a7a;
+    /* Muted Blue */
     --msg-text: #e0e0e0;
     --msg-meta: #7a8a9a;
-    --link-color: #58a6ff;
-    --border-color: #3a3a3c;
+    --link-color: #64b5f6;
+    --border-color: #333333;
     --hover-color: #2c2c2e;
-    --scroll-thumb: rgba(255, 255, 255, 0.2);
+    --scroll-thumb: rgba(255, 255, 255, 0.15);
 }
 
 /* Dark Mode Specific Overrides */
@@ -48,35 +48,63 @@
 }
 
 [data-theme="dark"] .sidebar-header {
-    background: linear-gradient(135deg, #1c1c1d 0%, #2c2c2e 100%);
+    background: linear-gradient(135deg, #212121 0%, #2c2c2e 100%);
 }
 
 [data-theme="dark"] .message.incoming {
-    background: rgba(44, 44, 46, 0.85);
-    /* Glassy Dark */
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: #2b2b2b;
+    border: 1px solid #333;
 }
 
 [data-theme="dark"] .message.bugrov-message {
-    background: rgba(43, 82, 120, 0.85);
-    /* Glassy Blue */
-    border: 1px solid rgba(62, 136, 247, 0.3);
+    background: #2b4a6f;
+    /* Muted Blue */
+    border: 1px solid #3e5a7a;
 }
 
+/* Service Message (System) Dark Mode */
+[data-theme="dark"] .service-message {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #e0e0e0;
+    padding: 4px 12px;
+    border-radius: 12px;
+    display: inline-block;
+    margin: 5px auto;
+    font-size: 13px;
+    text-shadow: none;
+}
+
+/* Brighter Sender Names for Dark Mode */
 [data-theme="dark"] .message-sender.color1 {
-    color: #ff6b6b;
+    color: #ff8a80;
 }
 
 [data-theme="dark"] .message-sender.color2 {
-    color: #51cf66;
+    color: #b9f6ca;
 }
 
 [data-theme="dark"] .message-sender.color3 {
-    color: #fcc419;
+    color: #ffe57f;
 }
 
 [data-theme="dark"] .message-sender.color4 {
-    color: #339af0;
+    color: #82b1ff;
+}
+
+[data-theme="dark"] .message-sender.color5 {
+    color: #ea80fc;
+}
+
+[data-theme="dark"] .message-sender.color6 {
+    color: #ff80ab;
+}
+
+[data-theme="dark"] .message-sender.color7 {
+    color: #80deea;
+}
+
+[data-theme="dark"] .message-sender.color8 {
+    color: #ffcc80;
 }
 
 * {
@@ -361,7 +389,7 @@ body {
     bottom: 0;
     left: 0;
     right: 0;
-    background-color: rgba(255, 255, 255, 0.95);
+    background-color: var(--bg-color);
     padding: 10px;
     text-align: center;
     font-size: 13px;
@@ -602,6 +630,12 @@ body {
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
 }
 
+[data-theme="dark"] .date-header {
+    background-color: rgba(0, 0, 0, 0.5);
+    color: #cecece;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 /* Round Video Messages - Strict Styling */
 .media-container.round-container {
     width: 240px;
@@ -674,6 +708,11 @@ body {
     /* Allow clicking through container */
 }
 
+/* Ensure buttons are clickable */
+.fab-stack>* {
+    pointer-events: auto;
+}
+
 /* FAB Container for Analytics/Calendar/etc */
 .fab-container {
     position: fixed;
@@ -688,13 +727,11 @@ body {
 }
 
 /* Common FAB styles */
-.fab,
-.scroll-bottom-btn {
+.fab {
     width: 48px;
     height: 48px;
     border-radius: 50%;
     background-color: var(--bg-color);
-    /* Adaptive bg */
     color: var(--text-secondary);
     display: flex;
     align-items: center;
@@ -703,63 +740,81 @@ body {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
     border: none;
     transition: transform 0.2s, opacity 0.2s;
-    pointer-events: auto;
-    /* Re-enable clicks */
     font-size: 20px;
+    position: relative;
+    /* For badge */
 }
 
-[data-theme="dark"] .fab,
-[data-theme="dark"] .scroll-bottom-btn {
+[data-theme="dark"] .fab {
     background-color: #2c2c2e;
     color: #fff;
 }
 
-.fab:hover,
-.scroll-bottom-btn:hover {
+.fab:hover {
     transform: scale(1.1);
     background-color: var(--hover-color);
 }
 
-/* Special styling for scroll bottom */
-.scroll-bottom-btn {
-    background-color: rgba(51, 144, 236, 0.9) !important;
-    color: white !important;
-    opacity: 0;
-    transform: translateY(20px);
-    display: none;
-    /* Hidden by layout logic if not visible */
-}
-
-.scroll-bottom-btn.visible {
-    opacity: 1;
-    transform: translateY(0);
+/* Scroll badge inside fab */
+.scroll-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: var(--accent-color);
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
     display: flex;
-    /* Join the stack */
-}
-
-[data-theme="dark"] .scroll-bottom-btn {
-    background-color: rgba(62, 136, 247, 0.9) !important;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
 }
 
 .modal-content {
-    background-color: #fff;
+    background-color: var(--bg-color);
+    color: var(--text-primary);
     padding: 20px;
-    border-radius: 8px;
+    border-radius: 12px;
     min-width: 300px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .modal-content {
+    background-color: #212121;
+    border: 1px solid #333;
 }
 
 .modal-header {
     font-size: 18px;
     margin-bottom: 15px;
     font-weight: 500;
-    color: #000;
+    color: var(--text-primary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-input[type="date"] {
-    background-color: #f1f1f1;
-    border: none;
-    color: #000;
+input[type="date"],
+input[type="text"],
+input[type="password"] {
+    background-color: var(--input-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 8px;
+    border-radius: 6px;
+    outline: none;
+}
+
+[data-theme="dark"] input[type="date"],
+[data-theme="dark"] input[type="text"],
+[data-theme="dark"] input[type="password"] {
+    background-color: #121212;
+    /* Darker inset */
+    border-color: #333;
+    color: #fff;
 }
 
 .btn {
@@ -1283,7 +1338,7 @@ input[type="date"] {
     justify-content: space-between;
     align-items: center;
     color: white;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0, 0, 0, 0.5);
 }
 
 .media-tabs {

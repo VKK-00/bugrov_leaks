@@ -100,7 +100,11 @@
             <!-- Calendar Modal -->
             <div class="modal" id="calendar-modal" onclick="if(event.target === this) this.style.display='none'">
                 <div class="modal-content">
-                    <div class="modal-header">Select Date</div>
+                    <div class="modal-header">
+                        <span>Select Date</span>
+                        <button class="icon-btn"
+                            onclick="document.getElementById('calendar-modal').style.display='none'">✕</button>
+                    </div>
                     <input type="date" id="calendar-input">
                     <button class="btn" onclick="app.jumpToDate()">Go</button>
                     <div style="clear: both;"></div>
@@ -266,11 +270,7 @@
         </main>
     </div>
     <div class="fab-stack" id="fab-stack">
-        <!-- Buttons are stacked bottom-up -->
-        <button id="scroll-bottom-btn" class="scroll-bottom-btn" onclick="app.scrollToBottom()" title="Go to Bottom">
-            ⬇️
-            <div class="scroll-badge" id="scroll-badge">0</div>
-        </button>
+        <!-- Buttons are stacked dynamically via JS -->
     </div>
 
     <script src="js/app.js"></script>
