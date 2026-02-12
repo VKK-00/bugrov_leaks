@@ -75,7 +75,31 @@ body {
 }
 
 .sidebar-header {
-    padding: 10px;
+    padding: 15px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-bottom: 1px solid var(--border-color);
+}
+
+#password-overlay {
+    background: radial-gradient(circle at center, #1a1a1a 0%, #000000 100%) !important;
+    backdrop-filter: blur(10px);
+}
+
+#password-overlay h2 {
+    font-weight: 300;
+    letter-spacing: 1px;
+    margin-bottom: 30px;
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+}
+
+#access-password {
+    transition: all 0.3s ease;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+#access-password:focus {
+    box-shadow: 0 0 0 2px var(--link-color);
+    transform: translateY(-1px);
 }
 
 /* Toggle Sidebar Button (in Chat Header) */
@@ -408,7 +432,8 @@ body {
     overflow: hidden;
 }
 
-.reply-text, .reply-name {
+.reply-text,
+.reply-name {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -416,7 +441,8 @@ body {
     display: block;
 }
 
-.message img, .message video {
+.message img,
+.message video {
     max-width: 100% !important;
     height: auto !important;
 }
@@ -796,28 +822,34 @@ input[type="date"] {
 
 /* Base Logic for touch devices */
 @media (hover: none) and (pointer: coarse) {
+
     /* Prevent pull-to-refresh */
     body {
         overscroll-behavior-y: contain;
     }
-    
+
     /* Better tap targets */
-    button, .icon-btn, .chat-item, .media-grid-item {
+    button,
+    .icon-btn,
+    .chat-item,
+    .media-grid-item {
         touch-action: manipulation;
     }
 }
 
 /* Valid for all mobile/tablet sizes */
 @media (max-width: 1024px) {
+
     /* Modals centered and smaller */
     .modal-content {
         width: 90%;
         max-width: 600px;
         margin: auto;
     }
-    
+
     /* Scroll fix */
-    .chat-area, .messages-container {
+    .chat-area,
+    .messages-container {
         -webkit-overflow-scrolling: touch;
     }
 }
@@ -825,14 +857,15 @@ input[type="date"] {
 /* Tablet (481px - 1024px) */
 @media (min-width: 481px) and (max-width: 1024px) {
     .sidebar {
-        width: 280px; /* Slightly narrower sidebar */
+        width: 280px;
+        /* Slightly narrower sidebar */
         flex-shrink: 0;
     }
-    
+
     .message {
         max-width: 65%;
     }
-    
+
     .media-grid {
         grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     }
@@ -840,7 +873,7 @@ input[type="date"] {
 
 /* Phone (max-width: 480px) */
 @media (max-width: 480px) {
-    
+
     /* 1. Sidebar - Overlay Drawer Style */
     .sidebar {
         position: absolute;
@@ -851,14 +884,14 @@ input[type="date"] {
         width: 85%;
         max-width: 320px;
         transform: translateX(-100%);
-        box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
         transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
     }
 
     .sidebar.open {
         transform: translateX(0);
     }
-    
+
     /* Sidebar Overlay Backdrop */
     .sidebar-overlay {
         position: fixed;
@@ -866,31 +899,38 @@ input[type="date"] {
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0,0,0,0.5);
-        z-index: 999; /* Below sidebar, above content */
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+        /* Below sidebar, above content */
         display: none;
         animation: fadeIn 0.3s;
     }
-    
+
     .sidebar-overlay.active {
         display: block;
     }
-    
+
     @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
     }
 
     /* 2. Messages & Chat Area */
     .message {
-        max-width: 92%; /* Wider messages on phone */
+        max-width: 92%;
+        /* Wider messages on phone */
         font-size: 14px;
     }
-    
+
     .message-meta {
         font-size: 10px;
     }
-    
+
     .chat-area {
         width: 100%;
         min-width: 100%;
@@ -904,26 +944,27 @@ input[type="date"] {
         height: auto !important;
         border-radius: 8px;
     }
-    
+
     .media-container.round-container {
         max-width: 160px;
         max-height: 160px;
         width: 100%;
         aspect-ratio: 1/1;
     }
-    
+
     /* 4. UI Elements */
     .fab-container {
         right: 15px;
-        bottom: 90px; /* Higher to avoid footer */
+        bottom: 90px;
+        /* Higher to avoid footer */
     }
-    
+
     .footer-banner {
         flex-direction: column;
         gap: 5px;
         padding-bottom: env(safe-area-inset-bottom, 10px);
     }
-    
+
     /* Full screen modals */
     .modal-content {
         width: 100% !important;
@@ -934,29 +975,30 @@ input[type="date"] {
         display: flex;
         flex-direction: column;
     }
-    
+
     .media-grid {
-        grid-template-columns: repeat(2, 1fr); /* 2 columns */
+        grid-template-columns: repeat(2, 1fr);
+        /* 2 columns */
         gap: 8px;
     }
-    
+
     /* Sticky Player Compact */
     .sticky-player {
         padding: 5px 10px;
         font-size: 12px;
         bottom: env(safe-area-inset-bottom, 0);
     }
-    
+
     .player-controls button {
         font-size: 18px;
         margin: 0 5px;
     }
-    
+
     /* Search Bar */
     #search-bar-chat {
         flex-wrap: wrap;
     }
-    
+
     #msg-search-input {
         min-width: 150px;
     }

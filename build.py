@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+from bootstrap_env import fix_env
+fix_env()
+
 """
 Telegram HTML Export → Static JSON Viewer Builder
 
