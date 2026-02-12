@@ -87,11 +87,7 @@ var app = {
         window.addEventListener('hashchange', () => this.handleHashChange());
         this.handleHashChange();
 
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js')
-                .then(reg => console.log('SW register success', reg))
-                .catch(err => console.log('SW register fail', err));
-        }
+        // Service Worker / PWA removed by request
 
         const searchInput = document.getElementById('chat-search');
         if (searchInput) {
@@ -188,27 +184,44 @@ var app = {
         this.renderSidebar(input.value);
     },
 
-    toggleSidebar: function () {
+    // Unified Sidebar Logic
+    setSidebarOpen: function (isOpen) {
         const sidebar = document.querySelector('.sidebar');
         const overlay = document.getElementById('sidebar-overlay');
-        sidebar.classList.toggle('open'); // Use 'open' instead of 'collapsed' for mobile logic clarity
-        // But wait, desktop uses 'collapsed' to hide. Mobile uses 'open' to show?
-        // Let's unify or handle both.
-        // CSS: .sidebar.collapsed { width: 0 } (Desktop)
-        // CSS: .sidebar { transform: translateX(-100%) } (Mobile)
-        // CSS: .sidebar.open { transform: translateX(0) } (Mobile)
+        const isMobile = window.innerWidth <= 768; // Tablet/Mobile threshold
 
-        // Let's keep existing desktop logic 'collapsed' and add 'open' for mobile
-        if (window.innerWidth <= 480) {
-            sidebar.classList.toggle('open');
-            if (sidebar.classList.contains('open')) {
-                overlay.classList.add('active');
+        if (isMobile) {
+            if (isOpen) {
+                sidebar.classList.add('open');
+                if (overlay) overlay.classList.add('active');
             } else {
-                overlay.classList.remove('active');
+                sidebar.classList.remove('open');
+                if (overlay) overlay.classList.remove('active');
             }
         } else {
-            sidebar.classList.toggle('collapsed');
+            // Desktop
+            if (isOpen) {
+                sidebar.classList.remove('collapsed');
+            } else {
+                sidebar.classList.add('collapsed');
+            }
         }
+    },
+
+    toggleSidebar: function () {
+        const sidebar = document.querySelector('.sidebar');
+        const isMobile = window.innerWidth <= 768;
+
+        let willBeOpen;
+        if (isMobile) {
+            // If it has 'open', we are closing it.
+            willBeOpen = !sidebar.classList.contains('open');
+        } else {
+            // If it has 'collapsed', we are opening it.
+            willBeOpen = sidebar.classList.contains('collapsed');
+        }
+
+        this.setSidebarOpen(willBeOpen);
     },
 
     closeChat: function () {
@@ -217,20 +230,7 @@ var app = {
 
         // Mobile Logic: Show sidebar, hide back button
         if (window.innerWidth <= 768) {
-            // For phone (<=480), we just clear the covering char area? 
-            // Actually on phone, sidebar is overlay. 
-            // If we "close chat", we probably want to see the sidebar relative to the chat list?
-            // "Full screen chat view" -> "Sidebar hidden entirely".
-            // So closing chat means showing sidebar.
-
-            const sidebar = document.querySelector('.sidebar');
-            // If we are on phone, we want sidebar to be OPEN (visible).
-            if (window.innerWidth <= 480) {
-                sidebar.classList.add('open'); // Show sidebar
-                document.getElementById('sidebar-overlay').classList.add('active');
-            } else {
-                sidebar.classList.remove('collapsed');
-            }
+            this.setSidebarOpen(true);
 
             const backBtn = document.getElementById('mobile-back-btn');
             if (backBtn) backBtn.style.display = 'none';
@@ -370,15 +370,7 @@ var app = {
         // Mobile Navigation Logic
         if (window.innerWidth <= 768) {
             // Auto-hide sidebar to show chat
-            const sidebar = document.querySelector('.sidebar');
-            const overlay = document.getElementById('sidebar-overlay');
-
-            if (window.innerWidth <= 480) {
-                sidebar.classList.remove('open');
-                if (overlay) overlay.classList.remove('active');
-            } else {
-                sidebar.classList.add('collapsed');
-            }
+            this.setSidebarOpen(false);
 
             // Show Back Button, Hide Burger
             const backBtn = document.getElementById('mobile-back-btn');
@@ -678,12 +670,13 @@ var app = {
                 if (msg.reply_to) {
                     const replyMsg = this.state.messageMap.get(msg.reply_to);
                     const replyName = replyMsg ? (replyMsg.from_name || 'Someone') : 'Message';
-                    const replyText = replyMsg ? (replyMsg.plain_text || 'Media') : '...';
+
+                    const replySnippet = this.getReplySnippet(replyMsg);
 
                     content += `
                         <div class="reply-preview" onclick="app.scrollToMessage('${msg.reply_to}')">
                             <div class="reply-name">${this.escapeHtml(replyName)}</div>
-                            <div class="reply-text">${this.escapeHtml(replyText)}</div>
+                            <div class="reply-text">${replySnippet}</div>
                         </div>`;
                 }
 
@@ -798,9 +791,40 @@ var app = {
         const el = document.getElementById(msgId);
         if (el) {
             el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            el.classList.add('highlight');
-            setTimeout(() => el.classList.remove('highlight'), 2000);
+            el.classList.add('highlight'); // Add highlight class
+            setTimeout(() => {
+                el.classList.remove('highlight');
+            }, 2000);
+        } else {
+            // If not found, maybe load chunk? (Not implemented here for simplicity)
+            console.log("Message not found in DOM:", msgId);
         }
+    },
+
+    getReplySnippet: function (msg) {
+        if (!msg) return '...';
+
+        // Priority: Text -> Media -> Type
+        if (msg.plain_text && msg.plain_text.trim()) {
+            let text = msg.plain_text.trim().replace(/\s+/g, ' ');
+            if (text.length > 50) {
+                text = text.substring(0, 50) + '...';
+            }
+            return this.escapeHtml(text);
+        }
+
+        // Check attachments
+        if (msg.attachments && msg.attachments.length > 0) {
+            const type = msg.attachments[0].kind;
+            if (type === 'photo') return '📷 Photo';
+            if (type === 'video') return '📹 Video';
+            if (type === 'voice') return '🎤 Voice Message';
+            if (type === 'sticker') return '🙂 Sticker';
+            if (type === 'round_video') return '⏺ Video Message';
+            return '📎 File';
+        }
+
+        return 'Message';
     },
 
     toggleSearch: function () {

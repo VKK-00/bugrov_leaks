@@ -65,7 +65,30 @@ body {
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
-    transition: width 0.3s ease, transform 0.3s ease;
+    transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), width 0.3s ease;
+    z-index: 1001;
+    /* Above everything on mobile */
+}
+
+/* Mobile: Sidebar is absolute overlay */
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 80% !important;
+        /* Max width on mobile */
+        max-width: 320px;
+        transform: translateX(-105%);
+        /* Hide off-screen left */
+        border-right: none;
+        box-shadow: 2px 0 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .sidebar.open {
+        transform: translateX(0);
+    }
 }
 
 .sidebar.collapsed {
@@ -219,6 +242,8 @@ body {
     position: relative;
     /* FIX: Allow shrinking below content size to prevent overflow */
     min-width: 0;
+    min-height: 0;
+    /* Critical for nested flex scrolling */
 }
 
 .chat-header {
@@ -270,8 +295,23 @@ body {
     /* Space for footer */
     /* FIX: Allow shrinking below content size */
     min-width: 0;
+    min-height: 0;
+    /* Critical for scroll */
     overflow-x: hidden;
-    /* Prevent horizontal scroll */
+    scroll-behavior: smooth;
+    animation: fadeInChat 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
+}
+
+@keyframes fadeInChat {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Footer Banner */
@@ -356,19 +396,21 @@ body {
 /* Incoming (Left) */
 .message.incoming {
     align-self: flex-start;
-    background-color: #ffffff;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     border-bottom-left-radius: 0;
 }
 
 /* Outgoing / Bugrov (Right) */
-/* Explicitly targeting the class we add in JS */
 .message.bugrov-message {
     align-self: flex-end;
-    background-color: #effdde;
-    /* Standard Telegram Green */
+    background: rgba(223, 253, 206, 0.85);
+    /* Glassy Green */
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(223, 253, 206, 0.3);
     border-bottom-right-radius: 0;
     border-bottom-left-radius: 12px;
-    /* Reset the left corner */
     margin-left: auto;
 }
 
@@ -439,6 +481,18 @@ body {
     text-overflow: ellipsis;
     max-width: 100%;
     display: block;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.reply-name {
+    color: var(--link-color);
+    font-weight: 500;
+}
+
+.reply-text {
+    color: inherit;
+    opacity: 0.8;
 }
 
 .message img,
