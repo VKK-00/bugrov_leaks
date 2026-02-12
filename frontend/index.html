@@ -28,27 +28,27 @@
         <div id="sidebar-overlay" class="sidebar-overlay" onclick="app.toggleSidebar()"></div>
         <aside class="sidebar">
             <header class="sidebar-header">
-                <div style="display: flex; align-items: center; margin-bottom: 5px;">
-                    <div class="search-bar" style="flex:1; margin-right: 10px;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                    <div class="search-bar" style="flex:1;">
                         <input type="text" placeholder="Search" id="chat-search">
                     </div>
+                    <button class="theme-toggle-btn" onclick="app.toggleTheme()" title="Toggle Theme"
+                        style="border: none; background: none; font-size: 20px; cursor: pointer;">
+                        🌙
+                    </button>
                     <!-- Mobile Close Sidebar Button -->
                     <button id="sidebar-close-btn" onclick="app.toggleSidebar()"
                         style="display: none; background:none; border:none; font-size: 20px; cursor: pointer;">✕</button>
                 </div>
 
-                <div
-                    style="margin-top: 10px; display: flex; align-items: center; justify-content: space-between; padding: 0 5px;">
+                <div style="display: flex; align-items: center; padding: 0 5px;">
                     <label
                         style="font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 5px; cursor: pointer;">
                         <input type="checkbox" id="global-search-toggle" onchange="app.toggleGlobalSearch()"> Global
                         Search
                     </label>
-                    <span id="global-search-status" style="font-size: 11px; color: var(--accent-color);"></span>
-                    <button class="theme-toggle-btn" onclick="app.toggleTheme()" title="Toggle Theme"
-                        style="border: none; background: none; font-size: 16px; cursor: pointer;">
-                        🌙
-                    </button>
+                    <span id="global-search-status"
+                        style="font-size: 11px; color: var(--accent-color); margin-left: 10px;"></span>
                 </div>
             </header>
             <div class="chat-list" id="chat-list">
@@ -85,12 +85,7 @@
                 </div>
             </div>
 
-            <!-- FAB Container -->
-            <div class="fab-container" id="fab-container" style="display: flex;">
-                <div class="fab" title="Analytics" onclick="app.openAnalytics()">📊</div>
-                <div class="fab" title="Calendar" onclick="app.showCalendar()">📅</div>
-                <div class="fab" title="Scroll to Top" onclick="app.scrollToTop()">⬆️</div>
-            </div>
+
 
             <!-- Footer Banner -->
             <div class="footer-banner">
@@ -267,18 +262,7 @@
                     <!-- Media items injected here -->
                 </div>
             </div>
-            <!-- Analytics Modal -->
-            <div class="modal" id="analytics-modal" onclick="if(event.target === this) this.style.display='none'">
-                <div class="modal-content" style="max-width: 600px;">
-                    <div class="modal-header"
-                        style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:10px;">
-                        <span style="font-weight:bold;">Chat Analytics</span>
-                        <button class="icon-btn"
-                            onclick="document.getElementById('analytics-modal').style.display='none'">✕</button>
-                    </div>
-                    <div id="analytics-body" style="padding: 10px 0;"></div>
-                </div>
-            </div>
+
         </main>
     </div>
     <div class="fab-stack" id="fab-stack">

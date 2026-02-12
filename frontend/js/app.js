@@ -12,6 +12,13 @@ var app = {
         isSearching: false
     },
 
+    closeAllModals: function () {
+        ['calendar-modal', 'media-gallery-modal', 'info-modal', 'analytics-modal', 'lightbox'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        });
+    },
+
     toggleTheme: function () {
         const current = localStorage.getItem('theme') || 'light';
         const next = current === 'dark' ? 'light' : 'dark';
@@ -163,7 +170,7 @@ var app = {
             document.getElementById('messages-container').innerHTML =
                 '<div class="empty-state"><p>Select a chat from the sidebar</p></div>';
             document.getElementById('chat-header').style.display = 'none';
-            document.getElementById('fab-container').style.display = 'none';
+            document.getElementById('chat-header').style.display = 'none';
             // Hide search bar if open
             const bar = document.getElementById('search-bar-chat');
             if (bar) bar.style.display = 'none';
@@ -275,7 +282,7 @@ var app = {
         // Hide chat header and cleared container
         document.getElementById('chat-header').style.display = 'none';
         document.getElementById('messages-container').innerHTML = '<div class="empty-state"><p>Select a chat from the sidebar</p></div>';
-        document.getElementById('fab-container').style.display = 'none';
+        document.getElementById('messages-container').innerHTML = '<div class="empty-state"><p>Select a chat from the sidebar</p></div>';
         const bar = document.getElementById('search-bar-chat');
         if (bar) bar.style.display = 'none';
     },
@@ -412,8 +419,6 @@ var app = {
             const toggleBtn = document.getElementById('sidebar-toggle-btn');
             if (toggleBtn) toggleBtn.style.display = 'none';
         }
-
-        document.getElementById('fab-container').style.display = 'flex';
 
         const chat = this.state.chats.find(c => c.chat_id === chatId);
         const header = document.getElementById('chat-header');
@@ -985,6 +990,7 @@ var app = {
     },
 
     showCalendar: function () {
+        this.closeAllModals();
         document.getElementById('calendar-modal').style.display = 'flex';
         const input = document.getElementById('calendar-input');
 
@@ -1025,6 +1031,7 @@ var app = {
     openMediaGallery: function () {
         if (!this.state.currentChatMessages || this.state.currentChatMessages.length === 0) return;
 
+        this.closeAllModals();
         document.getElementById('media-gallery-modal').style.display = 'flex';
         // Default to photo
         const photoTab = document.querySelector('.media-tab');
@@ -1126,6 +1133,7 @@ var app = {
     },
 
     openInfoModal: function () {
+        this.closeAllModals();
         document.getElementById('info-modal').style.display = 'flex';
     },
 
@@ -1191,7 +1199,7 @@ var app = {
         calBtn.className = 'fab';
         calBtn.innerText = '📅';
         calBtn.title = 'Date Calendar';
-        calBtn.onclick = () => app.openDateCalendar();
+        calBtn.onclick = () => app.showCalendar();
         stack.appendChild(calBtn); // Stack order: Bottom -> Top
 
         // Analytics
@@ -1199,8 +1207,16 @@ var app = {
         analyticsBtn.className = 'fab';
         analyticsBtn.innerText = '📊';
         analyticsBtn.title = 'Analytics';
-        analyticsBtn.onclick = () => app.showAnalytics();
+        analyticsBtn.onclick = () => app.openAnalytics();
         stack.appendChild(analyticsBtn);
+
+        // Scroll Top
+        const scrollTopBtn = document.createElement('div');
+        scrollTopBtn.className = 'fab';
+        scrollTopBtn.innerText = '⬆️';
+        scrollTopBtn.title = 'Scroll to Top';
+        scrollTopBtn.onclick = () => app.scrollToTop();
+        stack.appendChild(scrollTopBtn);
     },
 
     navigateMedia: function (direction) {
@@ -1284,6 +1300,7 @@ var app = {
             </div>
         `;
 
+        this.closeAllModals();
         document.getElementById('analytics-modal').style.display = 'flex';
     },
 
