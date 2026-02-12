@@ -13,11 +13,20 @@ var app = {
     },
 
     toggleTheme: function () {
-        // Removed
+        const current = localStorage.getItem('theme') || 'light';
+        const next = current === 'dark' ? 'light' : 'dark';
+        this.setTheme(next);
     },
 
     setTheme: function (theme) {
-        // Removed
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+
+        // Update button icon
+        const btns = document.querySelectorAll('.theme-toggle-btn');
+        btns.forEach(btn => {
+            btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+        });
     },
 
     checkPassword: function () {
@@ -99,14 +108,38 @@ var app = {
         const msgSearchInput = document.getElementById('msg-search-input');
         if (msgSearchInput) {
             msgSearchInput.addEventListener('input', (e) => {
-                this.filterMessages(e.target.value);
+                // ...
             });
         }
+
+        this.renderFixedUI();
     },
 
     acceptDisclaimer: function () {
         localStorage.setItem('bugrov_consent', 'true');
         document.getElementById('disclaimer-modal').style.display = 'none';
+        // Initialize Scroll Button
+        const scrollBtn = document.getElementById('scroll-bottom-btn');
+        const container = document.getElementById('messages-container');
+        if (container && scrollBtn) {
+            container.addEventListener('scroll', () => {
+                if (container.scrollTop < container.scrollHeight - container.clientHeight - 300) {
+                    scrollBtn.classList.add('visible');
+                } else {
+                    scrollBtn.classList.remove('visible');
+                }
+            });
+        }
+
+        // Initialize Theme
+        this.setTheme(localStorage.getItem('theme') || 'light');
+    },
+
+    scrollToBottom: function () {
+        const container = document.getElementById('messages-container');
+        if (container) {
+            container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+        }
     },
 
     loadManifest: async function () {
@@ -1146,6 +1179,28 @@ var app = {
                 }
             }
         }, { passive: true });
+    },
+
+    renderFixedUI: function () {
+        // Analytics Button (in stack)
+        const stack = document.getElementById('fab-stack');
+        if (!stack) return; // Wait for stack
+
+        // Calendar
+        const calBtn = document.createElement('div');
+        calBtn.className = 'fab';
+        calBtn.innerText = '📅';
+        calBtn.title = 'Date Calendar';
+        calBtn.onclick = () => app.openDateCalendar();
+        stack.appendChild(calBtn); // Stack order: Bottom -> Top
+
+        // Analytics
+        const analyticsBtn = document.createElement('div');
+        analyticsBtn.className = 'fab';
+        analyticsBtn.innerText = '📊';
+        analyticsBtn.title = 'Analytics';
+        analyticsBtn.onclick = () => app.showAnalytics();
+        stack.appendChild(analyticsBtn);
     },
 
     navigateMedia: function (direction) {

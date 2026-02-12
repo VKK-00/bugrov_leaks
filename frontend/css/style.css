@@ -19,23 +19,64 @@
 }
 
 [data-theme="dark"] {
-    /* Force Light Theme Colors even if dark theme is selected */
-    --bg-color: #ffffff;
-    --sidebar-bg: #ffffff;
-    --chat-bg: #9ac2de;
-    --header-bg: #ffffff;
-    --input-bg: #f1f1f1;
-    --text-primary: #000000;
-    --text-secondary: #707579;
-    --accent-color: #3390ec;
-    --message-bg-in: #ffffff;
-    --message-bg-out: #effdde;
-    --msg-text: #000;
-    --msg-meta: #a0aeb9;
-    --link-color: #3390ec;
-    --border-color: #dfe1e5;
-    --hover-color: #f1f1f1;
-    --scroll-thumb: rgba(0, 0, 0, 0.2);
+    /* Premium Dark Theme - Neo-Glass */
+    --bg-color: #0f0f0f;
+    --sidebar-bg: #1c1c1d;
+    --chat-bg: #000000;
+    --header-bg: #1c1c1d;
+    --input-bg: #2c2c2e;
+    --text-primary: #ffffff;
+    --text-secondary: #aaaaaa;
+    --accent-color: #3e88f7;
+    --message-bg-in: #2c2c2e;
+    --message-bg-out: #2b5278;
+    /* Deep Blue */
+    --msg-text: #e0e0e0;
+    --msg-meta: #7a8a9a;
+    --link-color: #58a6ff;
+    --border-color: #3a3a3c;
+    --hover-color: #2c2c2e;
+    --scroll-thumb: rgba(255, 255, 255, 0.2);
+}
+
+/* Dark Mode Specific Overrides */
+[data-theme="dark"] .chat-area {
+    background-image: url('https://web.telegram.org/img/bg_1.jpg') !important;
+    /* Dark pattern */
+    background-blend-mode: overlay;
+    background-color: #000;
+}
+
+[data-theme="dark"] .sidebar-header {
+    background: linear-gradient(135deg, #1c1c1d 0%, #2c2c2e 100%);
+}
+
+[data-theme="dark"] .message.incoming {
+    background: rgba(44, 44, 46, 0.85);
+    /* Glassy Dark */
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .message.bugrov-message {
+    background: rgba(43, 82, 120, 0.85);
+    /* Glassy Blue */
+    border: 1px solid rgba(62, 136, 247, 0.3);
+}
+
+[data-theme="dark"] .message-sender.color1 {
+    color: #ff6b6b;
+}
+
+[data-theme="dark"] .message-sender.color2 {
+    color: #51cf66;
+}
+
+[data-theme="dark"] .message-sender.color3 {
+    color: #fcc419;
+}
+
+[data-theme="dark"] .message-sender.color4 {
+    color: #339af0;
 }
 
 * {
@@ -619,50 +660,74 @@ body {
 
 /* Special Bugrov Styling (Message Bubble) */
 /* This class is applied to the .message DIV, not just the name */
-/* Calendar Button & Scroll Top */
-.fab-container {
-    position: absolute;
-    bottom: 80px;
-    /* Moved up to avoid footer overlay */
-    right: 30px;
+/* FAB Stack - Bottom Right Container */
+.fab-stack {
+    position: fixed;
+    bottom: 30px;
+    right: 20px;
     display: flex;
-    flex-direction: column;
+    flex-direction: column-reverse;
+    /* Stack from bottom up */
     gap: 15px;
-    z-index: 100;
+    z-index: 900;
+    pointer-events: none;
+    /* Allow clicking through container */
 }
 
-.fab {
+/* Common FAB styles */
+.fab,
+.scroll-bottom-btn {
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    background-color: #fff;
-    color: #707579;
+    background-color: var(--bg-color);
+    /* Adaptive bg */
+    color: var(--text-secondary);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-    transition: background-color 0.2s, transform 0.2s;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    border: none;
+    transition: transform 0.2s, opacity 0.2s;
+    pointer-events: auto;
+    /* Re-enable clicks */
+    position: static;
+    /* Let Flexbox handle layout */
     font-size: 20px;
 }
 
-.fab:hover {
-    background-color: #f1f1f1;
-    transform: scale(1.1);
+[data-theme="dark"] .fab,
+[data-theme="dark"] .scroll-bottom-btn {
+    background-color: #2c2c2e;
+    color: #fff;
 }
 
-/* Date Picker Modal */
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
+.fab:hover,
+.scroll-bottom-btn:hover {
+    transform: scale(1.1);
+    background-color: var(--hover-color);
+}
+
+/* Special styling for scroll bottom */
+.scroll-bottom-btn {
+    background-color: rgba(51, 144, 236, 0.9) !important;
+    color: white !important;
+    opacity: 0;
+    transform: translateY(20px);
     display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 200;
+    /* Hidden by layout logic if not visible */
+}
+
+.scroll-bottom-btn.visible {
+    opacity: 1;
+    transform: translateY(0);
+    display: flex;
+    /* Join the stack */
+}
+
+[data-theme="dark"] .scroll-bottom-btn {
+    background-color: rgba(62, 136, 247, 0.9) !important;
 }
 
 .modal-content {
@@ -695,6 +760,114 @@ input[type="date"] {
     cursor: pointer;
     font-weight: 500;
     float: right;
+}
+
+/* Smart Media Grid */
+.media-grid-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    border-radius: 12px;
+    overflow: hidden;
+    max-width: 480px;
+}
+
+.media-grid-item {
+    flex: 1 1 auto;
+    /* Grow to fill */
+    position: relative;
+    max-height: 320px;
+    min-width: 120px;
+    /* Prevent too narrow */
+    cursor: zoom-in;
+}
+
+.media-grid-item img,
+.media-grid-item video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Grid logic for 2 items */
+.media-grid-group[data-count="2"] .media-grid-item {
+    width: 50%;
+}
+
+/* Grid logic for 3 items: 1 big, 2 small, or 3 row */
+.media-grid-group[data-count="3"] .media-grid-item:first-child {
+    width: 100%;
+}
+
+/* Scroll To Bottom Button */
+.scroll-bottom-btn {
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: rgba(51, 144, 236, 0.9);
+    /* Default Blue */
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    border: none;
+    z-index: 900;
+    transition: transform 0.2s, opacity 0.2s;
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+}
+
+.scroll-bottom-btn.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: all;
+}
+
+[data-theme="dark"] .scroll-bottom-btn {
+    background-color: rgba(62, 136, 247, 0.9);
+}
+
+.scroll-bottom-btn:hover {
+    transform: scale(1.1);
+}
+
+.scroll-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: #ff3b30;
+    color: white;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: bold;
+    display: none;
+    /* Hide for archive viewer */
+}
+
+/* Toggle Theme Button */
+.theme-toggle-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    color: var(--text-secondary);
+    padding: 5px;
+    border-radius: 50%;
+    transition: background 0.2s;
+}
+
+.theme-toggle-btn:hover {
+    background-color: var(--hover-color);
+    color: var(--accent-color);
 }
 
 /* Media */
