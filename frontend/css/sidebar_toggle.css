@@ -58,8 +58,8 @@
 
     /* When sidebar is open on mobile, follow it */
     .sidebar.open~.floating-sidebar-toggle {
-        left: calc(min(85vw, 320px));
-        /* Follow sidebar width */
+        left: min(80vw, 320px);
+        /* Follow actual sidebar width (80vw max 320px) */
     }
 
     /* Arrow points right when closed, left when open */
