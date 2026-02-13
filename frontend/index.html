@@ -9,10 +9,12 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/media_gallery.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/twallpaper"></script>
 </head>
 
 <body>
     <div id="app">
+        <!-- Canvas removed -->
         <!-- Password Modal -->
         <div id="password-overlay"
             style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; display: flex; align-items: center; justify-content: center; color: white; flex-direction: column;">
@@ -26,6 +28,36 @@
             <p style="color: #666; font-size: 12px;">Підказка: прізвище ректора (лат.)</p>
         </div>
         <div id="sidebar-overlay" class="sidebar-overlay" onclick="app.toggleSidebar()"></div>
+
+        <!-- Disclaimer Modal -->
+        <div class="modal" id="disclaimer-modal" style="display: flex; background: rgba(0,0,0,0.9); z-index: 20000;">
+            <div class="modal-content" style="max-width: 600px; text-align: center;">
+                <h2 style="margin-bottom: 20px; color: #cc3333;">⚠️ УВАГА / WARNING</h2>
+                <p style="margin-bottom: 15px; line-height: 1.6;">
+                    Ви отримали доступ до архіву листування ректора КНУ ім. Тараса Шевченка Володимира Бугрова.
+                </p>
+                <p style="margin-bottom: 15px; line-height: 1.6;">
+                    Матеріали містять нецензурну лексику та контент 18+ (інтимного характеру), який був надісланий
+                    студенткам та співробітницям університету.
+                </p>
+                <p style="margin-bottom: 15px; line-height: 1.6;">
+                    Зазначене листування було вперше опубліковано на Telegram-каналі <a
+                        href="https://t.me/bugrovleaks/3" target="_blank">@bugrovleaks</a> незадовго до
+                    повномасштабного вторгнення Росії в Україну
+                    (лютий 2022).
+                </p>
+                <p style="margin-bottom: 25px; font-weight: bold;">
+                    Продовжуючи, ви підтверджуєте, що вам виповнилося 18 років і ви усвідомлюєте характер
+                    матеріалів.
+                </p>
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button class="btn" onclick="app.acceptDisclaimer()" style="font-size: 16px; padding: 10px 20px;">Я
+                        погоджуюсь / I Agree</button>
+                </div>
+                <div style="clear: both;"></div>
+            </div>
+        </div>
+
         <aside class="sidebar">
             <header class="sidebar-header">
                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
@@ -70,6 +102,29 @@
                     <button class="icon-btn" onclick="app.showCalendar()">📅</button>
                 </div>
             </header>
+            <!-- Sticky Audio Player -->
+            <div id="sticky-audio-player" class="sticky-player" style="display: none;">
+                <audio id="global-audio" style="display:none;"></audio>
+                <div class="player-controls">
+                    <button onclick="app.prevAudio()">⏮</button>
+                    <button onclick="app.toggleAudio()" id="play-pause-btn">▶</button>
+                    <button onclick="app.nextAudio()">⏭</button>
+                </div>
+                <div class="player-info">
+                    <div id="player-title" class="player-title">Audio Track</div>
+                    <div id="player-time" class="player-time">00:00 / 00:00</div>
+                </div>
+                <!-- Waveform Decoration -->
+                <div class="player-waveform">
+                    <div class="bar" style="height: 12px"></div>
+                    <div class="bar" style="height: 18px"></div>
+                    <div class="bar" style="height: 10px"></div>
+                    <div class="bar" style="height: 15px"></div>
+                    <div class="bar" style="height: 8px"></div>
+                    <div class="bar" style="height: 14px"></div>
+                </div>
+                <button onclick="app.closeAudio()" class="close-player">✕</button>
+            </div>
             <div id="search-bar-chat"
                 style="display:none; padding: 10px; background: var(--header-bg); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 10px;">
                 <input type="text" id="msg-search-input" placeholder="Search in this chat..."
@@ -79,6 +134,7 @@
                 <button class="icon-btn" onclick="app.navigateSearch('prev')" title="Previous">⬆️</button>
                 <button class="icon-btn" onclick="app.navigateSearch('next')" title="Next">⬇️</button>
             </div>
+            <div id="floating-date-header" class="floating-date-header">May 15</div>
             <div class="messages-container" id="messages-container">
                 <div class="empty-state">
                     <p>Select a chat from the sidebar</p>
@@ -97,180 +153,179 @@
                 </a>
             </div>
 
-            <!-- Calendar Modal -->
-            <div class="modal" id="calendar-modal" onclick="if(event.target === this) this.style.display='none'">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <span>Select Date</span>
-                        <button class="icon-btn"
-                            onclick="document.getElementById('calendar-modal').style.display='none'">✕</button>
-                    </div>
-                    <input type="date" id="calendar-input">
-                    <button class="btn" onclick="app.jumpToDate()">Go</button>
-                    <div style="clear: both;"></div>
-                </div>
-            </div>
 
-            <!-- Lightbox -->
-            <div class="lightbox" id="lightbox" onclick="this.style.display='none'">
-                <img id="lightbox-img" src="" alt="Full size">
-            </div>
+            <!-- Modals moved to root (below) -->
 
-            <!-- Disclaimer Modal -->
-            <div class="modal" id="disclaimer-modal" style="display: flex; background: rgba(0,0,0,0.9); z-index: 9999;">
-                <div class="modal-content" style="max-width: 600px; text-align: center;">
-                    <h2 style="margin-bottom: 20px; color: #cc3333;">⚠️ УВАГА / WARNING</h2>
-                    <p style="margin-bottom: 15px; line-height: 1.6;">
-                        Ви отримали доступ до архіву листування ректора КНУ ім. Тараса Шевченка Володимира Бугрова.
-                    </p>
-                    <p style="margin-bottom: 15px; line-height: 1.6;">
-                        Матеріали містять нецензурну лексику та контент 18+ (інтимного характеру), який був надісланий
-                        студенткам та співробітницям університету.
-                    </p>
-                    <p style="margin-bottom: 15px; line-height: 1.6;">
-                        Зазначене листування було вперше опубліковано на Telegram-каналі <a
-                            href="https://t.me/bugrovleaks/3" target="_blank">@bugrovleaks</a> незадовго до
-                        повномасштабного вторгнення Росії в Україну
-                        (лютий 2022).
-                    </p>
-                    <p style="margin-bottom: 25px; font-weight: bold;">
-                        Продовжуючи, ви підтверджуєте, що вам виповнилося 18 років і ви усвідомлюєте характер
-                        матеріалів.
-                    </p>
-                    <div style="display: flex; gap: 10px; justify-content: center;">
-                        <button class="btn" onclick="app.acceptDisclaimer()"
-                            style="font-size: 16px; padding: 10px 20px;">Я погоджуюсь / I Agree</button>
-                    </div>
-                    <div style="clear: both;"></div>
-                </div>
-            </div>
+            <!-- (Disclaimer Modal moved to root) -->
 
-            <!-- Analytics Modal -->
-            <div class="modal" id="analytics-modal" onclick="if(event.target === this) this.style.display='none'">
-                <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
-                    <div class="modal-header"
-                        style="border-bottom: 1px solid #eee; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
-                        <span>📊 Статистика Чату</span>
-                        <span style="cursor: pointer; font-size: 24px;"
-                            onclick="document.getElementById('analytics-modal').style.display='none'">&times;</span>
-                    </div>
-                    <div class="modal-body" id="analytics-body" style="padding-top: 20px;">
-                        <!-- Stats injected here -->
-                    </div>
-                </div>
-            </div>
 
-            <!-- Sticky Audio Player -->
-            <div id="sticky-audio-player" class="sticky-player" style="display: none;">
-                <div class="player-info">
-                    <span id="player-title">Audio Track</span>
-                    <span id="player-time">00:00 / 00:00</span>
-                </div>
-                <div class="player-controls">
-                    <button onclick="app.prevAudio()">⏮️</button>
-                    <button onclick="app.toggleAudio()" id="play-pause-btn">▶️</button>
-                    <button onclick="app.nextAudio()">⏭️</button>
-                    <button onclick="app.closeAudio()" style="margin-left: 10px; opacity: 0.7;">✕</button>
-                </div>
-                <audio id="global-audio" style="display:none;"></audio>
-            </div>
+            <!-- Modals moved to root (below) -->
 
-            <!-- Info Modal -->
-            <div class="modal" id="info-modal" onclick="if(event.target === this) this.style.display='none'">
-                <div class="modal-content" style="max-width: 700px; max-height: 90vh; overflow-y: auto;">
-                    <div class="modal-header"
-                        style="border-bottom: 1px solid #eee; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
-                        <span>Довідка та Контекст</span>
-                        <button class="icon-btn" onclick="document.getElementById('info-modal').style.display='none'"
-                            style="font-size: 24px;">✕</button>
-                    </div>
 
-                    <div style="margin-top: 20px;">
-                        <h3 style="color: var(--accent-color); margin-bottom: 10px;">📉 Відсутні медіа</h3>
-                        <p
-                            style="font-size: 14px; color: #555; background: #fff3cd; padding: 10px; border-radius: 6px; border-left: 4px solid #ffc107;">
-                            <strong>Зверніть увагу:</strong> При експорті архіву деякі файли, що перевищували ліміт
-                            розміру, не були завантажені. Також можуть бути відсутні деякі приватні стікери або
-                            специфічні медіа-файли. Це може виглядати як "бите" зображення або пустий файл у чаті.
-                        </p>
-                    </div>
-
-                    <div style="margin-top: 20px;">
-                        <h3 style="color: var(--accent-color); margin-bottom: 10px;">📜 Словник скорочень</h3>
-                        <div class="abbrev-grid"
-                            style="display: grid; grid-template-columns: auto 1fr; gap: 8px 15px; background: #f9f9f9; padding: 15px; border-radius: 8px; font-size: 14px;">
-                            <strong>ММ/КМ</strong> <span>Марія Миколаївна (Горбань)</span>
-                            <strong>ОЛ</strong> <span>Олена Леонідівна (Добржанська)</span>
-                            <strong>ВА</strong> <span>Володимир Анатолійович (Бугров)</span>
-                            <strong>ІО</strong> <span>Інна Олександрівна (Степанець)</span>
-                            <strong>ЛВ</strong> <span>Леонід Васильович (Губерський)</span>
-                            <strong>Пог</strong> <span>Погорецький (Микола Анатолійович)</span>
-                            <strong>Вітр</strong> <span>Вітренко (Андрій Олександрович)</span>
-                            <strong>РО</strong> <span>Руслан Олексійович (Стефанчук)</span>
-                            <strong>Ш</strong> <span>Шкарлет (Сергій Миколайович)</span>
-                            <strong>Ю</strong> <span>Юлія (Тарасівна Кузів)</span>
-                            <strong>Шеп</strong> <span>Шепелева (Анна Ігорівна)</span>
-                        </div>
-                    </div>
-
-                    <div style="margin-top: 30px;">
-                        <h3 style="color: var(--accent-color); margin-bottom: 10px;">🕵️‍♂️ Розслідування</h3>
-
-                        <div style="margin-bottom: 20px;">
-                            <a href="https://graph.org/Sprobi-zam%D1%96tannya-sl%D1%96d%D1%96v-02-07" target="_blank"
-                                style="text-decoration: none; color: #333; display: block; background: #fff; border: 1px solid #eee; border-radius: 8px; overflow: hidden; transition: box-shadow 0.2s;">
-                                <div style="padding: 15px;">
-                                    <div
-                                        style="font-weight: bold; font-size: 16px; margin-bottom: 5px; color: var(--link-color);">
-                                        Спроби замітання слідів</div>
-                                    <p style="font-size: 14px; color: #555; margin: 0;">Аналіз того, як адміністрація
-                                        намагалася приховати докази та вплинути на ситуацію після витоку інформації.</p>
-                                    <div style="margin-top: 8px; font-size: 12px; color: #999;">telegra.ph • Читати
-                                        статтю ↗</div>
-                                </div>
-                            </a>
-                        </div>
-
-                        <div>
-                            <a href="https://red-guber.medium.com/bugrovleaks-%D1%81%D0%B5%D0%BA%D1%81-%D1%81%D0%BA%D0%B0%D0%BD%D0%B0%D0%BB-%D1%89%D0%BE%D0%B4%D0%BE-%D1%80%D0%B5%D0%BA%D1%82%D0%BE%D1%80%D0%B0-%D0%BA%D0%BD%D1%83-%D1%8F%D0%BA%D0%B8%D0%B9-%D0%B2%D0%BF%D0%BB%D0%B8%D0%B2%D0%B0%D1%94-%D0%BD%D0%B0-%D0%B2%D1%81%D1%8E-%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D1%83-%D0%B2%D0%B8%D1%89%D0%BE%D1%97-%D0%BE%D1%81%D0%B2%D1%96%D1%82%D0%B8-659b7aab28d1"
-                                target="_blank"
-                                style="text-decoration: none; color: #333; display: block; background: #fff; border: 1px solid #eee; border-radius: 8px; overflow: hidden; transition: box-shadow 0.2s;">
-                                <div style="padding: 15px;">
-                                    <div
-                                        style="font-weight: bold; font-size: 16px; margin-bottom: 5px; color: var(--link-color);">
-                                        Секс-скандал та вплив на систему освіти</div>
-                                    <p style="font-size: 14px; color: #555; margin: 0;">Детальний розбір подій та їх
-                                        впливу на репутацію університету та систему вищої освіти в цілому.</p>
-                                    <div style="margin-top: 8px; font-size: 12px; color: #999;">medium.com • Читати
-                                        статтю ↗</div>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Media Gallery Modal -->
-            <div class="media-gallery-modal" id="media-gallery-modal">
-                <div class="media-gallery-header">
-                    <span style="font-size: 18px; font-weight: 500;">Shared Media</span>
-                    <button class="icon-btn"
-                        onclick="document.getElementById('media-gallery-modal').style.display='none'">✕</button>
-                </div>
-                <div class="media-tabs">
-                    <div class="media-tab active" onclick="app.filterGallery('photo', this)">Photos</div>
-                    <div class="media-tab" onclick="app.filterGallery('video', this)">Videos</div>
-                    <div class="media-tab" onclick="app.filterGallery('voice', this)">Voice</div>
-                </div>
-                <div class="media-grid" id="media-grid">
-                    <!-- Media items injected here -->
-                </div>
-            </div>
+            <!-- Modals moved to root (below) -->
 
         </main>
     </div>
     <div class="fab-stack" id="fab-stack">
         <!-- Buttons are stacked dynamically via JS -->
+    </div>
+
+    <!-- Modals (placed at root for proper layering) -->
+
+    <!-- Calendar Modal -->
+    <div class="modal" id="calendar-modal" onclick="if(event.target === this) this.style.display='none'">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>Select Date</span>
+                <button class="icon-btn"
+                    onclick="document.getElementById('calendar-modal').style.display='none'">✕</button>
+            </div>
+            <input type="date" id="calendar-input">
+            <button class="btn" onclick="app.jumpToDate()">Go</button>
+            <div style="clear: both;"></div>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox" onclick="this.style.display='none'">
+        <img id="lightbox-img" src="" alt="Full size">
+    </div>
+
+    <!-- Analytics Modal -->
+    <div class="modal" id="analytics-modal" onclick="if(event.target === this) this.style.display='none'">
+        <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header"
+                style="border-bottom: 1px solid #eee; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                <span>📊 Статистика Чату</span>
+                <span style="cursor: pointer; font-size: 24px;"
+                    onclick="document.getElementById('analytics-modal').style.display='none'">&times;</span>
+            </div>
+            <div class="modal-body" id="analytics-body" style="padding-top: 20px;">
+                <!-- Stats injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Modal -->
+    <div class="modal" id="info-modal" onclick="if(event.target === this) this.style.display='none'">
+        <div class="modal-content" style="max-width: 700px; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header"
+                style="border-bottom: 1px solid #eee; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                <span>Довідка та Контекст</span>
+                <button class="icon-btn" onclick="document.getElementById('info-modal').style.display='none'"
+                    style="font-size: 24px;">✕</button>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <h3 style="color: var(--accent-color); margin-bottom: 10px;">📉 Відсутні медіа</h3>
+                <p
+                    style="font-size: 14px; color: #555; background: #fff3cd; padding: 10px; border-radius: 6px; border-left: 4px solid #ffc107;">
+                    <strong>Зверніть увагу:</strong> При експорті архіву деякі файли, що перевищували ліміт
+                    розміру (25-30 МБ), не були завантажені. Це може виглядати як пусте повідомлення, що
+                    насправді містило великий файл або стікер.
+                    <br><br>
+                    👻 <strong>Емодзі привидів:</strong> Автоматично заміняють анімовані емодзі (стікери), які
+                    не були збережені при експорті чатів.
+                </p>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <h3 style="color: var(--accent-color); margin-bottom: 10px;">📜 Словник скорочень</h3>
+                <div class="abbrev-grid">
+                    <strong>ММ/КМ</strong> <span>Марія Миколаївна (Горбань)</span>
+                    <strong>ОЛ</strong> <span>Олена Леонідівна (Добржанська)</span>
+                    <strong>ВА</strong> <span>Володимир Анатолійович (Бугров)</span>
+                    <strong>ІО</strong> <span>Інна Олександрівна (Степанець)</span>
+                    <strong>ЛВ</strong> <span>Леонід Васильович (Губерський)</span>
+                    <strong>Пог</strong> <span>Погорецький (Микола Анатолійович)</span>
+                    <strong>Вітр</strong> <span>Вітренко (Андрій Олександрович)</span>
+                    <strong>РО</strong> <span>Руслан Олексійович (Стефанчук)</span>
+                    <strong>Ш</strong> <span>Шкарлет (Сергій Миколайович)</span>
+                    <strong>Ю</strong> <span>Юлія (Тарасівна Кузів)</span>
+                    <strong>Шеп</strong> <span>Шепелева (Анна Ігорівна)</span>
+                </div>
+            </div>
+
+            <div style="margin-top: 30px;">
+                <h3 style="color: var(--accent-color); margin-bottom: 10px;">🕵️‍♂️ Розслідування</h3>
+
+                <div class="investigation-card-container">
+                    <a href="https://graph.org/Sprobi-zam%D1%96tannya-sl%D1%96d%D1%96v-02-07" target="_blank"
+                        class="investigation-card">
+                        <div class="investigation-content">
+                            <div class="investigation-title">Спроби замітання слідів</div>
+                            <p class="investigation-desc">Аналіз того, як адміністрація намагалася приховати
+                                докази та вплинути на ситуацію после витоку інформації.</p>
+                            <div class="investigation-meta">telegra.ph • Читати статтю ↗</div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="investigation-card-container">
+                    <a href="https://red-guber.medium.com/bugrovleaks-%D1%81%D0%B5%D0%BA%D1%81-%D1%81%D0%BA%D0%B0%D0%BD%D0%B0%D0%BB-%D1%89%D0%BE%D0%B4%D0%BE-%D1%80%D0%B5%D0%BA%D1%82%D0%BE%D1%80%D0%B0-%D0%BA%D0%BD%D1%83-%D1%8F%D0%BA%D0%B8%D0%B9-%D0%B2%D0%BF%D0%BB%D0%B8%D0%B2%D0%B0%D1%94-%D0%BD%D0%B0-%D0%B2%D1%81%D1%8E-%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D1%83-%D0%B2%D0%B8%D1%89%D0%BE%D1%97-%D0%BE%D1%81%D0%B2%D1%96%D1%82%D0%B8-659b7aab28d1"
+                        target="_blank" class="investigation-card">
+                        <div class="investigation-content">
+                            <div class="investigation-title">Секс-скандал та вплив на систему освіти</div>
+                            <p class="investigation-desc">Детальний розбір подій та їх впливу на репутацію
+                                університету та систему вищої освіти в цілому.</p>
+                            <div class="investigation-meta">medium.com • Читати статтю ↗</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Theme Settings Modal -->
+    <div class="modal" id="theme-settings-modal" onclick="if(event.target === this) this.style.display='none'">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <span>Theme Settings</span>
+                <button class="icon-btn"
+                    onclick="document.getElementById('theme-settings-modal').style.display='none'">✕</button>
+            </div>
+            <div style="padding: 20px;">
+                <h4 style="margin-bottom: 10px; color: var(--text-primary);">Chat Background</h4>
+                <div id="theme-grid" class="theme-grid">
+                    <!-- Injected by JS -->
+                </div>
+
+                <div style="margin-top: 20px; display: flex; align-items: center; justify-content: space-between;">
+                    <span style="color: var(--text-primary);">Background Pattern</span>
+                    <label class="switch">
+                        <input type="checkbox" id="pattern-toggle" onchange="app.togglePattern()">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+
+                <div id="pattern-container" style="margin-top: 20px; display: none;">
+                    <h4 style="margin-bottom: 10px; color: var(--text-primary);">Select Pattern</h4>
+                    <div id="pattern-grid" class="theme-grid pattern-grid">
+                        <!-- Injected by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Media Gallery Modal -->
+    <div class="modal" id="media-gallery-modal" onclick="if(event.target === this) this.style.display='none'">
+        <div class="modal-content"
+            style="max-width: 900px; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column;">
+            <div class="media-gallery-header" style="background: none; border: none; padding: 15px 20px;">
+                <span style="font-size: 18px; font-weight: 500;">Shared Media</span>
+                <button class="icon-btn"
+                    onclick="document.getElementById('media-gallery-modal').style.display='none'">✕</button>
+            </div>
+            <div class="media-tabs" style="padding: 0 20px;">
+                <div class="media-tab active" onclick="app.filterGallery('photo', this)">Photos</div>
+                <div class="media-tab" onclick="app.filterGallery('video', this)">Videos</div>
+                <div class="media-tab" onclick="app.filterGallery('voice', this)">Voice</div>
+            </div>
+            <div class="media-grid" id="media-grid" style="flex: 1; overflow-y: auto; padding: 20px;">
+                <!-- Media items injected here -->
+            </div>
+        </div>
     </div>
 
     <script src="js/app.js"></script>

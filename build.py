@@ -438,6 +438,19 @@ def main():
                 shutil.copytree(s, d)
             else:
                 shutil.copy2(s, d)
+
+    # Copy Wallpapers
+    wallpaper_src = EXPORT_DIR / "wallpaper"
+    wallpaper_dest = OUTPUT_DIR / "images" / "wallpaper"
+    
+    if wallpaper_src.exists():
+        print(f"Copying wallpapers from {wallpaper_src}...")
+        wallpaper_dest.parent.mkdir(parents=True, exist_ok=True)
+        if wallpaper_dest.exists():
+            shutil.rmtree(wallpaper_dest)
+        shutil.copytree(wallpaper_src, wallpaper_dest)
+    else:
+        print(f"Wallpaper directory not found: {wallpaper_src}")
     
     print("\n" + "=" * 60)
     print("BUILD COMPLETE!")

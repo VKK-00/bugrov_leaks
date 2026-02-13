@@ -34,6 +34,183 @@ var app = {
         btns.forEach(btn => {
             btn.textContent = theme === 'dark' ? '☀️' : '🌙';
         });
+
+        // Apply Preset Colors
+        const presetIdx = parseInt(localStorage.getItem('theme_preset')) || 0;
+        this.state.currentThemeIndex = presetIdx;
+        const preset = this.themePresets[presetIdx];
+        if (preset) {
+            const colors = theme === 'dark' ? preset.dark : preset.light;
+            // Map array to CSS variables. 
+            // Design decision: We use valid CSS Generic Variables for the gradient/backgrounds.
+            // Let's assume --chat-bg is the solid fallback, and we might add a gradient overlay.
+            // For now, let's set --chat-bg to the first color (or a blend).
+            // Actually, the user asked for these specific palettes for the "Wallpaper". 
+
+            // To emulate Telegram iOS, we usually set a solid background color or a gradient.
+            // Let's set a CSS variable --wallpaper-gradient.
+            document.documentElement.style.setProperty('--wallpaper-gradient', `linear-gradient(135deg, ${colors[0]}, ${colors[1]})`);
+            document.documentElement.style.setProperty('--chat-bg', colors[0]);
+        }
+
+        // Apply Pattern Visibility & Selection
+        this.updateWallpaperStyle();
+    },
+
+    acceptDisclaimer: function () {
+        localStorage.setItem('bugrov_consent', 'true');
+        document.getElementById('disclaimer-modal').style.display = 'none';
+
+        // Initialize Scroll Button
+        const scrollBtn = document.getElementById('scroll-bottom-btn');
+        const container = document.getElementById('messages-container');
+        if (container && scrollBtn) {
+            scrollBtn.style.display = 'flex';
+        }
+
+        // Initialize Theme
+        const storedTheme = localStorage.getItem('theme') || 'light';
+        // Ensure preset is loaded
+        this.state.currentThemeIndex = parseInt(localStorage.getItem('theme_preset')) || 0;
+        this.setTheme(storedTheme);
+        // Ensure wallpaper logic runs
+        this.updateWallpaperStyle();
+    },
+
+    themePresets: [
+        { name: "Classic Green", light: ["#dbddbb", "#6ba587", "#d5d88d", "#88b884"], dark: ["#2b3b35", "#1f6a55", "#3a4a34", "#2e6b4a"] },
+        { name: "Ocean Teal", light: ["#cfe9e6", "#4fb6b3", "#b8e3dc", "#6fd0c7"], dark: ["#1a2a2c", "#1e6f73", "#23363a", "#2b7f79"] },
+        { name: "Sky Blue", light: ["#d6e9ff", "#5aa6ff", "#c0dcff", "#82c2ff"], dark: ["#18243a", "#2f6dff", "#1f3355", "#3a7dff"] },
+        { name: "Deep Blue", light: ["#d7e1ff", "#3f6cff", "#b9caff", "#6a8cff"], dark: ["#151c33", "#2b4cff", "#1c2a4a", "#3b60ff"] },
+        { name: "Lavender", light: ["#e9ddff", "#7a5cff", "#d5c1ff", "#a88cff"], dark: ["#221a33", "#5a3cff", "#2d2148", "#7b5cff"] },
+        { name: "Pink Peach", light: ["#ffe1e8", "#ff6b8b", "#ffd0d9", "#ff9db0"], dark: ["#331821", "#ff3f6a", "#40202c", "#ff6f8a"] },
+        { name: "Sunset Orange", light: ["#ffe6cf", "#ff8a3d", "#ffd1a6", "#ffb07a"], dark: ["#2e1f16", "#ff6a2a", "#3a271c", "#ff8d5c"] },
+        { name: "Sand", light: ["#f0e7da", "#c9a98d", "#e6d6c2", "#d6bea7"], dark: ["#2a241f", "#8d6f55", "#332b24", "#a78970"] },
+        { name: "Mint", light: ["#e4f7e9", "#5fcf8a", "#c9f0d5", "#93e0b0"], dark: ["#15261c", "#2aa86a", "#1b3326", "#45c58a"] },
+        { name: "Graphite", light: ["#d9e0ea", "#4b8dff", "#c5d0df", "#6aa8ff"], dark: ["#121a22", "#2f6dff", "#182330", "#3a84ff"] }
+    ],
+
+    wallpaperPatterns: [
+        "animals.png", "astronaut_cats.png", "beach.png", "cats_and_dogs.png",
+        "christmas.png", "fantasy.png", "games.png", "late_night_delight.png",
+        "magic.png", "math.png", "snowflakes.png", "space.png",
+        "star_wars.png", "sweets.png", "tattoos.png", "underwater_world.png",
+        "unicorn.png", "zoo.png"
+    ],
+
+    applyThemePreset: function (index) {
+        if (index < 0 || index >= this.themePresets.length) return;
+        this.state.currentThemeIndex = index;
+        localStorage.setItem('theme_preset', index);
+
+        // Re-apply current theme (light/dark) with new colors
+        this.setTheme(localStorage.getItem('theme') || 'light');
+        this.renderThemeGrid(); // Update active state
+    },
+
+    togglePattern: function () {
+        const toggle = document.getElementById('pattern-toggle');
+        const container = document.getElementById('pattern-container');
+        const show = toggle.checked;
+
+        localStorage.setItem('show_pattern', show);
+        if (container) container.style.display = show ? 'block' : 'none';
+
+        this.updateWallpaperStyle();
+    },
+
+    setPattern: function (filename) {
+        localStorage.setItem('selected_pattern', filename);
+        this.updateWallpaperStyle();
+        this.renderPatternGrid();
+    },
+
+    updateWallpaperStyle: function () {
+        const showPattern = localStorage.getItem('show_pattern') !== 'false';
+        const pattern = localStorage.getItem('selected_pattern') || 'animals.png';
+        const chatArea = document.querySelector('.chat-area');
+
+        if (chatArea) {
+            chatArea.style.backgroundImage = showPattern ? `url('images/wallpaper/${pattern}')` : 'none';
+        }
+    },
+
+    renderThemeGrid: function () {
+        // Render Colors
+        const grid = document.getElementById('theme-grid');
+        if (grid) {
+            grid.innerHTML = '';
+            this.themePresets.forEach((preset, idx) => {
+                const el = document.createElement('div');
+                el.className = `theme-option ${this.state.currentThemeIndex === idx ? 'active' : ''}`;
+                const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                const colors = isDark ? preset.dark : preset.light;
+                el.style.background = `linear-gradient(135deg, ${colors[0]}, ${colors[1]})`;
+                el.onclick = () => this.applyThemePreset(idx);
+                grid.appendChild(el);
+            });
+        }
+
+        // Sync Toggle
+        const toggle = document.getElementById('pattern-toggle');
+        if (toggle) {
+            toggle.checked = localStorage.getItem('show_pattern') !== 'false';
+            // Show/Hide Grid
+            const container = document.getElementById('pattern-container');
+            if (container) container.style.display = toggle.checked ? 'block' : 'none';
+        }
+
+        this.renderPatternGrid();
+    },
+
+    renderPatternGrid: function () {
+        const grid = document.getElementById('pattern-grid');
+        if (!grid) return;
+        grid.innerHTML = '';
+
+        const selected = localStorage.getItem('selected_pattern') || 'animals.png';
+
+        this.wallpaperPatterns.forEach(filename => {
+            const el = document.createElement('div');
+            el.className = `pattern-option ${filename === selected ? 'active' : ''}`;
+            el.style.backgroundImage = `url('images/wallpaper/${filename}')`;
+            el.onclick = () => this.setPattern(filename);
+            grid.appendChild(el);
+        });
+    },
+
+    openThemeSettings: function () {
+        this.closeAllModals();
+        document.getElementById('theme-settings-modal').style.display = 'flex';
+        this.renderThemeGrid();
+    },
+
+    wallpaperConfig: {
+        // Legacy config kept for reference or removal
+    },
+
+    initWallpaper: function () {
+        // TWallpaper disabled in favor of CSS background-image for better reliability
+        /*
+        try {
+            if (typeof TWallpaper !== 'undefined') {
+                const el = document.getElementById('tgme_background');
+                if (!el) {
+                    console.warn("Wallpaper canvas not found");
+                    return;
+                }
+                const theme = localStorage.getItem('theme') || 'light';
+                const config = theme === 'dark' ? this.wallpaperConfig.dark : this.wallpaperConfig.light;
+
+                this.wallpaper = new TWallpaper(el, config);
+                this.wallpaper.init();
+            } else {
+                console.warn('TWallpaper library not found.');
+            }
+        } catch (e) {
+            console.error("Wallpaper init failed:", e);
+        }
+        */
     },
 
     checkPassword: function () {
@@ -96,6 +273,10 @@ var app = {
 
         // Check Consent - ALWAYS SHOW
         document.getElementById('disclaimer-modal').style.display = 'flex';
+
+
+        this.initFloatingDate();
+        this.initWallpaper();
 
         await this.loadManifest();
         this.renderSidebar();
@@ -229,16 +410,20 @@ var app = {
             if (isOpen) {
                 sidebar.classList.add('open');
                 if (overlay) overlay.classList.add('active');
+                document.body.classList.add('sidebar-open');
             } else {
                 sidebar.classList.remove('open');
                 if (overlay) overlay.classList.remove('active');
+                document.body.classList.remove('sidebar-open');
             }
         } else {
             // Desktop
             if (isOpen) {
                 sidebar.classList.remove('collapsed');
+                document.body.classList.add('sidebar-open');
             } else {
                 sidebar.classList.add('collapsed');
+                document.body.classList.remove('sidebar-open');
             }
         }
     },
@@ -600,7 +785,63 @@ var app = {
         }
     },
 
+    initFloatingDate: function () {
+        const container = document.getElementById('messages-container');
+        if (!container) return;
+
+        // Ensure element exists
+        let floater = document.getElementById('floating-date-header');
+        if (!floater) {
+            floater = document.createElement('div');
+            floater.id = 'floating-date-header';
+            floater.className = 'floating-date-header';
+            document.body.appendChild(floater);
+        }
+
+        container.addEventListener('scroll', () => {
+            requestAnimationFrame(() => this.updateFloatingDate(container, floater));
+        }, { passive: true });
+    },
+
+    updateFloatingDate: function (container, floater) {
+        const scrollTop = container.scrollTop;
+
+        // Hide if near top
+        if (scrollTop < 50) {
+            floater.style.display = 'none';
+            return;
+        }
+
+        // Find the active date
+        const headers = Array.from(container.querySelectorAll('.date-header'));
+        let currentText = null;
+
+        // Find the last header that is above the view line (sticky behavior)
+        for (let i = headers.length - 1; i >= 0; i--) {
+            if (headers[i].offsetTop <= scrollTop + 60) {
+                currentText = headers[i].textContent;
+                break;
+            }
+        }
+
+        // Fallback: Use date of first loaded message if no header found above
+        if (!currentText && this.state.currentChatMessages.length > 0) {
+            const first = this.state.currentChatMessages[0];
+            if (first && first.dt_iso) currentText = this.formatDateHeader(first.dt_iso);
+        }
+
+        if (currentText) {
+            if (floater.textContent !== currentText) {
+                floater.textContent = currentText;
+            }
+            floater.style.display = 'block';
+        } else {
+            floater.style.display = 'none';
+        }
+    },
+
     formatDateHeader: function (isoString) {
+        if (!isoString) return '';
         const date = new Date(isoString);
         // Format: "27 March 2021"
         const day = date.getDate();
@@ -612,20 +853,19 @@ var app = {
     renderMessages: function (messages) {
         const container = document.getElementById('messages-container');
 
-        // Reset lastSender for this batch if it's a new render (not append). 
-        // But renderMessages is called by loadChunk which appends. 
-        // We should track the last message rendered in the container to be sure.
-        // However, we can just rely on local logic for the chunk, assuming chunks are large enough that boundary issues are minor.
-        // Better: check the last element in container.
+        // Service Message Keywords (if not marked by backend)
+        const serviceKeywords = ["invited", "joined", "created the group", "pinned", "left the group"];
 
-        // Local state for this batch
-        let lastSenderName = null; messages.forEach((msg, index) => {
+        let lastSenderName = null;
+
+        messages.forEach((msg, index) => {
             // Date Header
             if (msg.dt_iso) {
                 const dateKey = msg.dt_iso.split('T')[0];
                 if (dateKey !== this.state.lastRenderedDate) {
                     const dateDiv = document.createElement('div');
                     dateDiv.className = 'date-header';
+                    // Note: CSS class .date-header is now static, relying on floating header for sticky effect
                     dateDiv.textContent = this.formatDateHeader(msg.dt_iso);
                     container.appendChild(dateDiv);
                     this.state.lastRenderedDate = dateKey;
@@ -635,174 +875,199 @@ var app = {
                 }
             }
 
-            // ... (rest of loop)
+            // ... (Message Rendering)
+            // Detect Service Message
+            let isService = msg.is_service;
+            if (!isService && msg.text) {
+                if (serviceKeywords.some(kw => (msg.text || "").toLowerCase().includes(kw))) {
+                    if ((msg.text.length < 100) && (!msg.media_type)) {
+                        isService = true;
+                    }
+                }
+            }
 
-            /* The loop continues... handled in next chunk */
-
-            /* I need to inject the call at the END of renderMessages, not inside loop */
-
+            if (isService) {
+                const svcDiv = document.createElement('div');
+                svcDiv.className = 'service-message';
+                svcDiv.innerHTML = `<div class="content">${this.escapeHtml(msg.text || msg.plain_text)}</div>`;
+                container.appendChild(svcDiv);
+                lastSenderName = null;
+                return;
+            }
 
             const msgDiv = document.createElement('div');
             if (msg.dt_iso) msgDiv.dataset.date = msg.dt_iso.split('T')[0];
             if (msg.message_id) msgDiv.id = msg.message_id;
 
-            if (msg.is_service) {
-                msgDiv.className = 'service-message';
-                msgDiv.dataset.isServiceMsg = "true";
-                msgDiv.textContent = msg.plain_text;
-                lastSenderName = null; // Reset grouping on service msg
+            // Sender Logic - Define isBugrov first
+            const isBugrov = msg.from_name &&
+                (msg.from_name.includes('Volodymyr Bugrov') || msg.from_name.includes('Bugrov'));
+
+            let msgClass = 'message incoming';
+
+            // Grouping Logic
+            const currentName = msg.from_name || 'Unknown';
+            const isGrouped = (currentName === lastSenderName);
+
+            if (isGrouped) {
+                msgDiv.classList.add('grouped-message');
             } else {
-                // Sender Logic
-                const isBugrov = msg.from_name &&
-                    (msg.from_name.includes('Volodymyr Bugrov') || msg.from_name.includes('Bugrov'));
+                // Start of a new group
+            }
 
-                let msgClass = 'message incoming';
-                if (isBugrov) {
-                    msgClass = 'message bugrov-message';
-                }
-
+            if (isBugrov) {
+                // Logic for Bugrov outgoing messages
+                msgClass = 'message bugrov-message';
+                if (isGrouped) msgClass += ' grouped-message';
                 msgDiv.className = msgClass;
+            }
 
-                let content = '';
+            msgDiv.className = msgClass;
+            if (isGrouped) msgDiv.classList.add('grouped-message'); // Ensure class is added
 
-                // Name Logic (Grouping) - SHOW FIRST
-                const currentName = msg.from_name || 'Unknown';
-                const showName = (currentName !== lastSenderName);
+            let content = '';
 
-                // Profile Lookup
-                const profile = this.state.profiles && this.state.profiles[currentName];
-                const profileLink = profile ? profile.link : null;
+            // Show Name ONLY if NOT grouped
+            const showName = !isGrouped;
 
-                if (showName && msg.from_name) {
-                    let nameHtml = '';
-                    if (isBugrov) {
-                        // For Bugrov, checking if we want to hide name or show it specially.
-                        // User request: "ім'я профілю ... потім текст"
-                        // TDesktop shows name for everyone in groups. In PM, it might hide.
-                        // Let's show it to be safe as per "має бути: імя..."
-                        nameHtml = `<span class="message-sender">${this.escapeHtml(msg.from_name)}</span>`;
-                    } else {
-                        let hash = 0;
-                        for (let i = 0; i < msg.from_name.length; i++) {
-                            hash = msg.from_name.charCodeAt(i) + ((hash << 5) - hash);
-                        }
-                        const colorIndex = (Math.abs(hash) % 8) + 1;
-                        nameHtml = `<span class="message-sender color${colorIndex}">${this.escapeHtml(msg.from_name)}</span>`;
+            // Profile Lookup
+            const profile = this.state.profiles && this.state.profiles[currentName];
+            const profileLink = profile ? profile.link : null;
+
+            if (showName && msg.from_name) {
+                let nameHtml = '';
+                if (isBugrov) {
+                    nameHtml = `<span class="message-sender">${this.escapeHtml(msg.from_name)}</span>`;
+                } else {
+                    let hash = 0;
+                    for (let i = 0; i < msg.from_name.length; i++) {
+                        hash = msg.from_name.charCodeAt(i) + ((hash << 5) - hash);
                     }
-
-                    if (profileLink) {
-                        content += `<a href="${profileLink}" target="_blank" style="text-decoration:none;">${nameHtml}</a>`;
-                    } else {
-                        content += nameHtml;
-                    }
+                    const colorIndex = (Math.abs(hash) % 8) + 1;
+                    nameHtml = `<span class="message-sender color${colorIndex}">${this.escapeHtml(msg.from_name)}</span>`;
                 }
 
-                lastSenderName = currentName;
+                if (profileLink) {
+                    content += `<a href="${profileLink}" target="_blank" style="text-decoration:none;">${nameHtml}</a>`;
+                } else {
+                    content += nameHtml;
+                }
+            }
 
-                // Reply Logic - SHOW SECOND
-                if (msg.reply_to) {
-                    const replyMsg = this.state.messageMap.get(msg.reply_to);
-                    const replyName = replyMsg ? (replyMsg.from_name || 'Someone') : 'Message';
+            lastSenderName = currentName;
 
-                    const replySnippet = this.getReplySnippet(replyMsg);
+            // Reply Logic - SHOW SECOND
+            if (msg.reply_to) {
+                const replyMsg = this.state.messageMap.get(msg.reply_to);
+                const replyName = replyMsg ? (replyMsg.from_name || 'Someone') : 'Message';
 
-                    content += `
+                const replySnippet = this.getReplySnippet(replyMsg);
+
+                content += `
                         <div class="reply-preview" onclick="app.scrollToMessage('${msg.reply_to}')">
                             <div class="reply-name">${this.escapeHtml(replyName)}</div>
                             <div class="reply-text">${replySnippet}</div>
                         </div>`;
-                }
-
-                const hasAttachments = msg.attachments && msg.attachments.length > 0;
-
-                // Media
-                if (hasAttachments) {
-                    msg.attachments.forEach(att => {
-                        content += this.renderAttachment(att);
-                    });
-                }
-
-                // Text Logic
-                let textToShow = null;
-                if (hasAttachments) {
-                    if (msg.plain_text && msg.plain_text.trim().length > 0) {
-                        textToShow = this.escapeHtml(msg.plain_text);
-                    }
-                } else {
-                    if (msg.html_text) {
-                        textToShow = msg.html_text;
-                    } else if (msg.plain_text) {
-                        textToShow = this.escapeHtml(msg.plain_text);
-                    }
-                }
-
-                if (textToShow) {
-                    content += `<div class="message-content">${textToShow}</div>`;
-                }
-
-                // Timestamp
-                if (msg.dt_iso) {
-                    const time = msg.dt_iso.split('T')[1].substring(0, 5);
-                    content += `<div class="message-meta">${time}</div>`;
-                }
-
-                msgDiv.innerHTML = content;
             }
+
+            // Forwarded Logic
+            if (msg.forwarded_from) {
+                content += `<div class="forwarded-header" style="font-style: italic; font-size: 12px; color: var(--link-color); margin-bottom: 4px; opacity: 0.8;">Переслано від: ${this.escapeHtml(msg.forwarded_from)}</div>`;
+            } else if (msg.forward_from || msg.forward_from_name) {
+                const fwdName = msg.forward_from_name || (msg.forward_from ? msg.forward_from.name : 'Unknown');
+                content += `<div class="forwarded-header" style="font-style: italic; font-size: 12px; color: var(--link-color); margin-bottom: 4px; opacity: 0.8;">Переслано від: ${this.escapeHtml(fwdName)}</div>`;
+            }
+
+            const hasAttachments = msg.attachments && msg.attachments.length > 0;
+
+            // Media
+            if (hasAttachments) {
+                msg.attachments.forEach(att => {
+                    content += this.renderAttachment(att);
+                });
+            }
+
+            // Text Logic
+            let textToShow = null;
+            if (hasAttachments) {
+                if (msg.plain_text && msg.plain_text.trim().length > 0) {
+                    textToShow = this.escapeHtml(msg.plain_text);
+                }
+            } else {
+                if (msg.html_text) {
+                    textToShow = msg.html_text;
+                } else if (msg.plain_text) {
+                    textToShow = this.escapeHtml(msg.plain_text);
+                }
+            }
+
+            if (textToShow) {
+                content += `<div class="message-content">${textToShow}</div>`;
+            }
+
+            // Timestamp
+            if (msg.dt_iso) {
+                const time = msg.dt_iso.split('T')[1].substring(0, 5);
+                // Add Overlapping Read Receipt (Double Check)
+                content += `<div class="message-meta">${time} 
+                        <span class="read-receipt">
+                            <span class="check first">✓</span>
+                            <span class="check second">✓</span>
+                        </span>
+                    </div>`;
+            }
+
+            msgDiv.innerHTML = content;
             container.appendChild(msgDiv);
         });
 
         // this.generateTimeline(); // Removed
     },
 
-
-
     renderAttachment: function (att) {
-        if (att.kind === 'photo' || att.kind === 'sticker') {
-            const isSticker = att.kind === 'sticker';
-            const cls = isSticker ? 'media-sticker' : 'media-photo';
-            const onclick = isSticker ? '' : `onclick="app.openLightbox('${att.href}')"`;
-
-            // Thumbnail Logic: Try to use _thumb.jpg if available
-            // We blindly assume a thumb might exist or fallback to full image.
-            // Since we can't check existence easily without 404s, we will use the full image as src,
-            // BUT for the lightbox we definitely use the full image.
-            // OPTIMIZATION: If the file is huge, this is slow. 
-            // Telegram export usually names photos like "photo_123.jpg". 
-            // Thumbs are usually embedded or separate. 
-            // Users request implies "thumbnails" exist.
-            // Let's try to construct a thumb path if it's a standard format.
-            // Standard export: "photo_1@01-01-2021_12-00-00.jpg" -> "photo_1@01-01-2021_12-00-00_thumb.jpg" ??
-            // Actually standard export:
-            // photos/photo_1.jpg
-            // photos/photo_1_thumb.jpg (sometimes)
-            // Let's try to infer thumb path.
-
-            let src = att.href;
-            // Hacky attempt: if path ends in .jpg, try inserting _thumb
-            // We will stick to using the main image for now unless we are sure.
-            // User said: "картинки есть с подписью thumb и без неё".
-            // So if `att.href` is `photo_123.jpg`, there is `photo_123_thumb.jpg`.
-
-            if (!isSticker && src.toLowerCase().endsWith('.jpg')) {
-                // Try to use thumb for display
-                const thumbSrc = src.replace('.jpg', '_thumb.jpg');
-                // We render the thumb, but keep full href for lightbox
-                // Note: If _thumb doesn't exist, this will show broken image.
-                // We can add onerror to fallback.
+        if (att.kind === 'sticker') {
+            if (att.href.endsWith('.tgs')) {
+                return `<div class="media-container media-sticker-placeholder" title="Animated Sticker (TGS)">👻</div>`;
             }
-            // Fallback
-            return `<div class="media-container"><img src="${src}" class="${cls}" loading="lazy" ${onclick}></div>`;
+            return `<div class="media-container"><img src="${att.href}" class="media-sticker" loading="lazy"></div>`;
+        } else if (att.kind === 'photo') {
+            const cls = 'media-photo';
+            const onclick = `onclick="app.openLightbox('${att.href}')"`;
+            let src = att.href;
+            if (src.toLowerCase().endsWith('.jpg')) {
+                src = src.replace('.jpg', '_thumb.jpg');
+            }
+            return `<div class="media-container"><img src="${src}" class="${cls}" loading="lazy" ${onclick} onerror="this.onerror=null;this.src='${att.href}'"></div>`;
         } else if (att.kind === 'video') {
             return `<div class="media-container"><video src="${att.href}" controls class="media-video"></video></div>`;
         } else if (att.kind === 'round_video') {
             return `<div class="media-container round-container"><video src="${att.href}" autoplay loop muted class="media-round-video"></video></div>`;
         } else if (att.kind === 'voice') {
-            // Use Stick Player
-            // att.href is relative path? "data/chat/voice/..."
-            // We need title (date? duration?)
-            return `<div class="media-container">
-                <button class="voice-msg-btn" onclick="app.playAudio('${att.href}', 'Voice Message')">▶️ Play Voice</button>
-            </div>`;
+            // Use Waveform UI
+            return `<div class="media-container voice-message-container">
+            <button class="voice-msg-btn" onclick="app.playAudio('${att.href}', 'Voice Message')">
+                <span class="play-icon">▶</span>
+            </button>
+            <div class="voice-waveform">
+                <div class="bar" style="height: 10px"></div>
+                <div class="bar" style="height: 15px"></div>
+                <div class="bar" style="height: 12px"></div>
+                <div class="bar" style="height: 18px"></div>
+                <div class="bar" style="height: 10px"></div>
+                <div class="bar" style="height: 5px"></div>
+                <div class="bar" style="height: 14px"></div>
+                <div class="bar" style="height: 16px"></div>
+                <div class="bar" style="height: 10px"></div>
+                <div class="bar" style="height: 8px"></div>
+                <div class="bar" style="height: 12px"></div>
+                <div class="bar" style="height: 15px"></div>
+                <div class="bar" style="height: 10px"></div>
+                <div class="bar" style="height: 6px"></div>
+                <div class="bar" style="height: 14px"></div>
+                <div class="bar" style="height: 10px"></div>
+            </div>
+            <span class="voice-duration">Voice</span>
+        </div>`;
         } else {
             return `<div class="media-container"><a href="${att.href}" target="_blank" style="color: var(--link-color)">📄 ${att.kind}</a></div>`;
         }
@@ -1098,7 +1363,16 @@ var app = {
             } else if (type === 'video' || type === 'round') {
                 inner = `<video src="${item.href}" muted preload="metadata"></video><div class="type-icon">▶</div>`;
             } else if (type === 'voice') {
-                inner = `<div style="color:white; font-size:24px;">🎤</div><div class="type-icon">${item.duration || ''}</div>`;
+                // Waveform Visualization
+                inner = `
+                <div class="waveform-visual">
+                    <div class="waveform-bar"></div>
+                    <div class="waveform-bar"></div>
+                    <div class="waveform-bar"></div>
+                    <div class="waveform-bar"></div>
+                    <div class="waveform-bar"></div>
+                </div>
+                <div class="type-icon">${item.duration || ''}</div>`;
             }
 
             div.innerHTML = inner;
@@ -1205,6 +1479,14 @@ var app = {
         analyticsBtn.onclick = () => app.openAnalytics();
         stack.appendChild(analyticsBtn);
 
+        // Theme Settings
+        const themeBtn = document.createElement('div');
+        themeBtn.className = 'fab';
+        themeBtn.innerText = '🎨';
+        themeBtn.title = 'Appearance';
+        themeBtn.onclick = () => app.openThemeSettings();
+        stack.appendChild(themeBtn);
+
         // Scroll Bottom (Lowest)
         const scrollBottomBtn = document.createElement('div');
         scrollBottomBtn.id = 'scroll-bottom-btn';
@@ -1269,7 +1551,9 @@ var app = {
 
         msgs.forEach(m => {
             if (m.from_name) {
-                users[m.from_name] = (users[m.from_name] || 0) + 1;
+                // Clean name from timestamps like "Name 12.07.2021 20:00:13"
+                const cleanName = m.from_name.replace(/\s\d{2}\.\d{2}\.\d{4}.*$/, '').trim();
+                users[cleanName] = (users[cleanName] || 0) + 1;
             }
             if (m.dt_iso) {
                 const d = m.dt_iso.split('T')[0];
@@ -1331,7 +1615,23 @@ var app = {
 
         player.onended = () => {
             document.getElementById('play-pause-btn').textContent = '▶️';
+            // Auto-hide after short delay
+            setTimeout(() => {
+                if (player.paused) this.closeAudio();
+            }, 3000);
         };
+    },
+
+    closeAudio: function () {
+        const player = document.getElementById('global-audio');
+        const container = document.getElementById('sticky-audio-player');
+        if (player) {
+            player.pause();
+            player.src = "";
+        }
+        if (container) {
+            container.style.display = 'none';
+        }
     },
 
     toggleAudio: function () {

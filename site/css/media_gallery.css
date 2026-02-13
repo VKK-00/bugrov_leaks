@@ -1,25 +1,5 @@
-/* Service Messages (Joined, Invited, etc) */
-.service-message {
-    background-color: rgba(0, 0, 0, 0.2);
-    color: #fff;
-    padding: 5px 12px;
-    border-radius: 16px;
-    font-size: 13px;
-    font-weight: 500;
-    margin: 10px auto;
-    width: fit-content;
-    text-align: center;
-    max-width: 80%;
-}
+/* Media Gallery Styles */
 
-.theme-light .service-message {
-    background-color: rgba(0, 0, 0, 0.1);
-    /* Darker on light theme */
-    color: #555;
-    text-shadow: none;
-}
-
-/* Media Gallery Modal */
 .media-gallery-modal {
     display: none;
     position: fixed;
@@ -28,26 +8,54 @@
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.95);
-    z-index: 500;
+    z-index: 20000;
+    /* Top-most */
     flex-direction: column;
     height: 100vh;
-    /* Force full height */
     width: 100vw;
 }
 
+/* Light Theme Overrides for Gallery */
+[data-theme="light"] .media-gallery-modal {
+    background: #ffffff;
+}
+
+[data-theme="light"] .media-gallery-header {
+    background: #f5f5f5;
+    color: #000;
+    border-bottom: 1px solid #ddd;
+}
+
+[data-theme="light"] .media-tab {
+    color: #707579;
+}
+
+[data-theme="light"] .media-tab:hover {
+    color: #3390ec;
+    background-color: rgba(51, 144, 236, 0.1);
+}
+
+[data-theme="light"] .media-tab.active {
+    color: #3390ec;
+    border-bottom: 2px solid #3390ec;
+}
+
+/* Sidebar Open Adjustments for Desktop */
+@media (min-width: 769px) {
+    body.sidebar-open .media-gallery-modal {
+        left: 320px !important;
+        width: calc(100% - 320px) !important;
+    }
+}
+
 .media-gallery-header {
-    padding: 15px;
+    padding: 15px 20px;
     color: white;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    align-items: center;
     background: rgba(255, 255, 255, 0.1);
-}
-
-.media-gallery-header .icon-btn {
-    padding: 10px;
-    font-size: 24px;
+    backdrop-filter: blur(10px);
 }
 
 .media-tabs {
@@ -61,15 +69,20 @@
 .media-tab {
     color: #aaa;
     cursor: pointer;
-    padding-bottom: 5px;
-    font-weight: 500;
     padding: 10px 15px;
-    /* Larger hit area */
+    font-weight: 500;
+    transition: color 0.2s;
+    border-radius: 4px 4px 0 0;
+    /* Slight visual tweak */
+}
+
+.media-tab:hover {
+    color: #eee;
 }
 
 .media-tab.active {
     color: white;
-    border-bottom: 2px solid var(--link-color);
+    border-bottom: 2px solid #3390ec;
 }
 
 .media-grid {
@@ -82,21 +95,6 @@
     gap: 15px;
     align-content: start;
     padding-bottom: 50px;
-    /* Space for swipe area */
-}
-
-@media (max-width: 1024px) {
-    .media-grid {
-        gap: 10px;
-        padding: 10px;
-    }
-}
-
-@media (max-width: 480px) {
-    .media-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
-    }
 }
 
 .media-grid-item {
@@ -109,6 +107,16 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: transform 0.1s;
+}
+
+[data-theme="light"] .media-grid-item {
+    background: #f0f0f0;
+    border: 1px solid #ddd;
+}
+
+.media-grid-item:hover {
+    transform: scale(1.02);
 }
 
 .media-grid-item img,
@@ -127,4 +135,76 @@
     padding: 2px 4px;
     border-radius: 4px;
     color: white;
+}
+
+/* Audio Waveform Visualization */
+.waveform-visual {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    height: 40px;
+    width: 80%;
+}
+
+.waveform-bar {
+    width: 4px;
+    background-color: white;
+    border-radius: 2px;
+    animation: wave 1.2s ease-in-out infinite;
+}
+
+[data-theme="light"] .waveform-bar {
+    background-color: #3390ec;
+}
+
+@keyframes wave {
+
+    0%,
+    100% {
+        height: 10px;
+    }
+
+    50% {
+        height: 30px;
+    }
+}
+
+/* Stagger animations */
+.waveform-bar:nth-child(1) {
+    animation-delay: 0.0s;
+}
+
+.waveform-bar:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.waveform-bar:nth-child(3) {
+    animation-delay: 0.2s;
+}
+
+.waveform-bar:nth-child(4) {
+    animation-delay: 0.3s;
+}
+
+.waveform-bar:nth-child(5) {
+    animation-delay: 0.4s;
+}
+
+.waveform-bar:nth-child(6) {
+    animation-delay: 0.5s;
+}
+
+/* Extended for 6 bars */
+
+@media (max-width: 480px) {
+    .media-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .media-gallery-modal {
+        width: 100vw !important;
+        left: 0 !important;
+    }
 }
