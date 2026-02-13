@@ -185,33 +185,8 @@ var app = {
         this.renderThemeGrid();
     },
 
-    wallpaperConfig: {
-        // Legacy config kept for reference or removal
-    },
+    // Wallpaper config & init removed
 
-    initWallpaper: function () {
-        // TWallpaper disabled in favor of CSS background-image for better reliability
-        /*
-        try {
-            if (typeof TWallpaper !== 'undefined') {
-                const el = document.getElementById('tgme_background');
-                if (!el) {
-                    console.warn("Wallpaper canvas not found");
-                    return;
-                }
-                const theme = localStorage.getItem('theme') || 'light';
-                const config = theme === 'dark' ? this.wallpaperConfig.dark : this.wallpaperConfig.light;
-
-                this.wallpaper = new TWallpaper(el, config);
-                this.wallpaper.init();
-            } else {
-                console.warn('TWallpaper library not found.');
-            }
-        } catch (e) {
-            console.error("Wallpaper init failed:", e);
-        }
-        */
-    },
 
     checkPassword: function () {
         try {
@@ -276,7 +251,7 @@ var app = {
 
 
         this.initFloatingDate();
-        this.initWallpaper();
+
 
         await this.loadManifest();
         this.renderSidebar();
