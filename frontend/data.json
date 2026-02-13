@@ -1,0 +1,323 @@
+{
+    "meta": {
+        "title": "Довідка: медіа-висвітлення скандалів навколо ректора КНУ В. БУГРОВА",
+        "updated": "2026-02-13",
+        "timezone": "Europe/Kyiv",
+        "language": "uk"
+    },
+    "videos": [
+        {
+            "title": "У секс-скандалі з ректором КНУ Бугровим з'явилися нові подробиці",
+            "url": "https://www.youtube.com/watch?v=2_tHpnF2szE"
+        },
+        {
+            "title": "Ректор університету Шевченко відреагував на секс-скандал",
+            "url": "https://youtu.be/NUiMHgZ3JLc?si=3HfWCoh2thfo7eam"
+        },
+        {
+            "title": "Секс-скандал зі студентками: ректор Бугров прокоментував публікації",
+            "url": "https://www.youtube.com/watch?v=SgqGvev6yxc"
+        },
+        {
+            "title": "Ректор-фігурант історії з хеком по 333 грн купив квартиру...",
+            "url": "https://www.youtube.com/watch?v=bTAfqm1Ci3w"
+        },
+        {
+            "title": "РЕКТОРА КНУ БУГРОВА ЗАСКОЧИЛИ НА КОРУПЦІЇ З МІНОБОРОНИ + ВАСИЛЕНКО",
+            "url": "https://www.youtube.com/watch?v=TJUmDmFHOlA"
+        },
+        {
+            "title": "КНУ: ХТО КЕРУЄ ГОЛОВНИМ УНІВЕРСИТЕТОМ КРАЇНИ",
+            "url": "https://www.youtube.com/watch?v=FuiDAVJndPo"
+        },
+        {
+            "title": "СКАНДАЛ із закупівлями їжі для армії! Хек за ціною осетра",
+            "url": "https://www.youtube.com/watch?v=J3jYH7YKZ18"
+        },
+        {
+            "title": "СКАНДАЛ В ТОП-УНІВЕРСИТЕТІ | Хек по 333...",
+            "url": "https://youtu.be/lRix7znJ1ig?si=sklF9npMPgXdvdzC"
+        },
+        {
+            "title": "YouTube Shorts: Хек по 333 грн і хліб по 41 грн",
+            "url": "https://youtube.com/shorts/AFGDx0-M6a4?si=CPFmaOjFUjvNmEAX"
+        },
+        {
+            "title": "А це щойно відремонтовані бомбосховища КНУ...",
+            "url": "https://youtu.be/O8GuNpg1_CM?si=umPGyqMAivTY4v8k"
+        }
+    ],
+    "timeline": [
+        {
+            "date": "2021-04-30",
+            "title": "Володимир Бугров офіційно вступає на посаду ректора КНУ",
+            "summary": "Підписано контракт №I-43 від 29.04.2021 на термін до 29.04.2026. Контракт передбачає досягнення конкретних цільових показників, зокрема покращення позицій у міжнародних рейтингах QS, THE та Webometrics.",
+            "tags": [
+                "контракт",
+                "вибори",
+                "KPI"
+            ],
+            "sources": [
+                "https://knu.ua/en/geninf/adm/Bugrov/"
+            ]
+        },
+        {
+            "date": "2022-02-01",
+            "title": "Публічне поширення матеріалів «bugrovleaks»",
+            "summary": "У медіа та Telegram з'являються повідомлення про розсилку на 21,000 email-адрес з нібито листуванням ректора. Автентичність матеріалів є спірною.",
+            "tags": [
+                "bugrovleaks",
+                "витік",
+                "медіа"
+            ],
+            "sources": [
+                "https://glavcom.ua/country/science/seks-skandal-v-universiteti-shevchenka-rektor-volodimir-bugrov-poyasnyuje-shcho-vidbuvajetsya-822032.html",
+                "https://focus.ua/ukraine/505541-rektor-knu-bugrov-nazval-seks-skandal-v-vuze-gryaznoy-informacionnoy-atakoy-protiv-nego"
+            ]
+        },
+        {
+            "date": "2023-08-08",
+            "title": "Кримінальне провадження №12023100000000825 щодо ремонтів укриттів",
+            "summary": "Відкрито справу за ч.4 ст.191 ККУ. Експертизами встановлено збитки понад 1,2 млн грн на двох об'єктах (гуртожитки №14 і №23), при оплаті за актами понад 2,5 млн грн.",
+            "tags": [
+                "укриття",
+                "кримінальне провадження",
+                "191 ККУ"
+            ],
+            "sources": [
+                "https://interfax.com.ua/news/general/938333.html"
+            ]
+        },
+        {
+            "date": "2023-11-01",
+            "title": "Затримання підрядника О.Бабія за спробу підкупу слідчого",
+            "summary": "Підрядника затримали під час спроби надати неправомірну вигоду слідчому в межах розслідування ремонтів укриттів (ч.3 ст.369 ККУ).",
+            "tags": [
+                "укриття",
+                "підкуп",
+                "369 ККУ"
+            ],
+            "sources": [
+                "https://kiev.informator.ua/uk/pidryadnik-shcho-remontuvav-shovishcha-v-knu-im-shevchenka-namagavsya-vidkupitis-vid-policiji-shcho-z-cogo-viyshlo"
+            ]
+        },
+        {
+            "date": "2024-01-18",
+            "title": "Публікації про ціни/закупівлі харчування для курсантів",
+            "summary": "Журналісти «Наші гроші» повідомляли про ціни: хек по 333 грн/кг, хліб по 41 грн. КНУ заявляв про внутрішню перевірку та технічну помилку.",
+            "tags": [
+                "закупівлі",
+                "харчування",
+                "Міноборони"
+            ],
+            "sources": [
+                "https://nashigroshi.org/2024/01/18/stolychni-vuzy-vykotyly-ministerstvu-oborony-praysy-na-kharchuvannia-viys-kovykh-dorozhchi-nizh-hlyniana-i-hrynkevych/",
+                "https://knu.ua/news/13060"
+            ]
+        },
+        {
+            "date": "2024-02-28",
+            "title": "Розслідування про елітну квартиру ректора",
+            "summary": "Журналісти повідомляли про придбання квартири 74,7 кв.м у ЖК White Lines (понад 3,5 млн грн) та ставили питання щодо відповідності доходам.",
+            "tags": [
+                "нерухомість",
+                "декларації",
+                "журналістика"
+            ],
+            "sources": [
+                "https://www.slidstvo.info/articles/milyony-z-povitria-rektor-knu-stav-vlasnykom-elitnoi-kvartyry-na-iaku-ne-mav-hroshey/",
+                "https://suspilne.media/694942-ne-vidpovidae-dohodam-zurnalisti-znajsli-u-rektora-knu-elitnu-kvartiru/"
+            ]
+        },
+        {
+            "date": "2024-04-12",
+            "title": "Петиція про звільнення ректора набрала 25,000 підписів",
+            "summary": "Історичний прецедент — перший випадок для ректора ЗВО в Україні.",
+            "tags": [
+                "петиція",
+                "історичний прецедент"
+            ],
+            "sources": [
+                "https://petition.president.gov.ua/petition/216794"
+            ]
+        },
+        {
+            "date": "2024-05-09",
+            "title": "Відповідь Президента на петицію",
+            "summary": "Доручення МОН та ОГП провести перевірку. Станом на лютий 2026 публічні результати відсутні.",
+            "tags": [
+                "петиція",
+                "президент",
+                "перевірка"
+            ],
+            "sources": [
+                "https://hromadske.ua/amp/suspilstvo/223722-zelenskyy-vidpoviv-na-petytsiiu-pro-zvilnennia-rektora-knu-buhrova"
+            ]
+        },
+        {
+            "date": "2026-01-15",
+            "title": "НАЗК виявляє недостовірні дані у декларації ректора",
+            "summary": "Недостовірні відомості на суму 897 тисяч гривень.",
+            "tags": [
+                "НАЗК",
+                "декларація"
+            ],
+            "sources": [
+                "https://lb.ua/society/2026/02/12/661552_seks-skandal_sprava_nazk.html"
+            ]
+        }
+    ],
+    "rankings": [
+        {
+            "id": "qs_wur",
+            "name": "QS World University Rankings",
+            "source_url": "https://www.topuniversities.com/universities/taras-shevchenko-national-university-kyiv",
+            "verified": true,
+            "note": "Офіційні дані з TopUniversities",
+            "points": [
+                {
+                    "year": 2015,
+                    "label": "421-430",
+                    "value": 425.5,
+                    "color": "#4CAF50"
+                },
+                {
+                    "year": 2016,
+                    "label": "421-430",
+                    "value": 425.5,
+                    "color": "#4CAF50"
+                },
+                {
+                    "year": 2017,
+                    "label": "431-440",
+                    "value": 435.5,
+                    "color": "#8BC34A"
+                },
+                {
+                    "year": 2018,
+                    "label": "411-420",
+                    "value": 415.5,
+                    "color": "#4CAF50"
+                },
+                {
+                    "year": 2019,
+                    "label": "531-540",
+                    "value": 535.5,
+                    "color": "#FFC107"
+                },
+                {
+                    "year": 2020,
+                    "label": "541-550",
+                    "value": 545.5,
+                    "color": "#FFC107"
+                },
+                {
+                    "year": 2021,
+                    "label": "601-650",
+                    "value": 625.5,
+                    "color": "#FF9800"
+                },
+                {
+                    "year": 2022,
+                    "label": "601-650",
+                    "value": 625.5,
+                    "color": "#FF9800"
+                },
+                {
+                    "year": 2023,
+                    "label": "651-700",
+                    "value": 675.5,
+                    "color": "#FF5722"
+                },
+                {
+                    "year": 2024,
+                    "label": "681-690",
+                    "value": 685.5,
+                    "color": "#FF5722"
+                },
+                {
+                    "year": 2025,
+                    "label": "701-710",
+                    "value": 705.5,
+                    "color": "#F44336"
+                },
+                {
+                    "year": 2026,
+                    "label": "721-730",
+                    "value": 725.5,
+                    "color": "#D32F2F"
+                }
+            ]
+        },
+        {
+            "id": "the_wur",
+            "name": "Times Higher Education World University Rankings",
+            "source_url": "https://www.timeshighereducation.com/world-university-rankings/taras-shevchenko-national-university-kyiv",
+            "verified": true,
+            "note": "Офіційні дані з THE",
+            "points": [
+                {
+                    "year": 2020,
+                    "label": "1001+",
+                    "value": 1001.0,
+                    "color": "#FFC107"
+                },
+                {
+                    "year": 2021,
+                    "label": "1001+",
+                    "value": 1001.0,
+                    "color": "#FFC107"
+                },
+                {
+                    "year": 2022,
+                    "label": "1201+",
+                    "value": 1201.0,
+                    "color": "#FF9800"
+                },
+                {
+                    "year": 2023,
+                    "label": "1201-1500",
+                    "value": 1350.5,
+                    "color": "#FF5722"
+                },
+                {
+                    "year": 2024,
+                    "label": "1501+",
+                    "value": 1501.0,
+                    "color": "#F44336"
+                },
+                {
+                    "year": 2025,
+                    "label": "1501+",
+                    "value": 1501.0,
+                    "color": "#F44336"
+                },
+                {
+                    "year": 2026,
+                    "label": "1501+",
+                    "value": 1501.0,
+                    "color": "#D32F2F"
+                }
+            ]
+        }
+    ],
+    "case_stats": {
+        "kpu_12023100000000825": {
+            "number": "12023100000000825",
+            "date_opened": "2023-08-08",
+            "article": "ч.4 ст.191 ККУ",
+            "objects": [
+                "Гуртожиток №23 (вул. Є. Мірошніченка, 5)",
+                "Гуртожиток №14 (пр-т Лобановського, 3)"
+            ],
+            "damages_uah": "понад 1 200 000",
+            "paid_by_acts_uah": "понад 2 500 000",
+            "contractor": "О. Бабій",
+            "additional_charges": "ч.3 ст.369 ККУ (спроба підкупу слідчого)",
+            "sources": [
+                "https://interfax.com.ua/news/general/938333.html",
+                "https://kiev.informator.ua/uk/pidryadnik-shcho-remontuvav-shovishcha-v-knu-im-shevchenka-namagavsya-vidkupitis-vid-policiji-shcho-z-cogo-viyshlo"
+            ]
+        }
+    }
+}

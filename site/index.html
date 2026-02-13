@@ -1,334 +1,683 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="uk" data-theme="light">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#ffffff">
-    <title>Telegram Chat Export</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/media_gallery.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/twallpaper"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Справа КНУ: Хронологія подій 2022-2026</title>
+    <link rel="stylesheet" href="assets/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 
 <body>
-    <div id="app">
-        <!-- Canvas removed -->
-        <!-- Password Modal -->
-        <div id="password-overlay"
-            style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; display: flex; align-items: center; justify-content: center; color: white; flex-direction: column;">
-            <h2>🔒 Вхід до архіву</h2>
-            <div style="margin: 20px; text-align: center;">
-                <input type="password" id="access-password" placeholder="Введіть пароль"
-                    style="padding: 10px; font-size: 16px; border-radius: 4px; border: none;">
-                <button onclick="app.checkPassword()"
-                    style="padding: 10px 20px; font-size: 16px; background: var(--link-color); color: white; border: none; border-radius: 4px; cursor: pointer;">Ввійти</button>
-            </div>
-            <p style="color: #666; font-size: 12px;">Підказка: прізвище ректора (лат.)</p>
-        </div>
-        <div id="sidebar-overlay" class="sidebar-overlay" onclick="app.toggleSidebar()"></div>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
 
-        <!-- Disclaimer Modal -->
-        <div class="modal" id="disclaimer-modal" style="display: flex; background: rgba(0,0,0,0.9); z-index: 20000;">
-            <div class="modal-content" style="max-width: 600px; text-align: center;">
-                <h2 style="margin-bottom: 20px; color: #cc3333;">⚠️ УВАГА / WARNING</h2>
-                <p style="margin-bottom: 15px; line-height: 1.6;">
-                    Ви отримали доступ до архіву листування ректора КНУ ім. Тараса Шевченка Володимира Бугрова.
-                </p>
-                <p style="margin-bottom: 15px; line-height: 1.6;">
-                    Матеріали містять нецензурну лексику та контент 18+ (інтимного характеру), який був надісланий
-                    студенткам та співробітницям університету.
-                </p>
-                <p style="margin-bottom: 15px; line-height: 1.6;">
-                    Зазначене листування було вперше опубліковано на Telegram-каналі <a
-                        href="https://t.me/bugrovleaks/3" target="_blank">@bugrovleaks</a> незадовго до
-                    повномасштабного вторгнення Росії в Україну
-                    (лютий 2022).
-                </p>
-                <p style="margin-bottom: 25px; font-weight: bold;">
-                    Продовжуючи, ви підтверджуєте, що вам виповнилося 18 років і ви усвідомлюєте характер
-                    матеріалів.
-                </p>
-                <div style="display: flex; gap: 10px; justify-content: center;">
-                    <button class="btn" onclick="app.acceptDisclaimer()" style="font-size: 16px; padding: 10px 20px;">Я
-                        погоджуюсь / I Agree</button>
-                </div>
-                <div style="clear: both;"></div>
+    <div class="header">
+        <h1>Справа КНУ: Хронологія подій 2022-2026</h1>
+        <p>Документування подій суспільного значення</p>
+        <a href="archive.html" class="header-archive-btn">📂 Відкрити Архів листувань (32,173 повідомлень)</a>
+    </div>
+
+    <div class="container">
+        <!-- Info Cards Grid -->
+        <div class="info-grid">
+            <div class="info-card" style="background: linear-gradient(135deg, #FF5722 0%, #FF8A65 100%);">
+                <div class="info-card-number">4 РОКИ</div>
+                <div class="info-card-label">без судових оскаржень</div>
+            </div>
+            <div class="info-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="info-card-number">25,000+</div>
+                <div class="info-card-label">підписів на петиції</div>
+            </div>
+            <div class="info-card" style="background: linear-gradient(135deg, #2196F3 0%, #64B5F6 100%);">
+                <div class="info-card-number">150+</div>
+                <div class="info-card-label">публікацій у ЗМІ</div>
             </div>
         </div>
 
-        <aside class="sidebar">
-            <header class="sidebar-header">
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                    <div class="search-bar" style="flex:1;">
-                        <input type="text" placeholder="Search" id="chat-search">
+        <!-- Warning Box -->
+        <div class="warning-box" id="about">
+            <h2 style="border:none; margin-bottom:1rem;">⚠️ Про архів та матеріали</h2>
+            <p><strong>Важливо:</strong></p>
+            <ul>
+                <li>Цей сайт містить архіви листувань, оприлюднені в Telegram-каналі @bugrovleaks у лютому 2022 року
+                </li>
+                <li>Матеріали представлені у <strong>візуально читабельному форматі без жодних змін</strong></li>
+                <li>Архіви є оригінальними експортами з месенджера Telegram</li>
+                <li><strong>Автентичність цих матеріалів заперечується ректором університету</strong></li>
+                <li>Станом на лютий 2026 року матеріали <strong>не були оскаржені в судах</strong> і <strong>не стали
+                        предметом жодного кримінального провадження</strong></li>
+            </ul>
+            <div style="margin-top: 1.5rem; text-align: center;">
+                <a href="archive.html" class="btn-primary" style="font-size: 1.2rem; padding: 1.2rem 2.5rem;">📂
+                    Переглянути повний архів листувань</a>
+            </div>
+            <p
+                style="margin-top:1rem; padding:1rem; background:rgba(255,255,255,0.15); border-radius:6px; border: 1px dashed currentColor;">
+                <strong>📢 Анонс:</strong> На каналі @bugrovleaks заявлено про продовження публікацій <strong>26 лютого
+                    2026 року</strong>
+            </p>
+        </div>
+
+        <!-- Rector's Statements Timeline -->
+        <div class="card" id="statements">
+            <h2>💬 Хронологія коментарів ректора щодо скандалу</h2>
+            <p>Позиція Володимира Бугрова змінювалася протягом часу:</p>
+
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-date">23 січня 2022 (Facebook)</div>
+                    <p><strong>"Злами акаунтів / втручання в сервіси"</strong></p>
+                    <p>Повідомлення про багаторазові злами поштових скриньок, акаунтів у соцмережах та втрату iPhone,
+                        "прив'язаного до різних сервісів".</p>
+                    <div class="link-card">
+                        <a href="https://focus.ua/ukraine/505541-rektor-knu-bugrov-nazval-seks-skandal-v-vuze-gryaznoy-informacionnoy-atakoy-protiv-nego"
+                            target="_blank">ФОКУС: Коментар про злами</a>
                     </div>
-                    <button class="theme-toggle-btn" onclick="app.toggleTheme()" title="Toggle Theme"
-                        style="border: none; background: none; font-size: 20px; cursor: pointer;">
-                        🌙
-                    </button>
-                    <!-- Mobile Close Sidebar Button -->
-                    <button id="sidebar-close-btn" onclick="app.toggleSidebar()"
-                        style="display: none; background:none; border:none; font-size: 20px; cursor: pointer;">✕</button>
                 </div>
 
-                <div style="display: flex; align-items: center; padding: 0 5px;">
-                    <label
-                        style="font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 5px; cursor: pointer;">
-                        <input type="checkbox" id="global-search-toggle" onchange="app.toggleGlobalSearch()"> Global
-                        Search
-                    </label>
-                    <span id="global-search-status"
-                        style="font-size: 11px; color: var(--accent-color); margin-left: 10px;"></span>
+                <div class="timeline-item">
+                    <div class="timeline-date">4 лютого 2022 (FOCUS)</div>
+                    <p><strong>"Каналу не бачив; нічого не підтверджую; юристи аналізують"</strong></p>
+                    <p>Заявив, що не бачив телеграм-каналу, підтвердив отримання анонімних розсилок, але "нічого не
+                        підтверджує".</p>
+                    <div class="link-card">
+                        <a href="https://focus.ua/uk/ukraine/505496-nichego-ne-podtverzhdayu-rektor-knu-bugrov-prokommentiroval-seks-skandal-v-universitete"
+                            target="_blank">ФОКУС: "Нічого не підтверджую"</a>
+                    </div>
                 </div>
-            </header>
-            <div class="chat-list" id="chat-list">
-                <!-- Chat items will be injected here -->
-            </div>
-        </aside>
-        <main class="chat-area">
-            <header class="chat-header" id="chat-header" style="display: none;">
-                <button id="mobile-back-btn" onclick="app.closeChat()" title="Back to Chat List"
-                    style="display: none; margin-right: 10px; border:none; background:none; font-size:20px; cursor:pointer;">⬅️</button>
-                <button id="sidebar-toggle-btn" onclick="app.toggleSidebar()" title="Toggle Sidebar">☰</button>
-                <div class="chat-info">
-                    <h3 class="chat-title">Select a chat</h3>
-                    <span class="chat-status">to start messaging</span>
+
+                <div class="timeline-item">
+                    <div class="timeline-date">8 лютого 2022 (Telegram)</div>
+                    <p><strong>"Шантаж + ІПСО/рефлексивне управління"</strong></p>
+                    <p>Опублікував приклад вимоги "звільнитися" і описав ситуацію як застосування інструментів
+                        інформаційно-психологічних операцій.</p>
+                    <div class="link-card">
+                        <a href="https://suspilne.media/206048-anonimnij-telegram-kanal-zaaviv-so-rektor-knu-mav-seks-zi-studentkami-vin-ce-sprostovue-so-vidomo/"
+                            target="_blank">Суспільне: Про шантаж</a>
+                    </div>
                 </div>
-                <div class="header-tools">
-                    <button class="icon-btn" onclick="app.openMediaGallery()" title="Media Gallery">🖼️</button>
-                    <button class="icon-btn" onclick="app.toggleSearch()">🔍</button>
-                    <button class="icon-btn" onclick="app.showCalendar()">📅</button>
+
+                <div class="timeline-item">
+                    <div class="timeline-date">9 лютого 2022 (Брифінг)</div>
+                    <p><strong>"Офіційна позиція — сфабриковано; пов'язує з аудитом"</strong></p>
+                    <p>"Жодних статевих стосунків ні з ними, ні з ким у мене не було. Там є елементи справжнього
+                        листування, але не зі студентками." Пов'язав кампанію з ревізією Держаудитслужби.</p>
+                    <div class="link-card">
+                        <a href="https://knu.ua/news/12090" target="_blank">KNU.ua: Брифінг ректора</a>
+                    </div>
+                    <div class="link-card">
+                        <a href="https://www.ukrinform.ua/rubric-society/3400531-seksskandal-zi-studentkami-rektor-universitetu-sevcenka-prokomentuvav-publikacii.html"
+                            target="_blank">Укрінформ: Деталі брифінгу</a>
+                    </div>
                 </div>
-            </header>
-            <!-- Sticky Audio Player -->
-            <div id="sticky-audio-player" class="sticky-player" style="display: none;">
-                <audio id="global-audio" style="display:none;"></audio>
-                <div class="player-controls">
-                    <button onclick="app.prevAudio()">⏮</button>
-                    <button onclick="app.toggleAudio()" id="play-pause-btn">▶</button>
-                    <button onclick="app.nextAudio()">⏭</button>
+
+                <div class="timeline-item">
+                    <div class="timeline-date">10 лютого 2022 (Facebook)</div>
+                    <p><strong>"Демонстрація можливості підробки листування"</strong></p>
+                    <p>Виклав відео, де показував, як можна підробити листування в Telegram.</p>
+                    <div class="link-card">
+                        <a href="https://suspilne.media/206048-anonimnij-telegram-kanal-zaaviv-so-rektor-knu-mav-seks-zi-studentkami-vin-ce-sprostovue-so-vidomo/"
+                            target="_blank">Суспільне: Відео про підробку</a>
+                    </div>
                 </div>
-                <div class="player-info">
-                    <div id="player-title" class="player-title">Audio Track</div>
-                    <div id="player-time" class="player-time">00:00 / 00:00</div>
-                </div>
-                <!-- Waveform Decoration -->
-                <div class="player-waveform">
-                    <div class="bar" style="height: 12px"></div>
-                    <div class="bar" style="height: 18px"></div>
-                    <div class="bar" style="height: 10px"></div>
-                    <div class="bar" style="height: 15px"></div>
-                    <div class="bar" style="height: 8px"></div>
-                    <div class="bar" style="height: 14px"></div>
-                </div>
-                <button onclick="app.closeAudio()" class="close-player">✕</button>
-            </div>
-            <div id="search-bar-chat"
-                style="display:none; padding: 10px; background: var(--header-bg); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 10px;">
-                <input type="text" id="msg-search-input" placeholder="Search in this chat..."
-                    style="flex: 1; padding: 8px; border-radius: 4px; border: none; background: var(--input-bg); color: white;">
-                <span id="search-count"
-                    style="color: var(--text-secondary); font-size: 13px; min-width: 40px; text-align: center;"></span>
-                <button class="icon-btn" onclick="app.navigateSearch('prev')" title="Previous">⬆️</button>
-                <button class="icon-btn" onclick="app.navigateSearch('next')" title="Next">⬇️</button>
-            </div>
-            <div id="floating-date-header" class="floating-date-header">May 15</div>
-            <div class="messages-container" id="messages-container">
-                <div class="empty-state">
-                    <p>Select a chat from the sidebar</p>
+
+                <div class="timeline-item">
+                    <div class="timeline-date">12 лютого 2026 (LB.ua)</div>
+                    <p><strong>"Зі студентками листування не було; версія про компіляцію"</strong></p>
+                    <p>"Ні, зі студентками листування не було. Можна припустити, що «зняли» реальне листування з
+                        політиками та «розбавили» його компіляціями. Всі ми розуміємо, що «зняття» інформації з телефону
+                        такого рівня не обійшлось без відповідних органів."</p>
+                    <div class="link-card">
+                        <a href="https://lb.ua/society/2026/02/12/721850_seksskandal_sprava_nazk.html"
+                            target="_blank">LB.ua: Інтерв'ю 2026</a>
+                    </div>
                 </div>
             </div>
 
+            <h3>📊 Еволюція пояснень:</h3>
+            <ol style="margin-left: 2rem;">
+                <li><strong>Початок:</strong> Телефон втрачено, акаунти зламано</li>
+                <li><strong>Потім:</strong> Листування частково справжнє, але не зі студентками</li>
+                <li><strong>Зараз:</strong> "Зняли" спецслужби і розбавили фейками</li>
+            </ol>
 
-
-            <!-- Footer Banner -->
-            <div class="footer-banner">
-                Зазначене листування було вперше опубліковано на Telegram-каналі <a href="https://t.me/bugrovleaks/3"
-                    target="_blank">@bugrovleaks</a>
-                <span style="margin: 0 8px; opacity: 0.5;">|</span>
-                <a href="#" onclick="app.openInfoModal(); return false;" class="info-link-highlight">
-                    ℹ️ <span style="text-decoration: underline;">Довідка</span>
-                </a>
-            </div>
-
-
-            <!-- Modals moved to root (below) -->
-
-            <!-- (Disclaimer Modal moved to root) -->
-
-
-            <!-- Modals moved to root (below) -->
-
-
-            <!-- Modals moved to root (below) -->
-
-        </main>
-    </div>
-    <div class="fab-stack" id="fab-stack">
-        <!-- Buttons are stacked dynamically via JS -->
-    </div>
-
-    <!-- Modals (placed at root for proper layering) -->
-
-    <!-- Calendar Modal -->
-    <div class="modal" id="calendar-modal" onclick="if(event.target === this) this.style.display='none'">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span>Select Date</span>
-                <button class="icon-btn"
-                    onclick="document.getElementById('calendar-modal').style.display='none'">✕</button>
-            </div>
-            <input type="date" id="calendar-input">
-            <button class="btn" onclick="app.jumpToDate()">Go</button>
-            <div style="clear: both;"></div>
-        </div>
-    </div>
-
-    <!-- Lightbox -->
-    <div class="lightbox" id="lightbox" onclick="this.style.display='none'">
-        <img id="lightbox-img" src="" alt="Full size">
-    </div>
-
-    <!-- Analytics Modal -->
-    <div class="modal" id="analytics-modal" onclick="if(event.target === this) this.style.display='none'">
-        <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
-            <div class="modal-header"
-                style="border-bottom: 1px solid #eee; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
-                <span>📊 Статистика Чату</span>
-                <span style="cursor: pointer; font-size: 24px;"
-                    onclick="document.getElementById('analytics-modal').style.display='none'">&times;</span>
-            </div>
-            <div class="modal-body" id="analytics-body" style="padding-top: 20px;">
-                <!-- Stats injected here -->
+            <div class="warning-box" style="margin-top: 1.5rem;">
+                <p><strong>⚠️ Невиконана обіцянка:</strong> Адміністрація КНУ обіцяла скликати етичну комісію для
+                    розгляду ситуації, але так цього і не зробила.</p>
+                <div class="link-card">
+                    <a href="https://focus.ua/uk/ukraine/505825-my-ne-znaem-takih-studentok-no-soberem-komitet-po-etike-v-knu-o-seks-skandale-s-bugrovym"
+                        target="_blank">FOCUS: Обіцянка про етичну комісію</a>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Info Modal -->
-    <div class="modal" id="info-modal" onclick="if(event.target === this) this.style.display='none'">
-        <div class="modal-content" style="max-width: 700px; max-height: 90vh; overflow-y: auto;">
-            <div class="modal-header"
-                style="border-bottom: 1px solid #eee; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
-                <span>Довідка та Контекст</span>
-                <button class="icon-btn" onclick="document.getElementById('info-modal').style.display='none'"
-                    style="font-size: 24px;">✕</button>
+        <!-- Timeline -->
+        <div class="card" id="timeline">
+            <h2>📅 Хронологія ключових подій</h2>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-date">30 квітня 2021</div>
+                    <p><strong>Володимир Бугров вступає на посаду ректора КНУ</strong></p>
+                    <p>Підписано контракт №I-43 на термін до 29.04.2026 з обов'язковими KPI щодо підвищення рейтингів
+                        університету.</p>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-date">3 лютого 2022</div>
+                    <p><strong>Створення каналу @bugrovleaks та масові публікації</strong></p>
+                    <p>Розсилка на 21,000 корпоративних email. Оприлюднення архівів листувань.</p>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-date">11 лютого 2022</div>
+                    <p><strong>Оприлюднення повного архіву</strong></p>
+                    <p>Публікація архівів листувань за 5+ місяців.</p>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-date">8 серпня 2023</div>
+                    <p><strong>Відкриття кримінального провадження</strong></p>
+                    <p>Справа №12023100000000825 за ч.4 ст.191 ККУ щодо розкрадання коштів на укриттях.</p>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-date">Січень 2024</div>
+                    <p><strong>Скандал із закупівлями для ЗСУ</strong></p>
+                    <p>Хек по 333 грн/кг, хліб по 41 грн. Вартість 153 грн/добу.</p>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-date">12 квітня 2024</div>
+                    <p><strong>Петиція набирає 25,000 підписів</strong></p>
+                    <p>Історичний прецедент для ректора ЗВО в Україні.</p>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-date">Грудень 2025</div>
+                    <p><strong>Підозра співробітнику адміністрації КНУ</strong></p>
+                    <p>Прокуратура оголосила підозру щодо розкрадання 1,2 млн грн.</p>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-date">26 лютого 2026</div>
+                    <p style="color:#d32f2f; font-weight:600;">🔴 Анонсовано нові публікації на @bugrovleaks</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rankings Decline -->
+        <div class="rankings-section" id="rankings">
+            <h2 style="border:none; color:#2c3e50; text-align:center; font-size:2rem; margin-bottom:1rem;">📉 Падіння
+                рейтингів під час каденції Бугрова</h2>
+            <p style="text-align:center; font-size:1.1rem; margin-bottom:2rem;">
+                Контракт №I-43 від 29.04.2021 передбачав <strong>підвищення позицій</strong> у міжнародних рейтингах.
+                Фактично — <strong>рейтинги впали</strong>.
+            </p>
+
+            <div class="rankings-grid">
+                <div class="ranking-chart">
+                    <h3>QS World University Rankings</h3>
+                    <canvas id="qsChart" style="max-height: 350px;"></canvas>
+                    <p class="muted" style="text-align:center; margin-top:1rem; font-size:0.85rem;">
+                        <a href="https://www.topuniversities.com/universities/taras-shevchenko-national-university-kyiv"
+                            target="_blank">Джерело: TopUniversities</a>
+                    </p>
+                </div>
+
+                <div class="ranking-chart">
+                    <h3>Times Higher Education Rankings</h3>
+                    <canvas id="theChart" style="max-height: 350px;"></canvas>
+                    <p class="muted" style="text-align:center; margin-top:1rem; font-size:0.85rem;">
+                        <a href="https://www.timeshighereducation.com/world-university-rankings/taras-shevchenko-national-university-kyiv"
+                            target="_blank">Джерело: Times Higher Education</a>
+                    </p>
+                </div>
             </div>
 
-            <div style="margin-top: 20px;">
-                <h3 style="color: var(--accent-color); margin-bottom: 10px;">📉 Відсутні медіа</h3>
+            <div class="contract-warning">
+                <h4>⚠️ Невиконання контрактних зобов'язань</h4>
+                <p><strong>Згідно контракту №I-43:</strong></p>
+                <ul style="margin-top:0.75rem;">
+                    <li>Ректор зобов'язаний забезпечити цільові показники рейтингів</li>
+                    <li>Наглядова рада має право <strong>достроково розірвати контракт</strong> за недосягнення цілей
+                    </li>
+                </ul>
                 <p
-                    style="font-size: 14px; color: #555; background: #fff3cd; padding: 10px; border-radius: 6px; border-left: 4px solid #ffc107;">
-                    <strong>Зверніть увагу:</strong> При експорті архіву деякі файли, що перевищували ліміт
-                    розміру (25-30 МБ), не були завантажені. Це може виглядати як пусте повідомлення, що
-                    насправді містило великий файл або стікер.
-                    <br><br>
-                    👻 <strong>Емодзі привидів:</strong> Автоматично заміняють анімовані емодзі (стікери), які
-                    не були збережені при експорті чатів.
+                    style="margin-top:1rem; padding:1rem; background:rgba(255,255,255,0.8); border-radius:8px; border-left:4px solid #d32f2f;">
+                    <strong>Фактичний результат:</strong> Замість підвищення — падіння на <strong>~180 позицій у
+                        QS</strong> та <strong>~500 позицій у THE</strong>.
                 </p>
             </div>
+        </div>
 
-            <div style="margin-top: 20px;">
-                <h3 style="color: var(--accent-color); margin-bottom: 10px;">📜 Словник скорочень</h3>
-                <div class="abbrev-grid">
-                    <strong>ММ/КМ</strong> <span>Марія Миколаївна (Горбань)</span>
-                    <strong>ОЛ</strong> <span>Олена Леонідівна (Добржанська)</span>
-                    <strong>ВА</strong> <span>Володимир Анатолійович (Бугров)</span>
-                    <strong>ІО</strong> <span>Інна Олександрівна (Степанець)</span>
-                    <strong>ЛВ</strong> <span>Леонід Васильович (Губерський)</span>
-                    <strong>Пог</strong> <span>Погорецький (Микола Анатолійович)</span>
-                    <strong>Вітр</strong> <span>Вітренко (Андрій Олександрович)</span>
-                    <strong>РО</strong> <span>Руслан Олексійович (Стефанчук)</span>
-                    <strong>Ш</strong> <span>Шкарлет (Сергій Миколайович)</span>
-                    <strong>Ю</strong> <span>Юлія (Тарасівна Кузів)</span>
-                    <strong>Шеп</strong> <span>Шепелева (Анна Ігорівна)</span>
-                </div>
+        <!-- Wealth Analysis -->
+        <div class="card" id="wealth-analysis"
+            style="background: linear-gradient(135deg, rgba(255,193,7,0.1) 0%, rgba(255,152,0,0.1) 100%); border: 2px solid #FF9800;">
+            <h2 style="border-color: #FF9800;">💰 Аналіз зміни статків Володимира Бугрова (2020-2024)</h2>
+            <p style="text-align: center; font-size: 1.1rem; margin-bottom: 2rem;">
+                Порівняння майнового стану <strong>до ректорства</strong> (2020) та <strong>під час каденції</strong>
+                (2021-2024)
+            </p>
+
+            <div style="overflow-x: auto;">
+                <table
+                    style="width: 100%; border-collapse: collapse; background: var(--bg-secondary); border-radius: 8px; overflow: hidden;">
+                    <thead style="background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%); color: white;">
+                        <tr>
+                            <th style="padding: 1rem; text-align: left; border: 1px solid rgba(255,255,255,0.2);">
+                                Показник</th>
+                            <th style="padding: 1rem; text-align: center; border: 1px solid rgba(255,255,255,0.2);">
+                                2020<br><small>(до ректорства)</small></th>
+                            <th style="padding: 1rem; text-align: center; border: 1px solid rgba(255,255,255,0.2);">
+                                2021<br><small>(1-й рік)</small></th>
+                            <th style="padding: 1rem; text-align: center; border: 1px solid rgba(255,255,255,0.2);">
+                                2022<br><small>(2-й рік)</small></th>
+                            <th style="padding: 1rem; text-align: center; border: 1px solid rgba(255,255,255,0.2);">
+                                2023<br><small>(3-й рік)</small></th>
+                            <th style="padding: 1rem; text-align: center; border: 1px solid rgba(255,255,255,0.2);">
+                                2024<br><small>(4-й рік)</small></th>
+                            <th style="padding: 1rem; text-align: center; border: 1px solid rgba(255,255,255,0.2);">
+                                Зміна</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="background: rgba(255,152,0,0.05);">
+                            <td colspan="7"
+                                style="padding: 0.75rem; font-weight: 700; border: 1px solid var(--border-color);">📍
+                                ПОСАДА</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 0.75rem; border: 1px solid var(--border-color);">Посада</td>
+                            <td style="padding: 0.75rem; text-align: center; border: 1px solid var(--border-color);">
+                                проректор</td>
+                            <td colspan="4"
+                                style="padding: 0.75rem; text-align: center; background: rgba(102,126,234,0.1); border: 1px solid var(--border-color);">
+                                <strong>ректор</strong>
+                            </td>
+                            <td style="padding: 0.75rem; text-align: center; border: 1px solid var(--border-color);">—
+                            </td>
+                        </tr>
+                        <tr style="background: rgba(255,152,0,0.05);">
+                            <td colspan="7"
+                                style="padding: 0.75rem; font-weight: 700; border: 1px solid var(--border-color);">🏠
+                                НЕРУХОМІСТЬ</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 0.75rem; border: 1px solid var(--border-color);">Квартира Бугрова (74.7
+                                м²), Київ</td>
+                            <td style="padding: 0.75rem; text-align: center; border: 1px solid var(--border-color);">—
+                            </td>
+                            <td style="padding: 0.75rem; text-align: center; border: 1px solid var(--border-color);">—
+                            </td>
+                            <td style="padding: 0.75rem; text-align: center; border: 1px solid var(--border-color);">—
+                            </td>
+                            <td
+                                style="padding: 0.75rem; text-align: center; background: rgba(76,175,80,0.1); border: 1px solid var(--border-color);">
+                                <strong>✓ 3.56 млн</strong>
+                            </td>
+                            <td
+                                style="padding: 0.75rem; text-align: center; background: rgba(76,175,80,0.1); border: 1px solid var(--border-color);">
+                                <strong>✓</strong>
+                            </td>
+                            <td
+                                style="padding: 0.75rem; text-align: center; background: rgba(76,175,80,0.2); border: 1px solid var(--border-color); font-weight: 700; color: #2E7D32;">
+                                +3.56 млн грн</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 0.75rem; border: 1px solid var(--border-color);">Об'єкти незавершеного
+                                будівництва</td>
+                            <td style="padding: 0.75rem; text-align: center; border: 1px solid var(--border-color);">—
+                            </td>
+                            <td style="padding: 0.75rem; text-align: center; border: 1px solid var(--border-color);">—
+                            </td>
+                            <td style="padding: 0.75rem; text-align: center; border: 1px solid var(--border-color);">—
+                            </td>
+                            <td
+                                style="padding: 0.75rem; text-align: center; background: rgba(76,175,80,0.1); border: 1px solid var(--border-color);">
+                                3 шт</td>
+                            <td
+                                style="padding: 0.75rem; text-align: center; background: rgba(76,175,80,0.1); border: 1px solid var(--border-color);">
+                                3 шт</td>
+                            <td
+                                style="padding: 0.75rem; text-align: center; background: rgba(76,175,80,0.2); border: 1px solid var(--border-color); font-weight: 700; color: #2E7D32;">
+                                +3 об'єкти</td>
+                        </tr>
+                        <tr style="background: rgba(255,152,0,0.05);">
+                            <td colspan="7"
+                                style="padding: 0.75rem; font-weight: 700; border: 1px solid var(--border-color);">🚗
+                                ТРАНСПОРТ</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 0.75rem; border: 1px solid var(--border-color);">Mitsubishi Outlander
+                                2016</td>
+                            <td style="padding: 0.75rem; text-align: center; border: 1px solid var(--border-color);">✓
+                                (839 тис)</td>
+                            <td style="padding: 0.75rem; text-align: center; border: 1px solid var(--border-color);">✓
+                            </td>
+                            <td style="padding: 0.75rem; text-align: center; border: 1px solid var(--border-color);">—
+                            </td>
+                            <td style="padding: 0.75rem; text-align: center; border: 1px solid var(--border-color);">—
+                            </td>
+                            <td style="padding: 0.75rem; text-align: center; border: 1px solid var(--border-color);">—
+                            </td>
+                            <td style="padding: 0.75rem; text-align: center; border: 1px solid var(--border-color);">
+                                продано</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 0.75rem; border: 1px solid var(--border-color);">Mitsubishi Outlander
+                                2022</td>
+                            <td style="padding: 0.75rem; text-align: center; border: 1px solid var(--border-color);">—
+                            </td>
+                            <td style="padding: 0.75rem; text-align: center; border: 1px solid var(--border-color);">—
+                            </td>
+                            <td
+                                style="padding: 0.75rem; text-align: center; background: rgba(76,175,80,0.1); border: 1px solid var(--border-color);">
+                                <strong>✓ 1.12 млн</strong>
+                            </td>
+                            <td
+                                style="padding: 0.75rem; text-align: center; background: rgba(76,175,80,0.1); border: 1px solid var(--border-color);">
+                                ✓</td>
+                            <td
+                                style="padding: 0.75rem; text-align: center; background: rgba(76,175,80,0.1); border: 1px solid var(--border-color);">
+                                ✓</td>
+                            <td
+                                style="padding: 0.75rem; text-align: center; background: rgba(76,175,80,0.2); border: 1px solid var(--border-color); font-weight: 700; color: #2E7D32;">
+                                +1.12 млн грн</td>
+                        </tr>
+                        <tr style="background: rgba(255,152,0,0.05);">
+                            <td colspan="7"
+                                style="padding: 0.75rem; font-weight: 700; border: 1px solid var(--border-color);">💵
+                                ДОХОДИ БУГРОВА (грн/рік)</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 0.75rem; border: 1px solid var(--border-color);">Заробітна плата основна
+                            </td>
+                            <td style="padding: 0.75rem; text-align: center; border: 1px solid var(--border-color);">
+                                751,534</td>
+                            <td style="padding: 0.75rem; text-align: center; border: 1px solid var(--border-color);">
+                                1,058,269</td>
+                            <td style="padding: 0.75rem; text-align: center; border: 1px solid var(--border-color);">
+                                1,050,654</td>
+                            <td style="padding: 0.75rem; text-align: center; border: 1px solid var(--border-color);">
+                                1,015,391</td>
+                            <td style="padding: 0.75rem; text-align: center; border: 1px solid var(--border-color);">
+                                1,243,958</td>
+                            <td
+                                style="padding: 0.75rem; text-align: center; background: rgba(76,175,80,0.2); border: 1px solid var(--border-color); font-weight: 700; color: #2E7D32;">
+                                +65.5%</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 0.75rem; border: 1px solid var(--border-color);"><strong>ВСЬОГО
+                                    доходів</strong></td>
+                            <td
+                                style="padding: 0.75rem; text-align: center; font-weight: 700; border: 1px solid var(--border-color);">
+                                953,325</td>
+                            <td
+                                style="padding: 0.75rem; text-align: center; font-weight: 700; border: 1px solid var(--border-color);">
+                                1,321,406</td>
+                            <td
+                                style="padding: 0.75rem; text-align: center; font-weight: 700; border: 1px solid var(--border-color);">
+                                1,354,388</td>
+                            <td
+                                style="padding: 0.75rem; text-align: center; font-weight: 700; border: 1px solid var(--border-color);">
+                                1,343,150</td>
+                            <td
+                                style="padding: 0.75rem; text-align: center; font-weight: 700; border: 1px solid var(--border-color);">
+                                1,553,525</td>
+                            <td
+                                style="padding: 0.75rem; text-align: center; background: rgba(76,175,80,0.3); border: 1px solid var(--border-color); font-weight: 700; color: #1B5E20;">
+                                +62.9%</td>
+                        </tr>
+                        <tr style="background: rgba(255,152,0,0.05);">
+                            <td colspan="7"
+                                style="padding: 0.75rem; font-weight: 700; border: 1px solid var(--border-color);">💰
+                                ГРОШОВІ АКТИВИ (грн)</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 0.75rem; border: 1px solid var(--border-color);"><strong>РАЗОМ грошових
+                                    активів</strong></td>
+                            <td
+                                style="padding: 0.75rem; text-align: center; font-weight: 700; border: 1px solid var(--border-color);">
+                                ~1,376,000</td>
+                            <td
+                                style="padding: 0.75rem; text-align: center; font-weight: 700; border: 1px solid var(--border-color);">
+                                ~1,292,000</td>
+                            <td
+                                style="padding: 0.75rem; text-align: center; font-weight: 700; border: 1px solid var(--border-color);">
+                                ~1,651,000</td>
+                            <td
+                                style="padding: 0.75rem; text-align: center; font-weight: 700; border: 1px solid var(--border-color);">
+                                ~1,357,000</td>
+                            <td
+                                style="padding: 0.75rem; text-align: center; font-weight: 700; border: 1px solid var(--border-color);">
+                                ~1,385,000</td>
+                            <td
+                                style="padding: 0.75rem; text-align: center; background: rgba(158,158,158,0.2); border: 1px solid var(--border-color); font-weight: 700;">
+                                ~0%</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
 
-            <div style="margin-top: 30px;">
-                <h3 style="color: var(--accent-color); margin-bottom: 10px;">🕵️‍♂️ Розслідування</h3>
+            <div
+                style="margin-top: 2rem; background: rgba(255,87,34,0.1); border-left: 4px solid #FF5722; padding: 1.5rem; border-radius: 8px;">
+                <h3 style="color: #d32f2f; margin: 0 0 1rem 0;">📊 Ключові зміни за період ректорства:</h3>
+                <ul style="margin-left: 1.5rem;">
+                    <li><strong>Квартира у Києві (74.7 м²):</strong> придбано за 3.56 млн грн (грудень 2023)</li>
+                    <li><strong>3 об'єкти незавершеного будівництва:</strong> 2 паркомісця + нежитлове приміщення</li>
+                    <li><strong>Новий автомобіль:</strong> Mitsubishi Outlander 2022 за 1.12 млн грн (жовтень 2022, під
+                        час війни)</li>
+                    <li><strong>Зарплата Бугрова:</strong> зросла на <strong>62.9%</strong> (з 953 тис до 1.55 млн
+                        грн/рік)</li>
+                    <li><strong>Зарплата дружини:</strong> зросла на <strong>60%</strong> (з 325 тис до 520 тис грн/рік)
+                    </li>
+                    <li><strong>Додатковий дохід дружини:</strong> ~110 тис грн/рік від "зеленого тарифу"</li>
+                </ul>
+            </div>
 
-                <div class="investigation-card-container">
-                    <a href="https://graph.org/Sprobi-zam%D1%96tannya-sl%D1%96d%D1%96v-02-07" target="_blank"
-                        class="investigation-card">
-                        <div class="investigation-content">
-                            <div class="investigation-title">Спроби замітання слідів</div>
-                            <p class="investigation-desc">Аналіз того, як адміністрація намагалася приховати
-                                докази та вплинути на ситуацію после витоку інформації.</p>
-                            <div class="investigation-meta">telegra.ph • Читати статтю ↗</div>
-                        </div>
-                    </a>
-                </div>
-
-                <div class="investigation-card-container">
-                    <a href="https://red-guber.medium.com/bugrovleaks-%D1%81%D0%B5%D0%BA%D1%81-%D1%81%D0%BA%D0%B0%D0%BD%D0%B0%D0%BB-%D1%89%D0%BE%D0%B4%D0%BE-%D1%80%D0%B5%D0%BA%D1%82%D0%BE%D1%80%D0%B0-%D0%BA%D0%BD%D1%83-%D1%8F%D0%BA%D0%B8%D0%B9-%D0%B2%D0%BF%D0%BB%D0%B8%D0%B2%D0%B0%D1%94-%D0%BD%D0%B0-%D0%B2%D1%81%D1%8E-%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D1%83-%D0%B2%D0%B8%D1%89%D0%BE%D1%97-%D0%BE%D1%81%D0%B2%D1%96%D1%82%D0%B8-659b7aab28d1"
-                        target="_blank" class="investigation-card">
-                        <div class="investigation-content">
-                            <div class="investigation-title">Секс-скандал та вплив на систему освіти</div>
-                            <p class="investigation-desc">Детальний розбір подій та їх впливу на репутацію
-                                університету та систему вищої освіти в цілому.</p>
-                            <div class="investigation-meta">medium.com • Читати статтю ↗</div>
-                        </div>
-                    </a>
-                </div>
+            <div class="link-card" style="margin-top: 1rem;">
+                <strong>Джерела:</strong> Електронні декларації на сайті НАЗК
             </div>
         </div>
-    </div>
 
-    <!-- Theme Settings Modal -->
-    <div class="modal" id="theme-settings-modal" onclick="if(event.target === this) this.style.display='none'">
-        <div class="modal-content" style="max-width: 400px;">
-            <div class="modal-header">
-                <span>Theme Settings</span>
-                <button class="icon-btn"
-                    onclick="document.getElementById('theme-settings-modal').style.display='none'">✕</button>
-            </div>
-            <div style="padding: 20px;">
-                <h4 style="margin-bottom: 10px; color: var(--text-primary);">Chat Background</h4>
-                <div id="theme-grid" class="theme-grid">
-                    <!-- Injected by JS -->
-                </div>
+        <!-- Criminal Case (Simplified) -->
+        <div class="case-details-box" id="case-details">
+            <h2 style="border:none; margin-bottom:1.5rem;">⚖️ Кримінальна справа про укриття</h2>
+            <p><strong>Справа №12023100000000825</strong> (відкрита 08.08.2023, ч.4 ст.191 ККУ)</p>
 
-                <div style="margin-top: 20px; display: flex; align-items: center; justify-content: space-between;">
-                    <span style="color: var(--text-primary);">Background Pattern</span>
-                    <label class="switch">
-                        <input type="checkbox" id="pattern-toggle" onchange="app.togglePattern()">
-                        <span class="slider round"></span>
-                    </label>
-                </div>
-
-                <div id="pattern-container" style="margin-top: 20px; display: none;">
-                    <h4 style="margin-bottom: 10px; color: var(--text-primary);">Select Pattern</h4>
-                    <div id="pattern-grid" class="theme-grid pattern-grid">
-                        <!-- Injected by JS -->
+            <div style="margin-top: 1.5rem; background: rgba(255,255,255,0.5); padding: 1.5rem; border-radius: 12px;">
+                <div
+                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 1rem;">
+                    <div>
+                        <strong style="color: #d32f2f;">Виділено коштів:</strong><br>
+                        <span style="font-size: 1.5rem; font-weight: 700;">2,5 млн грн</span>
+                    </div>
+                    <div>
+                        <strong style="color: #d32f2f;">Розкрадано:</strong><br>
+                        <span style="font-size: 1.5rem; font-weight: 700; color: #f44336;">1,2 млн грн</span>
+                    </div>
+                    <div>
+                        <strong style="color: #d32f2f;">Відсоток:</strong><br>
+                        <span style="font-size: 1.5rem; font-weight: 700; color: #f44336;">48%</span>
                     </div>
                 </div>
+
+                <p><strong>Об'єкти:</strong> Гуртожитки №23 та №14</p>
+                <p><strong>Підрядник:</strong> О. Бабій (спіймали на спробі підкупу слідчого)</p>
+            </div>
+
+            <div
+                style="margin-top: 1.5rem; background: rgba(102,126,234,0.1); padding: 1rem; border-radius: 8px; border-left: 4px solid #667eea;">
+                <p><strong>👮 Підозри оголошено:</strong></p>
+                <ul style="margin-top: 0.5rem;">
+                    <li><a href="https://kyiv.gp.gov.ua/ua/news.html?_m=publications&_t=rec&id=407517"
+                            target="_blank">Посадовим особам КНУ</a> (<a href="https://t.me/chervonyguber/3642"
+                            target="_blank">деталі</a>)</li>
+                    <li><a href="https://kyiv.gp.gov.ua/ua/news.html?_m=publications&_c=view&_t=rec&id=409817"
+                            target="_blank">Співробітнику адміністрації КНУ та підряднику</a> (<a
+                            href="https://t.me/chervonyguber/4442" target="_blank">деталі</a>)</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="card">
+            <h2>📈 Статистика справи</h2>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">150+</div>
+                    <div class="stat-label">публікацій у ЗМІ</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">21,000</div>
+                    <div class="stat-label">email-адрес отримали розсилку</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">25,000</div>
+                    <div class="stat-label">підписів під петицією</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">14</div>
+                    <div class="stat-label">категорій скандалів</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">4 роки</div>
+                    <div class="stat-label">без судових оскаржень</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">5,5 млн</div>
+                    <div class="stat-label">грн елітне майно під час війни</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">1,2 млн</div>
+                    <div class="stat-label">грн розкрадано на укриттях</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">2×</div>
+                    <div class="stat-label">"Академічна негідність" (2023, 2024)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Video Materials -->
+        <div class="card" id="videos">
+            <h2>📺 Відеоматеріали</h2>
+            <div class="video-grid">
+                <div class="video-card">
+                    <a href="https://www.youtube.com/watch?v=2_tHpnF2szE" target="_blank">🎥 Подробиці секс-скандалу</a>
+                </div>
+                <div class="video-card">
+                    <a href="https://www.youtube.com/watch?v=bTAfqm1Ci3w" target="_blank">🎥 Квартира в елітному ЖК</a>
+                </div>
+                <div class="video-card">
+                    <a href="https://www.youtube.com/watch?v=TJUmDmFHOlA" target="_blank">🎥 Корупція з Міноборони</a>
+                </div>
+                <div class="video-card">
+                    <a href="https://www.youtube.com/watch?v=Ds33ng2a7as" target="_blank">🎥 Стефанчук та клани</a>
+                </div>
+                <div class="video-card">
+                    <a href="https://www.youtube.com/watch?v=FuiDAVJndPo" target="_blank">🎥 Хто керує КНУ</a>
+                </div>
+                <div class="video-card">
+                    <a href="https://www.youtube.com/watch?v=J3jYH7YKZ18" target="_blank">🎥 Скандал із закупівлями</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Legal Status -->
+        <div class="danger-box">
+            <h2 style="border:none; margin-bottom:1rem;">⚠️ Відсутність правових наслідків</h2>
+            <p><strong>Станом на лютий 2026 року (через 4 роки):</strong></p>
+
+            <div class="fact-item">
+                <span class="status-badge status-red">❌</span> Матеріали з @bugrovleaks <strong>не оскаржені в
+                    суді</strong>
+            </div>
+            <div class="fact-item">
+                <span class="status-badge status-red">❌</span> <strong>Не подано позовів</strong> про захист честі та
+                гідності
+            </div>
+            <div class="fact-item">
+                <span class="status-badge status-yellow">⏳</span> Петиція з 25,000 підписів <strong>без
+                    результатів</strong> понад рік
+            </div>
+            <div class="fact-item">
+                <span class="status-badge status-yellow">⏳</span> Перевірки МОН та ОГП <strong>без публічних
+                    результатів</strong>
+            </div>
+        </div>
+
+        <!-- Archive Access -->
+        <div class="card"
+            style="text-align: center; padding: 3rem; background: linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(118,75,162,0.1) 100%);">
+            <h2>🔍 Доступ до повного архіву</h2>
+            <p style="margin: 1.5rem 0; font-size: 1.1rem;">Дослідити оригінальні матеріали листувань, оприлюднені у
+                лютому 2022 року</p>
+            <a href="archive.html" class="btn-primary" style="font-size: 1.3rem; padding: 1.3rem 3rem;">📂 Відкрити
+                Архів (32,173 повідомлень)</a>
+            <p style="margin-top: 1.5rem; font-size: 0.9rem; opacity: 0.7;">
+                Матеріали представлені у візуально читабельному форматі без жодних змін<br>
+                Автентичність оспорюється ректором • Не оскаржено в судах
+            </p>
+        </div>
+
+        <!-- Primary Sources -->
+        <div class="card">
+            <h2>🔗 Первинні джерела</h2>
+
+            <h3>Telegram-канал</h3>
+            <div class="link-card">
+                <a href="https://t.me/bugrovleaks" target="_blank">📱 @bugrovleaks</a><br>
+                <em>Створено 3 лютого 2022. Анонс нових публікацій: 26 лютого 2026.</em>
+            </div>
+
+            <h3>Офіційні джерела</h3>
+            <div class="link-card">
+                <a href="https://petition.president.gov.ua/petition/216794" target="_blank">✍️ Петиція про звільнення
+                    ректора (25,000 підписів)</a>
+            </div>
+            <div class="link-card">
+                <a href="https://knu.ua/ua/geninf/adm/Bugrov/" target="_blank">🏛️ Офіційна сторінка ректора (українська
+                    версія)</a>
+            </div>
+            <div class="link-card">
+                <a href="https://uk.wikipedia.org/wiki/Бугров_Володимир_Анатолійович" target="_blank">📚 Вікіпедія</a>
             </div>
         </div>
     </div>
 
-    <!-- Media Gallery Modal -->
-    <div class="modal" id="media-gallery-modal" onclick="if(event.target === this) this.style.display='none'">
-        <div class="modal-content"
-            style="max-width: 900px; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column;">
-            <div class="media-gallery-header" style="background: none; border: none; padding: 15px 20px;">
-                <span style="font-size: 18px; font-weight: 500;">Shared Media</span>
-                <button class="icon-btn"
-                    onclick="document.getElementById('media-gallery-modal').style.display='none'">✕</button>
-            </div>
-            <div class="media-tabs" style="padding: 0 20px;">
-                <div class="media-tab active" onclick="app.filterGallery('photo', this)">Photos</div>
-                <div class="media-tab" onclick="app.filterGallery('video', this)">Videos</div>
-                <div class="media-tab" onclick="app.filterGallery('voice', this)">Voice</div>
-            </div>
-            <div class="media-grid" id="media-grid" style="flex: 1; overflow-y: auto; padding: 20px;">
-                <!-- Media items injected here -->
-            </div>
-        </div>
+    <div class="footer">
+        <p><strong>Останнє оновлення:</strong> 13 лютого 2026</p>
+        <p><strong>Наступна публікація на @bugrovleaks:</strong> 26 лютого 2026</p>
+        <p style="margin-top: 1rem;">📧 Контакти: chervonyguber@protonmail.com</p>
+        <p style="margin-top: 0.5rem; font-size: 0.85rem; opacity: 0.8;">
+            Цей сайт створено з метою документування подій суспільного значення<br>
+            Всі матеріали представлені без змін • Посилання на перевірені джерела
+        </p>
+        <p style="margin-top: 1rem; font-size: 0.9rem;">© 2026 Documenting Public Interest Events</p>
     </div>
 
-    <script src="js/app.js"></script>
+    <script>
+        // Theme Toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            const current = html.getAttribute('data-theme') || 'light';
+            const next = current === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+            document.querySelector('.theme-toggle').textContent = next === 'dark' ? '☀️' : '🌙';
+        }
+
+        // Init theme
+        const storedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', storedTheme);
+        if (document.querySelector('.theme-toggle')) {
+            document.querySelector('.theme-toggle').textContent = storedTheme === 'dark' ? '☀️' : '🌙';
+        }
+    </script>
+    <script src="assets/app.js"></script>
 </body>
 
 </html>
