@@ -1,0 +1,81 @@
+/* Floating Sidebar Toggle Button - Telegram Style */
+.floating-sidebar-toggle {
+    position: fixed;
+    left: 320px;
+    /* Right edge of sidebar */
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 48px;
+    background: var(--accent-color);
+    border: none;
+    border-radius: 0 6px 6px 0;
+    cursor: pointer;
+    z-index: 1002;
+    /* Above sidebar */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.15);
+    transition: left 0.3s cubic-bezier(0.25, 1, 0.5, 1), background 0.2s ease;
+    opacity: 0.8;
+}
+
+.floating-sidebar-toggle:hover {
+    opacity: 1;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.25);
+}
+
+.floating-sidebar-toggle .toggle-arrow {
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+    display: inline-block;
+}
+
+/* When sidebar is collapsed on desktop */
+.sidebar.collapsed~.floating-sidebar-toggle {
+    left: 0;
+}
+
+.sidebar.collapsed~.floating-sidebar-toggle .toggle-arrow {
+    transform: rotate(180deg);
+}
+
+/* Mobile: When sidebar is hidden */
+@media (max-width: 768px) {
+    .floating-sidebar-toggle {
+        left: 0;
+        /* Start at left edge */
+        width: 32px;
+        height: 56px;
+        top: 15%;
+        /* Higher on mobile */
+        border-radius: 0 8px 8px 0;
+        opacity: 0.9;
+    }
+
+    /* When sidebar is open on mobile, follow it */
+    .sidebar.open~.floating-sidebar-toggle {
+        left: calc(min(85vw, 320px));
+        /* Follow sidebar width */
+    }
+
+    /* Arrow points right when closed, left when open */
+    .floating-sidebar-toggle .toggle-arrow {
+        transform: rotate(180deg);
+        /* Default: point right (closed state) */
+    }
+
+    .sidebar.open~.floating-sidebar-toggle .toggle-arrow {
+        transform: rotate(0deg);
+        /* Point left when open */
+    }
+}
+
+/* Dark theme adjustments */
+[data-theme="dark"] .floating-sidebar-toggle {
+    background: var(--accent-color);
+    box-shadow: 2px 0 6px rgba(0, 0, 0, 0.4);
+}

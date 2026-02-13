@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/media_gallery.css">
     <link rel="stylesheet" href="css/floating_date.css">
-    <link rel="stylesheet" href="css/mobile_overlay_fix.css">
+    <link rel="stylesheet" href="css/sidebar_toggle.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/twallpaper"></script>
 </head>
@@ -94,6 +94,13 @@
                 <!-- Chat items will be injected here -->
             </div>
         </aside>
+
+        <!-- Floating Sidebar Toggle Button -->
+        <button id="floating-sidebar-toggle" class="floating-sidebar-toggle" onclick="app.toggleSidebar()"
+            title="Toggle Chat List">
+            <span class="toggle-arrow">◀</span>
+        </button>
+
         <main class="chat-area">
             <header class="chat-header" id="chat-header" style="display: none;">
                 <button id="mobile-back-btn" onclick="app.closeChat()" title="Back to Chat List"
@@ -344,43 +351,6 @@
     </div>
 
     <script src="js/app.js"></script>
-    <script>
-        // Mobile Sidebar Initialization
-        (function () {
-            function initMobileSidebar() {
-                const isMobile = window.innerWidth <= 768;
-                if (isMobile) {
-                    // Show sidebar by default on mobile when no chat is selected
-                    if (!window.location.hash || window.location.hash === '#') {
-                        const sidebar = document.querySelector('.sidebar');
-                        const overlay = document.querySelector('.sidebar-overlay');
-
-                        if (sidebar) {
-                            sidebar.classList.add('open');
-                        }
-                        if (overlay) {
-                            overlay.classList.add('active');
-                        }
-                    }
-                }
-            }
-
-            // Run on page load
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', initMobileSidebar);
-            } else {
-                // DOM already loaded
-                setTimeout(initMobileSidebar, 100);
-            }
-
-            // Re-check on resize
-            let resizeTimer;
-            window.addEventListener('resize', function () {
-                clearTimeout(resizeTimer);
-                resizeTimer = setTimeout(initMobileSidebar, 250);
-            });
-        })();
-    </script>
 </body>
 
 </html>
