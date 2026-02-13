@@ -50,8 +50,8 @@
         /* Start at left edge */
         width: 32px;
         height: 56px;
-        top: 15%;
-        /* Higher on mobile */
+        top: 50%;
+        /* Centered vertically like desktop */
         border-radius: 0 8px 8px 0;
         opacity: 0.9;
     }
