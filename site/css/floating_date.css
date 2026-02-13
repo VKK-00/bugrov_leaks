@@ -16,7 +16,8 @@
     border-radius: 12px;
     font-size: 13px;
     font-weight: 500;
-    z-index: 100;
+    z-index: 50;
+    /* Lower than search bar (100) and audio player (1000) */
     pointer-events: none;
     transition: opacity 0.2s;
 }

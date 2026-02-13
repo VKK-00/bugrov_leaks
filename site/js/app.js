@@ -549,7 +549,18 @@ var app = {
     },
 
     loadChat: async function (chatId) {
-        if (this.state.currentChatId === chatId && this.state.currentChatMessages.length > 0 && !this.state.pendingScrollChunk) return;
+        // If same chat is already loaded and no pending scroll, skip reload
+        if (this.state.currentChatId === chatId && this.state.currentChatMessages.length > 0 && !this.state.pendingScrollChunk && !this.state.pendingScrollId) return;
+
+        // If we have a pending scroll ID but chat is already loaded, just scroll
+        if (this.state.currentChatId === chatId && this.state.currentChatMessages.length > 0 && this.state.pendingScrollId) {
+            setTimeout(() => {
+                this.scrollToMessage(this.state.pendingScrollId);
+                this.state.pendingScrollId = null;
+                this.state.pendingScrollChunk = null;
+            }, 100);
+            return;
+        }
 
         this.state.currentChatId = chatId;
         this.state.chunksLoaded.clear();
@@ -1260,6 +1271,79 @@ var app = {
             } else {
                 alert("No messages found on or after this date.");
             }
+        }
+    },
+
+    toggleSearch: function () {
+        const searchBar = document.getElementById('search-bar-chat');
+        const searchInput = document.getElementById('msg-search-input');
+
+        if (!searchBar) {
+            console.error('Chat search bar element not found');
+            return;
+        }
+
+        if (searchBar.style.display === 'none' || !searchBar.style.display) {
+            searchBar.style.display = 'flex';
+            if (searchInput) searchInput.focus();
+        } else {
+            searchBar.style.display = 'none';
+            if (searchInput) searchInput.value = '';
+            // Clear search highlighting
+            this.clearSearchHighlights();
+        }
+    },
+
+    clearSearchHighlights: function () {
+        const container = document.getElementById('messages-container');
+        if (!container) return;
+
+        const highlights = container.querySelectorAll('.search-highlight');
+        highlights.forEach(el => {
+            const parent = el.parentNode;
+            parent.replaceChild(document.createTextNode(el.textContent), el);
+            parent.normalize();
+        });
+    },
+
+    searchInChat: function (query) {
+        if (!query || query.trim() === '') {
+            this.clearSearchHighlights();
+            return;
+        }
+
+        const container = document.getElementById('messages-container');
+        if (!container) return;
+
+        // Clear previous highlights
+        this.clearSearchHighlights();
+
+        const messages = container.querySelectorAll('.message');
+        let firstMatch = null;
+
+        messages.forEach(msg => {
+            const textContent = msg.querySelector('.message-text, .message-caption');
+            if (!textContent) return;
+
+            const text = textContent.textContent;
+            const lowerText = text.toLowerCase();
+            const lowerQuery = query.toLowerCase();
+
+            if (lowerText.includes(lowerQuery)) {
+                // Highlight the match
+                const regex = new RegExp(`(${query})`, 'gi');
+                const highlighted = text.replace(regex, '<span class="search-highlight">$1</span>');
+                textContent.innerHTML = highlighted;
+
+                if (!firstMatch) {
+                    firstMatch = msg;
+                }
+            }
+        });
+
+        // Scroll to first match
+        if (firstMatch) {
+            firstMatch.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
     },
 

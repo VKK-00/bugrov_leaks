@@ -7,7 +7,8 @@
     transform: translateY(-50%);
     width: 24px;
     height: 48px;
-    background: var(--accent-color);
+    background: rgba(102, 126, 234, 0.25);
+    /* Much more transparent */
     border: none;
     border-radius: 0 6px 6px 0;
     cursor: pointer;
@@ -16,14 +17,17 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.15);
-    transition: left 0.3s cubic-bezier(0.25, 1, 0.5, 1), background 0.2s ease;
-    opacity: 0.8;
+    box-shadow: 1px 0 2px rgba(0, 0, 0, 0.1);
+    transition: left 0.3s cubic-bezier(0.25, 1, 0.5, 1), background 0.2s ease, opacity 0.2s ease;
+    opacity: 0.4;
+    /* More transparent by default */
 }
 
 .floating-sidebar-toggle:hover {
-    opacity: 1;
-    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.25);
+    opacity: 0.7;
+    /* Slightly more visible on hover */
+    background: rgba(102, 126, 234, 0.4);
+    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.15);
 }
 
 .floating-sidebar-toggle .toggle-arrow {
@@ -50,16 +54,16 @@
         /* Start at left edge */
         width: 32px;
         height: 56px;
-        top: 15%;
-        /* Higher on mobile */
+        top: 50%;
+        /* Centered vertically like desktop */
         border-radius: 0 8px 8px 0;
         opacity: 0.9;
     }
 
     /* When sidebar is open on mobile, follow it */
     .sidebar.open~.floating-sidebar-toggle {
-        left: calc(min(85vw, 320px));
-        /* Follow sidebar width */
+        left: min(80vw, 320px);
+        /* Follow actual sidebar width (80vw max 320px) */
     }
 
     /* Arrow points right when closed, left when open */
@@ -76,6 +80,10 @@
 
 /* Dark theme adjustments */
 [data-theme="dark"] .floating-sidebar-toggle {
-    background: var(--accent-color);
-    box-shadow: 2px 0 6px rgba(0, 0, 0, 0.4);
+    background: rgba(74, 95, 193, 0.25);
+    box-shadow: 1px 0 2px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .floating-sidebar-toggle:hover {
+    background: rgba(74, 95, 193, 0.4);
 }
