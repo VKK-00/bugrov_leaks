@@ -1,0 +1,42 @@
+/* Floating Date Header - Centered within chat area, not entire window */
+.floating-date-header {
+    position: fixed;
+    top: 60px;
+    /* Center within remaining space after sidebar */
+    left: 320px;
+    /* Start after sidebar */
+    right: 0;
+    margin-left: auto;
+    margin-right: auto;
+    width: fit-content;
+    max-width: 200px;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    padding: 6px 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 500;
+    z-index: 100;
+    pointer-events: none;
+    transition: opacity 0.2s;
+}
+
+.floating-date-header.visible {
+    opacity: 1;
+}
+
+[data-theme="dark"] .floating-date-header {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+/* Mobile: center in full width since no sidebar */
+@media (max-width: 768px) {
+    .floating-date-header {
+        left: 0;
+        right: 0;
+        /* Reset margin and width for full width centering */
+        margin-left: auto;
+        margin-right: auto;
+        width: fit-content;
+    }
+}

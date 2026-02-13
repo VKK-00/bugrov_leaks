@@ -8,6 +8,8 @@
     <title>Telegram Chat Export</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/media_gallery.css">
+    <link rel="stylesheet" href="css/floating_date.css">
+    <link rel="stylesheet" href="css/mobile_overlay_fix.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/twallpaper"></script>
 </head>
@@ -342,6 +344,43 @@
     </div>
 
     <script src="js/app.js"></script>
+    <script>
+        // Mobile Sidebar Initialization
+        (function () {
+            function initMobileSidebar() {
+                const isMobile = window.innerWidth <= 768;
+                if (isMobile) {
+                    // Show sidebar by default on mobile when no chat is selected
+                    if (!window.location.hash || window.location.hash === '#') {
+                        const sidebar = document.querySelector('.sidebar');
+                        const overlay = document.querySelector('.sidebar-overlay');
+
+                        if (sidebar) {
+                            sidebar.classList.add('open');
+                        }
+                        if (overlay) {
+                            overlay.classList.add('active');
+                        }
+                    }
+                }
+            }
+
+            // Run on page load
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initMobileSidebar);
+            } else {
+                // DOM already loaded
+                setTimeout(initMobileSidebar, 100);
+            }
+
+            // Re-check on resize
+            let resizeTimer;
+            window.addEventListener('resize', function () {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(initMobileSidebar, 250);
+            });
+        })();
+    </script>
 </body>
 
 </html>

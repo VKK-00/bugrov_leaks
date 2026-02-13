@@ -1,0 +1,22 @@
+/* Additional mobile overlay fixes to prevent blocking interaction */
+@media (max-width: 768px) {
+
+    /* Ensure overlay is completely hidden when not active */
+    .sidebar-overlay {
+        visibility: hidden;
+        opacity: 0;
+        transition: opacity 0.3s, visibility 0.3s;
+    }
+
+    .sidebar-overlay.active {
+        visibility: visible;
+        opacity: 1;
+        display: block;
+    }
+
+    /* Make sure overlay doesn't block when sidebar is closed */
+    .sidebar:not(.open)+* .sidebar-overlay:not(.active) {
+        pointer-events: none;
+        display: none !important;
+    }
+}

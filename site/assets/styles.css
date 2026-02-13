@@ -498,6 +498,27 @@ a {
 }
 
 @media (max-width: 768px) {
+    .header h1 {
+        font-size: 1.8rem;
+    }
+
+    .header p {
+        font-size: 1rem;
+    }
+
+    .header-archive-btn {
+        font-size: 1rem;
+        padding: 1rem 1.5rem;
+    }
+
+    .container {
+        padding: 1rem;
+    }
+
+    .card {
+        padding: 1.5rem;
+    }
+
     .rankings-grid {
         grid-template-columns: 1fr;
     }
@@ -510,9 +531,123 @@ a {
         grid-template-columns: 1fr;
     }
 
+    .video-grid {
+        grid-template-columns: 1fr;
+    }
+
     .theme-toggle {
         width: 45px;
         height: 45px;
         font-size: 1.3rem;
+        top: 15px;
+        right: 15px;
+    }
+
+    .info-card-number {
+        font-size: 2.5rem;
+    }
+
+    .stat-number {
+        font-size: 1.5rem;
+    }
+
+    .timeline {
+        padding-left: 1.5rem;
+    }
+
+    .timeline-item:before {
+        left: -1.5rem;
+    }
+
+    .timeline-item:after {
+        left: -1.2rem;
+    }
+
+    /* Table responsiveness */
+    table {
+        font-size: 0.85rem;
+    }
+
+    table th,
+    table td {
+        padding: 0.5rem !important;
+    }
+
+    /* Better button sizing on mobile */
+    .btn-primary {
+        font-size: 1rem !important;
+        padding: 0.9rem 1.5rem !important;
+    }
+
+    /* Rankings section mobile */
+    .rankings-section {
+        padding: 1.5rem;
+    }
+
+    .rankings-section h2 {
+        font-size: 1.5rem !important;
+    }
+
+    /* Case details mobile */
+    .case-details-box {
+        padding: 1.5rem;
+    }
+
+    /* Password display on mobile */
+    code {
+        font-size: 0.9rem !important;
+        word-break: break-all;
+    }
+}
+
+@media (max-width: 480px) {
+    .header h1 {
+        font-size: 1.5rem;
+    }
+
+    .header {
+        padding: 2rem 1rem 1.5rem;
+    }
+
+    .info-card-number {
+        font-size: 2rem;
+    }
+
+    .info-card-label {
+        font-size: 0.95rem;
+    }
+
+    table {
+        font-size: 0.75rem;
+    }
+
+    table th,
+    table td {
+        padding: 0.35rem !important;
+    }
+
+    /* Stack table on very small screens */
+    .rankings-grid,
+    .stats-grid,
+    .info-grid,
+    .video-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .container {
+        padding: 0.75rem;
+    }
+
+    .card {
+        padding: 1rem;
+    }
+
+    h2 {
+        font-size: 1.3rem;
+    }
+
+    h3 {
+        font-size: 1.1rem;
     }
 }
