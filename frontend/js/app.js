@@ -32,7 +32,16 @@ var app = {
         // Update button icon
         const btns = document.querySelectorAll('.theme-toggle-btn');
         btns.forEach(btn => {
-            btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+            const icon = btn.querySelector('.icon');
+            if (icon) {
+                if (theme === 'dark') {
+                    icon.classList.remove('icon-darkmode');
+                    icon.classList.add('icon-brightness');
+                } else {
+                    icon.classList.remove('icon-brightness');
+                    icon.classList.add('icon-darkmode');
+                }
+            }
         });
 
         // Apply Preset Colors
@@ -246,8 +255,13 @@ var app = {
         // Force Light Theme (or default)
         document.body.setAttribute('data-theme', 'light');
 
-        // Check Consent - ALWAYS SHOW
-        document.getElementById('disclaimer-modal').style.display = 'flex';
+        // Check Consent
+        const consent = localStorage.getItem('bugrov_consent');
+        if (consent !== 'true') {
+            document.getElementById('disclaimer-modal').style.display = 'flex';
+        } else {
+            document.getElementById('disclaimer-modal').style.display = 'none';
+        }
 
 
         this.initFloatingDate();
@@ -548,6 +562,13 @@ var app = {
         }, 500);
     },
 
+    getMsgIdNum: function (msgId) {
+        if (!msgId) return -1;
+        const match = msgId.match(/message(\d+)/);
+        return match ? parseInt(match[1]) : -1;
+    },
+
+
     loadChat: async function (chatId) {
         // If same chat is already loaded and no pending scroll, skip reload
         if (this.state.currentChatId === chatId && this.state.currentChatMessages.length > 0 && !this.state.pendingScrollChunk && !this.state.pendingScrollId) return;
@@ -613,6 +634,22 @@ var app = {
                 let targetChunkIndex = 0; // Default to first chunk
                 let targetFilename = manifest.chunks[0].filename;
 
+                // FIX: If we have pending ID but no chunk, find the chunk!
+                if (this.state.pendingScrollId && !this.state.pendingScrollChunk) {
+                    const targetNum = this.getMsgIdNum(this.state.pendingScrollId);
+                    if (targetNum !== -1) {
+                        const chunk = manifest.chunks.find(c => {
+                            const start = this.getMsgIdNum(c.start_id);
+                            const end = this.getMsgIdNum(c.end_id);
+                            return targetNum >= start && targetNum <= end;
+                        });
+                        if (chunk) {
+                            this.state.pendingScrollChunk = chunk.filename;
+                        }
+                    }
+                }
+
+
                 if (this.state.pendingScrollChunk) {
                     targetFilename = this.state.pendingScrollChunk;
                     targetChunkIndex = manifest.chunks.findIndex(c => c.filename === targetFilename);
@@ -646,10 +683,11 @@ var app = {
             // Scroll Logic
             if (this.state.pendingScrollId) {
                 setTimeout(() => {
+                    console.log("Scrolling to pending message:", this.state.pendingScrollId); // DEBUG
                     this.scrollToMessage(this.state.pendingScrollId);
                     this.state.pendingScrollId = null;
                     this.state.pendingScrollChunk = null;
-                }, 300);
+                }, 500);
             } else {
                 // Scroll to TOP if starting from beginning
                 container.scrollTop = 0;
@@ -1158,6 +1196,17 @@ var app = {
 
     // Search functionality state
 
+    performChatSearch: function () {
+        const input = document.getElementById('msg-search-input');
+        if (input) {
+            const query = input.value;
+            console.log("performChatSearch called with:", query); // DEBUG
+            this.filterMessages(query);
+        } else {
+            console.error("Search input not found!");
+        }
+    },
+
 
     filterMessages: function (query) {
         const container = document.getElementById('messages-container');
@@ -1193,9 +1242,10 @@ var app = {
             // Line 453: content += `<div class="message-content">${textToShow}</div>`;
             // So class is message-content.
 
-            const contentEl = msg.querySelector('.message-content');
+            const contentEl = msg.querySelector('.message-content, .text, .message-caption'); // Improved selector
             if (contentEl) {
                 const text = contentEl.textContent;
+                console.log(`Checking msg ${msg.id}:`, text.substring(0, 20), "Query:", lowerQuery); // DEBUG
                 if (text.toLowerCase().includes(lowerQuery)) {
                     count++;
                     msg.classList.add('match');
@@ -1315,9 +1365,13 @@ var app = {
         if (searchBar.style.display === 'none' || !searchBar.style.display) {
             searchBar.style.display = 'flex';
             if (searchInput) searchInput.focus();
+            const dateHeader = document.getElementById('floating-date-header');
+            if (dateHeader) dateHeader.classList.add('search-open');
         } else {
             searchBar.style.display = 'none';
             if (searchInput) searchInput.value = '';
+            const dateHeader = document.getElementById('floating-date-header');
+            if (dateHeader) dateHeader.classList.remove('search-open');
             // Clear search highlighting
             this.clearSearchHighlights();
         }
@@ -1335,9 +1389,17 @@ var app = {
         });
     },
 
-    searchInChat: function (query) {
+    // --- Search Logic ---
+    performChatSearch: function () {
+        const input = document.getElementById('msg-search-input');
+        const query = input ? input.value : '';
+        const countSpan = document.getElementById('search-count');
+
         if (!query || query.trim() === '') {
             this.clearSearchHighlights();
+            if (countSpan) countSpan.textContent = '';
+            this.state.searchMatches = [];
+            this.state.currentMatchIndex = -1;
             return;
         }
 
@@ -1348,10 +1410,11 @@ var app = {
         this.clearSearchHighlights();
 
         const messages = container.querySelectorAll('.message');
-        let firstMatch = null;
+        this.state.searchMatches = [];
+        this.state.currentMatchIndex = -1;
 
         messages.forEach(msg => {
-            const textContent = msg.querySelector('.message-text, .message-caption');
+            const textContent = msg.querySelector('.text, .message-caption');
             if (!textContent) return;
 
             const text = textContent.textContent;
@@ -1360,19 +1423,64 @@ var app = {
 
             if (lowerText.includes(lowerQuery)) {
                 // Highlight the match
-                const regex = new RegExp(`(${query})`, 'gi');
+                const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
                 const highlighted = text.replace(regex, '<span class="search-highlight">$1</span>');
                 textContent.innerHTML = highlighted;
 
-                if (!firstMatch) {
-                    firstMatch = msg;
-                }
+                // Add all highlights in this message to the matches list
+                // We want to navigate between *instances* of matches, or *messages*?
+                // User said "jumping from message to message".
+                // Let's treat each message as one match point for simplicity of navigation.
+                this.state.searchMatches.push(msg);
             }
         });
 
-        // Scroll to first match
-        if (firstMatch) {
-            firstMatch.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (this.state.searchMatches.length > 0) {
+            this.state.currentMatchIndex = 0;
+            this.highlightCurrentMatch();
+            if (countSpan) countSpan.textContent = `1 / ${this.state.searchMatches.length}`;
+        } else {
+            if (countSpan) countSpan.textContent = '0 / 0';
+        }
+    },
+
+    navigateSearch: function (direction) {
+        if (this.state.searchMatches.length === 0) return;
+
+        if (direction === 'next') {
+            this.state.currentMatchIndex++;
+            if (this.state.currentMatchIndex >= this.state.searchMatches.length) {
+                this.state.currentMatchIndex = 0; // Wrap around
+            }
+        } else if (direction === 'prev') {
+            this.state.currentMatchIndex--;
+            if (this.state.currentMatchIndex < 0) {
+                this.state.currentMatchIndex = this.state.searchMatches.length - 1; // Wrap around
+            }
+        }
+
+        this.highlightCurrentMatch();
+
+        const countSpan = document.getElementById('search-count');
+        if (countSpan) {
+            countSpan.textContent = `${this.state.currentMatchIndex + 1} / ${this.state.searchMatches.length}`;
+        }
+    },
+
+    highlightCurrentMatch: function () {
+        const match = this.state.searchMatches[this.state.currentMatchIndex];
+        if (match) {
+            // Remove 'active' class from all highlights
+            const allHighlights = document.querySelectorAll('.search-highlight');
+            allHighlights.forEach(h => h.classList.remove('active'));
+
+            // Scroll to message
+            match.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // Add 'active' class to highlights within this message
+            // To make the specific text stand out more?
+            const highlights = match.querySelectorAll('.search-highlight');
+            highlights.forEach(h => h.classList.add('active'));
         }
     },
 
@@ -1629,8 +1737,11 @@ var app = {
             return;
         }
 
-        const msgs = this.state.currentChatMessages;
+        let msgs = this.state.currentChatMessages;
         if (!msgs || msgs.length === 0) return;
+
+        // Filter out forwarded message for stats
+        msgs = msgs.filter(m => !m.is_forwarded);
 
         const total = msgs.length;
         const users = {};

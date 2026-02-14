@@ -141,9 +141,10 @@
     background-image: url('../icons/camera.svg');
 }
 
-/* UI elements */
 .icon-calendar {
     background-image: url('../icons/calendar.svg');
+    filter: brightness(0.5);
+    /* Make it darker in light mode */
 }
 
 .icon-info {
@@ -183,4 +184,14 @@
 .icon-btn .icon {
     margin: 0;
     vertical-align: middle;
+}
+
+/* Lock Icon */
+.icon-lock {
+    background-image: url('../icons/lock.svg');
+}
+
+/* Dark mode lock icon */
+[data-theme='dark'] .icon-lock {
+    filter: invert(1) brightness(0.9);
 }

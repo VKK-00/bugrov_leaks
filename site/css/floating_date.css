@@ -2,6 +2,13 @@
 .floating-date-header {
     position: fixed;
     top: 60px;
+    z-index: 50;
+    pointer-events: none;
+    transition: opacity 0.2s, top 0.2s;
+}
+
+.floating-date-header.search-open {
+    top: 110px;
     /* Center within remaining space after sidebar */
     left: 320px;
     /* Start after sidebar */

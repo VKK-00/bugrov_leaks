@@ -132,3 +132,19 @@
 [data-theme="dark"] .call-icon-wrapper.cancelled {
     background: rgba(255, 152, 0, 0.2);
 }
+
+/* Search Highlights */
+.search-highlight {
+    background-color: #ffeeb3;
+    /* Light yellow */
+    color: black;
+    border-radius: 2px;
+}
+
+.search-highlight.active {
+    background-color: #ff9800;
+    /* Orange */
+    color: white;
+    font-weight: bold;
+    outline: 2px solid #ff5722;
+}
