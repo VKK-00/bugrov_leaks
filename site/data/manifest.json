@@ -3,7 +3,7 @@
     {
       "chat_id": "chat_003",
       "title": "Марія Горбань",
-      "message_count": 16281,
+      "message_count": 16092,
       "chunk_count": 2,
       "start_date": "2021-06-20T03:14:02",
       "end_date": "2021-11-10T12:38:40"
@@ -11,7 +11,7 @@
     {
       "chat_id": "chat_016",
       "title": "Інна Степанець",
-      "message_count": 11772,
+      "message_count": 11326,
       "chunk_count": 2,
       "start_date": "2021-03-05T13:54:01",
       "end_date": "2021-11-09T22:08:06"
@@ -19,7 +19,7 @@
     {
       "chat_id": "chat_001",
       "title": "Вікторія Лукянцева",
-      "message_count": 1283,
+      "message_count": 1280,
       "chunk_count": 1,
       "start_date": "2021-03-27T21:31:50",
       "end_date": "2021-11-10T13:48:33"
@@ -27,7 +27,7 @@
     {
       "chat_id": "chat_042",
       "title": "Катерина Ган",
-      "message_count": 1049,
+      "message_count": 1041,
       "chunk_count": 1,
       "start_date": "2021-04-13T21:32:28",
       "end_date": "2021-10-11T21:03:06"
@@ -35,7 +35,7 @@
     {
       "chat_id": "chat_017",
       "title": "Сергій Юрійович Козьяков",
-      "message_count": 582,
+      "message_count": 576,
       "chunk_count": 1,
       "start_date": "2020-06-24T09:15:19",
       "end_date": "2021-11-09T19:17:05"
@@ -43,7 +43,7 @@
     {
       "chat_id": "chat_002",
       "title": "фрагмент з Ярослава Хоменко",
-      "message_count": 469,
+      "message_count": 464,
       "chunk_count": 1,
       "start_date": null,
       "end_date": null
@@ -59,13 +59,13 @@
     {
       "chat_id": "chat_023",
       "title": "Туса",
-      "message_count": 356,
+      "message_count": 355,
       "chunk_count": 1,
       "start_date": "2021-08-07T22:27:36",
       "end_date": "2021-11-03T12:24:52"
     }
   ],
   "total_chats": 8,
-  "total_messages": 32173,
-  "generated_at": "2026-02-14T00:26:22.838302"
+  "total_messages": 31515,
+  "generated_at": "2026-02-14T01:40:14.447465"
 }

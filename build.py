@@ -51,6 +51,9 @@ class Message:
     plain_text: str
     reply_to: Optional[str] = None
     forwarded_from: Optional[str] = None
+    forwarded_date: Optional[str] = None
+    call_type: Optional[str] = None  # "incoming" | "outgoing" | "missed"
+    call_duration: Optional[int] = None  # seconds
     attachments: List[Attachment] = field(default_factory=list)
     is_service: bool = False
 
@@ -197,11 +200,49 @@ def parse_messages_html(path: Path, chat_id: str, last_sender: Dict[str, str]) -
         
         # Get forwarded from
         forwarded_from = None
+        forwarded_date = None
         fwd_div = msg_div.select_one("div.forwarded.body")
         if fwd_div:
-            fwd_name = fwd_div.select_one("span.from_name")
-            if fwd_name:
-                forwarded_from = norm_text(fwd_name.get_text(" ", strip=True))
+            fwd_name_div = fwd_div.select_one("div.from_name")
+            if fwd_name_div:
+                # Extract name (before span.details)
+                fwd_text = fwd_name_div.get_text(" ", strip=True)
+                # Extract date from span.details if present
+                fwd_date_span = fwd_name_div.select_one("span.details")
+                if fwd_date_span:
+                    forwarded_date = norm_text(fwd_date_span.get_text(" ", strip=True))
+                    # Remove date part from name
+                    fwd_text = fwd_text.replace(forwarded_date, "").strip()
+                forwarded_from = norm_text(fwd_text)
+        
+        # Get call information
+        call_type = None
+        call_duration = None
+        call_div = msg_div.select_one("div.media_call")
+        if call_div:
+            call_classes = set(call_div.get("class") or [])
+            status_div = call_div.select_one("div.status.details")
+            if status_div:
+                status_text = norm_text(status_div.get_text(" ", strip=True))
+                
+                # Determine call type
+                if "Incoming" in status_text:
+                    call_type = "incoming"
+                elif "Outgoing" in status_text:
+                    call_type = "outgoing"
+                elif "Cancelled" in status_text:
+                    call_type = "cancelled"
+                elif "Missed" in status_text:
+                    call_type = "missed"
+                
+                # Check if answered (has 'success' class)
+                if "success" not in call_classes and call_type and call_type != "cancelled":
+                    call_type = "missed"
+                
+                # Extract duration if present
+                duration_match = re.search(r"\((\d+)\s+seconds?\)", status_text)
+                if duration_match:
+                    call_duration = int(duration_match.group(1))
         
         # Get text
         text_div = msg_div.select_one("div.text")
@@ -233,6 +274,9 @@ def parse_messages_html(path: Path, chat_id: str, last_sender: Dict[str, str]) -
             plain_text=plain_text,
             reply_to=reply_to,
             forwarded_from=forwarded_from,
+            forwarded_date=forwarded_date,
+            call_type=call_type,
+            call_duration=call_duration,
             attachments=attachments,
             is_service=is_service
         ))
@@ -352,7 +396,7 @@ def process_chat(chat_dir: Path, output_data_dir: Path, output_media_dir: Path) 
     chat_manifest = {
         "chat_id": chat_id,
         "title": title,
-        "message_count": len(all_messages),
+        "message_count": len([m for m in all_messages if not m.forwarded_from]),
         "chunk_count": len(chunks_info),
         "chunks": chunks_info,
         "start_date": min(all_dates) if all_dates else None,
@@ -368,7 +412,7 @@ def process_chat(chat_dir: Path, output_data_dir: Path, output_media_dir: Path) 
     return {
         "chat_id": chat_id,
         "title": title,
-        "message_count": len(all_messages),
+        "message_count": len([m for m in all_messages if not m.forwarded_from]),
         "chunk_count": len(chunks_info),
         "start_date": min(all_dates) if all_dates else None,
         "end_date": max(all_dates) if all_dates else None

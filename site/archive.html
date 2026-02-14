@@ -1,4 +1,4 @@
-﻿к<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="css/floating_date.css">
     <link rel="stylesheet" href="css/sidebar_toggle.css">
     <link rel="stylesheet" href="css/chat_search.css">
+    <link rel="stylesheet" href="css/message_features.css">
+    <link rel="stylesheet" href="css/icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/twallpaper"></script>
 </head>
@@ -73,12 +75,13 @@
                         <input type="text" placeholder="Search" id="chat-search">
                     </div>
                     <button class="theme-toggle-btn" onclick="app.toggleTheme()" title="Toggle Theme"
-                        style="border: none; background: none; font-size: 20px; cursor: pointer;">
-                        🌙
+                        style="border: none; background: none; padding: 5px; cursor: pointer;">
+                        <span class="icon icon-md icon-darkmode"></span>
                     </button>
                     <!-- Mobile Close Sidebar Button -->
                     <button id="sidebar-close-btn" onclick="app.toggleSidebar()"
-                        style="display: none; background:none; border:none; font-size: 20px; cursor: pointer;">✖️</button>
+                        style="display: none; background:none; border:none; padding: 5px; cursor: pointer;"><span
+                            class="icon icon-md icon-close"></span></button>
                 </div>
 
                 <div style="display: flex; align-items: center; padding: 0 5px;">
@@ -105,25 +108,31 @@
         <main class="chat-area">
             <header class="chat-header" id="chat-header" style="display: none;">
                 <button id="mobile-back-btn" onclick="app.closeChat()" title="Back to Chat List"
-                    style="display: none; margin-right: 10px; border:none; background:none; font-size:20px; cursor:pointer;">⬅️</button>
-                <button id="sidebar-toggle-btn" onclick="app.toggleSidebar()" title="Toggle Sidebar">☰</button>
+                    style="display: none; margin-right: 10px; border:none; background:none; padding: 5px; cursor:pointer;"><span
+                        class="icon icon-md icon-back"></span></button>
+                <button id="sidebar-toggle-btn" onclick="app.toggleSidebar()" title="Toggle Sidebar"><span
+                        class="icon icon-md icon-menu"></span></button>
                 <div class="chat-info">
                     <h3 class="chat-title">Select a chat</h3>
                     <span class="chat-status">to start messaging</span>
                 </div>
                 <div class="header-tools">
-                    <button class="icon-btn" onclick="app.openMediaGallery()" title="Media Gallery">🖼️</button>
-                    <button class="icon-btn" onclick="app.toggleSearch()">🔍</button>
-                    <button class="icon-btn" onclick="app.showCalendar()">📅</button>
+                    <button class="icon-btn" onclick="app.lockApp()" title="Lock Chat"><span
+                            class="icon icon-md icon-lock"></span></button>
+                    <button class="icon-btn" onclick="app.openMediaGallery()" title="Media Gallery"><span
+                            class="icon icon-md icon-image"></span></button>
+                    <button class="icon-btn" onclick="app.toggleSearch()"><span
+                            class="icon icon-md icon-search"></span></button>
+                    <button class="icon-btn" onclick="app.showCalendar()"><span
+                            class="icon icon-md icon-calendar"></span></button>
                 </div>
             </header>
             <!-- Sticky Audio Player -->
             <div id="sticky-audio-player" class="sticky-player" style="display: none;">
                 <audio id="global-audio" style="display:none;"></audio>
-                <div class="player-controls">
-                    <button onclick="app.prevAudio()">⏮️</button>
-                    <button onclick="app.toggleAudio()" id="play-pause-btn">▶️</button>
-                    <button onclick="app.nextAudio()">⏭️</button>
+                <div class="audio-controls">
+                    <button id="play-pause-btn" onclick="app.toggleAudio()"><span
+                            class="icon icon-md icon-pause"></span></button>
                 </div>
                 <div class="player-info">
                     <div id="player-title" class="player-title">Audio Track</div>
@@ -138,7 +147,8 @@
                     <div class="bar" style="height: 8px"></div>
                     <div class="bar" style="height: 14px"></div>
                 </div>
-                <button onclick="app.closeAudio()" class="close-player">тЬХ</button>
+                <button onclick="app.closeAudio()" class="close-player"><span
+                        class="icon icon-md icon-close"></span></button>
             </div>
             <div id="search-bar-chat"
                 style="display:none; padding: 10px; background: var(--header-bg); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 10px;">
@@ -147,8 +157,10 @@
                     style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-primary);">
                 <span id="search-count"
                     style="color: var(--text-secondary); font-size: 13px; min-width: 40px; text-align: center;"></span>
-                <button class="icon-btn" onclick="app.navigateSearch('prev')" title="Previous">⬆️</button>
-                <button class="icon-btn" onclick="app.navigateSearch('next')" title="Next">⬇️</button>
+                <button class="icon-btn" onclick="app.navigateSearch('prev')" title="Previous"><span
+                        class="icon icon-md icon-up"></span></button>
+                <button class="icon-btn" onclick="app.navigateSearch('next')" title="Next"><span
+                        class="icon icon-md icon-down"></span></button>
             </div>
             <div id="floating-date-header" class="floating-date-header">May 15</div>
             <div class="messages-container" id="messages-container">
@@ -193,8 +205,8 @@
         <div class="modal-content">
             <div class="modal-header">
                 <span>Select Date</span>
-                <button class="icon-btn"
-                    onclick="document.getElementById('calendar-modal').style.display='none'">✖️</button>
+                <button class="icon-btn" onclick="document.getElementById('calendar-modal').style.display='none'"><span
+                        class="icon icon-md icon-close"></span></button>
             </div>
             <input type="date" id="calendar-input">
             <button class="btn" onclick="app.jumpToDate()">Go</button>
@@ -229,7 +241,7 @@
                 style="border-bottom: 1px solid #eee; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
                 <span>Довідка та Контекст</span>
                 <button class="icon-btn" onclick="document.getElementById('info-modal').style.display='none'"
-                    style="font-size: 24px;">✖</button>
+                    style="font-size: 24px;"><span class="icon icon-lg icon-close"></span></button>
             </div>
 
             <div style="margin-top: 20px;">
@@ -306,7 +318,8 @@
             <div class="modal-header">
                 <span>Theme Settings</span>
                 <button class="icon-btn"
-                    onclick="document.getElementById('theme-settings-modal').style.display='none'">✖️</button>
+                    onclick="document.getElementById('theme-settings-modal').style.display='none'"><span
+                        class="icon icon-md icon-close"></span></button>
             </div>
             <div style="padding: 20px;">
                 <h4 style="margin-bottom: 10px; color: var(--text-primary);">Chat Background</h4>
@@ -339,7 +352,8 @@
             <div class="media-gallery-header" style="background: none; border: none; padding: 15px 20px;">
                 <span style="font-size: 18px; font-weight: 500;">Shared Media</span>
                 <button class="icon-btn"
-                    onclick="document.getElementById('media-gallery-modal').style.display='none'">✖️</button>
+                    onclick="document.getElementById('media-gallery-modal').style.display='none'"><span
+                        class="icon icon-md icon-close"></span></button>
             </div>
             <div class="media-tabs" style="padding: 0 20px;">
                 <div class="media-tab active" onclick="app.filterGallery('photo', this)">Photos</div>

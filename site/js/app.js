@@ -958,10 +958,42 @@ var app = {
 
             // Forwarded Logic
             if (msg.forwarded_from) {
-                content += `<div class="forwarded-header" style="font-style: italic; font-size: 12px; color: var(--link-color); margin-bottom: 4px; opacity: 0.8;">Переслано від: ${this.escapeHtml(msg.forwarded_from)}</div>`;
+                let fwdLabel = `Переслано від ${this.escapeHtml(msg.forwarded_from)}`;
+                if (msg.forwarded_date) {
+                    fwdLabel += ` <span class="forwarded-from">${this.escapeHtml(msg.forwarded_date)}</span>`;
+                }
+                content += `<div class="forwarded-label"><span class="icon icon-sm icon-forward"></span>${fwdLabel}</div>`;
             } else if (msg.forward_from || msg.forward_from_name) {
                 const fwdName = msg.forward_from_name || (msg.forward_from ? msg.forward_from.name : 'Unknown');
-                content += `<div class="forwarded-header" style="font-style: italic; font-size: 12px; color: var(--link-color); margin-bottom: 4px; opacity: 0.8;">Переслано від: ${this.escapeHtml(fwdName)}</div>`;
+                content += `<div class="forwarded-label">Переслано від ${this.escapeHtml(fwdName)}</div>`;
+            }
+
+            // Call Record Rendering - Telegram Style
+            if (msg.call_type) {
+                const callLabels = {
+                    incoming: 'Вхідний дзвінок',
+                    outgoing: 'Вихідний дзвінок',
+                    missed: 'Пропущений дзвінок',
+                    cancelled: 'Скасований дзвінок'
+                };
+
+                const label = callLabels[msg.call_type] || 'Дзвінок';
+                let durationStr = '';
+
+                if (msg.call_duration) {
+                    const minutes = Math.floor(msg.call_duration / 60);
+                    const seconds = msg.call_duration % 60;
+                    durationStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                }
+
+                content += `
+                    <div class="call-record">
+                        <div class="call-icon-wrapper ${msg.call_type}"></div>
+                        <div class="call-info">
+                            <div class="call-contact">${label}</div>
+                            ${durationStr ? `<div class="call-duration">${durationStr}</div>` : ''}
+                        </div>
+                    </div>`;
             }
 
             const hasAttachments = msg.attachments && msg.attachments.length > 0;
@@ -996,10 +1028,7 @@ var app = {
                 const time = msg.dt_iso.split('T')[1].substring(0, 5);
                 // Add Overlapping Read Receipt (Double Check)
                 content += `<div class="message-meta">${time} 
-                        <span class="read-receipt">
-                            <span class="check first">✓</span>
-                            <span class="check second">✓</span>
-                        </span>
+                        <span class="icon icon-sm icon-checks" style="display:inline-block; margin-left: 4px;"></span>
                     </div>`;
             }
 
@@ -1032,7 +1061,7 @@ var app = {
             // Use Waveform UI
             return `<div class="media-container voice-message-container">
             <button class="voice-msg-btn" onclick="app.playAudio('${att.href}', 'Voice Message')">
-                <span class="play-icon">▶</span>
+                <span class="icon icon-lg icon-largeplay"></span>
             </button>
             <div class="voice-waveform">
                 <div class="bar" style="height: 10px"></div>
@@ -1055,7 +1084,7 @@ var app = {
             <span class="voice-duration">Voice</span>
         </div>`;
         } else {
-            return `<div class="media-container"><a href="${att.href}" target="_blank" style="color: var(--link-color)">📄 ${att.kind}</a></div>`;
+            return `<div class="media-container"><a href="${att.href}" target="_blank" style="color: var(--link-color)"><span class="icon icon-sm icon-document" style="margin-right: 4px;"></span>${att.kind}</a></div>`;
         }
     },
 
@@ -1105,7 +1134,7 @@ var app = {
             if (type === 'voice') return '🎤 Voice Message';
             if (type === 'sticker') return '🙂 Sticker';
             if (type === 'round_video') return '⏺ Video Message';
-            return '📎 File';
+            return '<span class="icon icon-sm icon-attach" style="margin-right: 4px;"></span>File';
         }
 
         return 'Message';
@@ -1420,7 +1449,7 @@ var app = {
                 if (src.toLowerCase().endsWith('.jpg')) src = src.replace('.jpg', '_thumb.jpg');
                 inner = `<img src="${src}" onerror="this.onerror=null;this.src='${item.href}'" loading="lazy">`;
             } else if (type === 'video' || type === 'round') {
-                inner = `<video src="${item.href}" muted preload="metadata"></video><div class="type-icon">▶</div>`;
+                inner = `<video src="${item.href}" muted preload="metadata"></video><div class="type-icon"><span class="icon icon-md icon-play"></span></div>`;
             } else if (type === 'voice') {
                 // Waveform Visualization
                 inner = `
@@ -1550,7 +1579,7 @@ var app = {
         const scrollBottomBtn = document.createElement('div');
         scrollBottomBtn.id = 'scroll-bottom-btn';
         scrollBottomBtn.className = 'fab';
-        scrollBottomBtn.innerHTML = '⬇️<div class="scroll-badge" id="scroll-badge" style="display:none">0</div>';
+        scrollBottomBtn.innerHTML = '<span class="icon icon-md icon-down"></span><div class="scroll-badge" id="scroll-badge" style="display:none">0</div>';
         scrollBottomBtn.title = 'Scroll to Bottom';
         scrollBottomBtn.onclick = () => app.scrollToBottom();
         scrollBottomBtn.style.display = 'flex'; // Always visible
@@ -1559,7 +1588,7 @@ var app = {
         // Scroll Top
         const scrollTopBtn = document.createElement('div');
         scrollTopBtn.className = 'fab';
-        scrollTopBtn.innerText = '⬆️';
+        scrollTopBtn.innerHTML = '<span class="icon icon-md icon-up"></span>';
         scrollTopBtn.title = 'Scroll to Top';
         scrollTopBtn.onclick = () => app.scrollToTop();
         stack.appendChild(scrollTopBtn);
@@ -1673,7 +1702,7 @@ var app = {
         };
 
         player.onended = () => {
-            document.getElementById('play-pause-btn').textContent = '▶️';
+            document.getElementById('play-pause-btn').innerHTML = '<span class="icon icon-md icon-play"></span>';
             // Auto-hide after short delay
             setTimeout(() => {
                 if (player.paused) this.closeAudio();
@@ -1697,10 +1726,10 @@ var app = {
         const player = document.getElementById('global-audio');
         if (player.paused) {
             player.play();
-            document.getElementById('play-pause-btn').textContent = '⏸️';
+            document.getElementById('play-pause-btn').innerHTML = '<span class="icon icon-md icon-pause"></span>';
         } else {
             player.pause();
-            document.getElementById('play-pause-btn').textContent = '▶️';
+            document.getElementById('play-pause-btn').innerHTML = '<span class="icon icon-md icon-play"></span>';
         }
     },
 
@@ -1731,6 +1760,23 @@ var app = {
             .replace(/"/g, "&quot;")
             .replace(/'/g, "&#039;");
     },
+
+    lockApp: function () {
+        localStorage.removeItem('chat_auth');
+        location.reload();
+    },
+
+    checkPassword: function () {
+        const isAuth = localStorage.getItem('chat_auth');
+        if (!isAuth) {
+            const password = prompt("Enter password to view this archive:");
+            if (password && password.toLowerCase() === "bugrov") {
+                localStorage.setItem('chat_auth', 'true');
+            } else {
+                document.body.innerHTML = '<div style="display:flex;justify-content:center;align-items:center;height:100vh;flex-direction:column;background:#181818;color:white;font-family:sans-serif;"><h2>Access Denied</h2><p>Incorrect password</p><button onclick="location.reload()" style="padding:10px 20px;margin-top:20px;cursor:pointer;border:none;border-radius:4px;background:#3390ec;color:white;">Retry</button></div>';
+            }
+        }
+    }
 };
 
 document.addEventListener('DOMContentLoaded', () => {

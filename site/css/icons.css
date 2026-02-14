@@ -1,0 +1,186 @@
+/* Universal Icon System - Telegram SVG Icons */
+
+/* Base icon class - auto-adapts to theme */
+.icon {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    vertical-align: middle;
+}
+
+/* Icon sizes */
+.icon-sm {
+    width: 16px;
+    height: 16px;
+}
+
+.icon-md {
+    width: 20px;
+    height: 20px;
+}
+
+.icon-lg {
+    width: 24px;
+    height: 24px;
+}
+
+.icon-xl {
+    width: 28px;
+    height: 28px;
+}
+
+/* Dark theme - invert black icons to white */
+[data-theme="dark"] .icon {
+    filter: invert(1) brightness(0.9);
+}
+
+/* Specific icons */
+.icon-search {
+    background-image: url('../icons/search.svg');
+}
+
+.icon-close {
+    background-image: url('../icons/close.svg');
+}
+
+.icon-cross {
+    background-image: url('../icons/cross.svg');
+}
+
+.icon-back {
+    background-image: url('../icons/back.svg');
+}
+
+.icon-left {
+    background-image: url('../icons/left.svg');
+}
+
+.icon-menu {
+    background-image: url('../icons/menu.svg');
+}
+
+.icon-more {
+    background-image: url('../icons/more.svg');
+}
+
+/* Navigation */
+.icon-up {
+    background-image: url('../icons/up.svg');
+}
+
+.icon-down {
+    background-image: url('../icons/down.svg');
+}
+
+.icon-arrow-up {
+    background-image: url('../icons/arrow_up.svg');
+}
+
+.icon-arrow-down {
+    background-image: url('../icons/arrow_down.svg');
+}
+
+/* Media controls */
+.icon-play {
+    background-image: url('../icons/play.svg');
+}
+
+.icon-pause {
+    background-image: url('../icons/pause.svg');
+}
+
+.icon-next {
+    background-image: url('../icons/next.svg');
+}
+
+.icon-previous {
+    background-image: url('../icons/previous.svg');
+}
+
+.icon-fast-forward {
+    background-image: url('../icons/fast_forward.svg');
+}
+
+.icon-fast-rewind {
+    background-image: url('../icons/fast_rewind.svg');
+}
+
+.icon-largeplay {
+    background-image: url('../icons/largeplay.svg');
+}
+
+.icon-largepause {
+    background-image: url('../icons/largepause.svg');
+}
+
+.icon-forward {
+    background-image: url('../icons/forward.svg');
+}
+
+/* File types */
+.icon-image {
+    background-image: url('../icons/image.svg');
+}
+
+.icon-document {
+    background-image: url('../icons/document.svg');
+}
+
+.icon-attach {
+    background-image: url('../icons/attach.svg');
+}
+
+.icon-folder {
+    background-image: url('../icons/folder.svg');
+}
+
+.icon-camera {
+    background-image: url('../icons/camera.svg');
+}
+
+/* UI elements */
+.icon-calendar {
+    background-image: url('../icons/calendar.svg');
+}
+
+.icon-info {
+    background-image: url('../icons/info.svg');
+}
+
+.icon-settings {
+    background-image: url('../icons/settings.svg');
+}
+
+.icon-darkmode {
+    background-image: url('../icons/darkmode.svg');
+}
+
+.icon-statistics {
+    background-image: url('../icons/statistics.svg');
+}
+
+/* Read receipts - special handling (keep original colors) */
+.icon-check {
+    background-image: url('../icons/1check.svg');
+}
+
+.icon-checks {
+    background-image: url('../icons/2checks.svg');
+}
+
+/* For checks, don't invert - use custom colors */
+[data-theme="dark"] .icon-check,
+[data-theme="dark"] .icon-checks {
+    filter: none;
+    /* Apply blue tint for read receipts */
+    filter: invert(54%) sepia(87%) saturate(1934%) hue-rotate(188deg) brightness(96%) contrast(97%);
+}
+
+/* Button icon wrapper - ensures proper spacing */
+.icon-btn .icon {
+    margin: 0;
+    vertical-align: middle;
+}

@@ -1,0 +1,134 @@
+/* Forwarded Message Indicator - Telegram Style */
+.forwarded-label {
+    color: var(--accent-color);
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 6px;
+    padding-left: 4px;
+    border-left: 3px solid var(--accent-color);
+    position: relative;
+    opacity: 0.9;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.forwarded-label .icon {
+    opacity: 0.7;
+    flex-shrink: 0;
+}
+
+.forwarded-from {
+    color: var(--text-secondary);
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+/* Call Record - Telegram Style */
+.call-record {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: transparent;
+    border-radius: 8px;
+    margin: 4px 0;
+    max-width: 280px;
+}
+
+.call-icon-wrapper {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.call-icon-wrapper::after {
+    content: "";
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+/* Incoming Call Icon - Green phone with down arrow */
+.call-icon-wrapper.incoming {
+    background: rgba(76, 175, 80, 0.15);
+}
+
+.call-icon-wrapper.incoming::after {
+    background-image: url('../icons/phone.svg');
+    filter: invert(63%) sepia(46%) saturate(610%) hue-rotate(81deg) brightness(91%) contrast(86%);
+}
+
+/* Outgoing Call Icon - Blue phone with up arrow */
+.call-icon-wrapper.outgoing {
+    background: rgba(33, 150, 243, 0.15);
+}
+
+.call-icon-wrapper.outgoing::after {
+    background-image: url('../icons/phone.svg');
+    filter: invert(54%) sepia(87%) saturate(1934%) hue-rotate(188deg) brightness(96%) contrast(97%);
+}
+
+/* Missed Call Icon - Red filled phone for emphasis */
+.call-icon-wrapper.missed {
+    background: rgba(244, 67, 54, 0.15);
+}
+
+.call-icon-wrapper.missed::after {
+    background-image: url('../icons/phone_filled.svg');
+    filter: invert(40%) sepia(93%) saturate(4089%) hue-rotate(348deg) brightness(93%) contrast(97%);
+}
+
+/* Cancelled Call Icon - Orange phone crossed */
+.call-icon-wrapper.cancelled {
+    background: rgba(255, 152, 0, 0.15);
+}
+
+.call-icon-wrapper.cancelled::after {
+    background-image: url('../icons/endcall_filled.svg');
+    filter: invert(66%) sepia(86%) saturate(1725%) hue-rotate(358deg) brightness(102%) contrast(102%);
+}
+
+.call-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.call-contact {
+    font-weight: 400;
+    color: var(--text-primary);
+    font-size: 14px;
+    line-height: 1.3;
+}
+
+.call-duration {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+    opacity: 0.8;
+}
+
+/* Dark Theme Adjustments */
+[data-theme="dark"] .call-icon-wrapper.incoming {
+    background: rgba(76, 175, 80, 0.2);
+}
+
+[data-theme="dark"] .call-icon-wrapper.outgoing {
+    background: rgba(33, 150, 243, 0.2);
+}
+
+[data-theme="dark"] .call-icon-wrapper.missed {
+    background: rgba(244, 67, 54, 0.2);
+}
+
+[data-theme="dark"] .call-icon-wrapper.cancelled {
+    background: rgba(255, 152, 0, 0.2);
+}
