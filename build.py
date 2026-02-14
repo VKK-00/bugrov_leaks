@@ -56,6 +56,7 @@ class Message:
     call_duration: Optional[int] = None  # seconds
     attachments: List[Attachment] = field(default_factory=list)
     is_service: bool = False
+    is_forwarded: bool = False
 
 
 def parse_dt(title_value: Optional[str]) -> Optional[str]:
@@ -201,6 +202,11 @@ def parse_messages_html(path: Path, chat_id: str, last_sender: Dict[str, str]) -
         # Get forwarded from
         forwarded_from = None
         forwarded_date = None
+        
+        # Check for forwarded class anywhere in message (e.g. on userpic_wrap)
+        is_forwarded_msg = bool(msg_div.select_one(".forwarded"))
+        
+        # Try to find forwarded body for details (optional)
         fwd_div = msg_div.select_one("div.forwarded.body")
         if fwd_div:
             fwd_name_div = fwd_div.select_one("div.from_name")
@@ -214,6 +220,7 @@ def parse_messages_html(path: Path, chat_id: str, last_sender: Dict[str, str]) -
                     # Remove date part from name
                     fwd_text = fwd_text.replace(forwarded_date, "").strip()
                 forwarded_from = norm_text(fwd_text)
+                is_forwarded_msg = True
         
         # Get call information
         call_type = None
@@ -278,7 +285,8 @@ def parse_messages_html(path: Path, chat_id: str, last_sender: Dict[str, str]) -
             call_type=call_type,
             call_duration=call_duration,
             attachments=attachments,
-            is_service=is_service
+            is_service=is_service,
+            is_forwarded=is_forwarded_msg
         ))
     
     return messages
@@ -396,7 +404,7 @@ def process_chat(chat_dir: Path, output_data_dir: Path, output_media_dir: Path) 
     chat_manifest = {
         "chat_id": chat_id,
         "title": title,
-        "message_count": len([m for m in all_messages if not m.forwarded_from]),
+        "message_count": len([m for m in all_messages if not m.is_forwarded]),
         "chunk_count": len(chunks_info),
         "chunks": chunks_info,
         "start_date": min(all_dates) if all_dates else None,

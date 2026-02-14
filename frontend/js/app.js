@@ -1766,21 +1766,76 @@ var app = {
         location.reload();
     },
 
-    checkPassword: function () {
+    checkAuth: function () {
+        const overlay = document.getElementById('password-overlay');
+        if (!overlay) return;
+
         const isAuth = localStorage.getItem('chat_auth');
-        if (!isAuth) {
-            const password = prompt("Enter password to view this archive:");
-            if (password && password.toLowerCase() === "bugrov") {
-                localStorage.setItem('chat_auth', 'true');
-            } else {
-                document.body.innerHTML = '<div style="display:flex;justify-content:center;align-items:center;height:100vh;flex-direction:column;background:#181818;color:white;font-family:sans-serif;"><h2>Access Denied</h2><p>Incorrect password</p><button onclick="location.reload()" style="padding:10px 20px;margin-top:20px;cursor:pointer;border:none;border-radius:4px;background:#3390ec;color:white;">Retry</button></div>';
+
+        if (isAuth === 'true') {
+            overlay.style.display = 'none';
+            const mainContent = document.querySelector('.main-container');
+            if (mainContent) mainContent.style.filter = 'none';
+            document.body.style.overflow = '';
+        } else {
+            overlay.style.display = 'flex';
+            const mainContent = document.querySelector('.main-container');
+            if (mainContent) mainContent.style.filter = 'blur(10px)';
+            document.body.style.overflow = 'hidden';
+        }
+    },
+
+    login: function () {
+        const input = document.getElementById('access-password');
+        const overlay = document.getElementById('password-overlay');
+        const hint = overlay ? overlay.querySelector('p') : null;
+
+        if (!input) return;
+
+        const password = input.value.trim();
+
+        if (password.toLowerCase() === "bugrov") {
+            localStorage.setItem('chat_auth', 'true');
+            if (overlay) overlay.style.display = 'none';
+            const mainContent = document.querySelector('.main-container');
+            if (mainContent) mainContent.style.filter = 'none';
+            document.body.style.overflow = '';
+        } else {
+            input.style.border = '2px solid #ed4245';
+
+            if (hint) {
+                const originalText = hint.innerText;
+                hint.style.color = '#ed4245';
+                hint.style.fontWeight = 'bold';
+                hint.innerText = "Невірний пароль!";
+
+                setTimeout(() => {
+                    hint.innerText = originalText;
+                    hint.style.color = '#666';
+                    hint.style.fontWeight = 'normal';
+                }, 1500);
             }
+
+            input.value = '';
+
+            setTimeout(() => {
+                input.style.border = 'none';
+            }, 1500);
         }
     }
 };
 
 document.addEventListener('DOMContentLoaded', () => {
     app.init();
+    app.checkAuth();
     app.initGestures();
     app.initPWA();
+
+    // Add Enter key support for login
+    const passwordInput = document.getElementById('access-password');
+    if (passwordInput) {
+        passwordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') app.login();
+        });
+    }
 });
